@@ -1,5 +1,3 @@
-package edu.cornell;
-
 /**
  * Created by mabryan on 3/21/17.
  */

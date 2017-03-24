@@ -1,5 +1,3 @@
-package edu.cornell;
-
 import java.util.Scanner;
 
 public class App
