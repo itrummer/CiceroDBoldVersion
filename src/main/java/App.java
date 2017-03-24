@@ -1,3 +1,5 @@
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class App
@@ -27,7 +29,20 @@ public class App
                 continue;
             }
 
-            voiceGenerator.generateSpeech(input);
+            try {
+                ArrayList<String[]> results = DatabaseUtilities.executeQuery(input);
+                if (results.size() == 0) {
+                    System.out.println("Results: empty");
+                } else {
+                    System.out.println("Results:");
+                    for (String[] row : results) {
+                        System.out.println(row);
+                    }
+                }
+                // TODO: output results as speech
+            } catch (SQLException e) {}
+
+//            voiceGenerator.generateSpeech(input);
         }
     }
 }
