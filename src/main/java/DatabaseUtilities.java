@@ -1,6 +1,5 @@
 
 import java.sql.*;
-import java.util.ArrayList;
 
 /**
  * Convenience methods for setting up connections to the PostgreSQL database and extracting result sets
@@ -11,11 +10,17 @@ public class DatabaseUtilities {
     static String password = "admin";
     static int MAX_ROWS = 100;
 
-    public static ArrayList<String[]> executeQuery(String sql) throws SQLException {
+    /**
+     * For now, returns a String representation of the ResultSet after executing the query
+     * @param sql The query to execute
+     * @return String representation of the results of executing sql
+     * @throws SQLException
+     */
+    public static String executeQuery(String sql) throws SQLException {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
-        ArrayList<String[]> resultList = new ArrayList();
+        String results = "";
 
         SQLException sqlException = null;
 
@@ -24,17 +29,10 @@ public class DatabaseUtilities {
             statement = connection.createStatement();
             statement.setMaxRows(MAX_ROWS);
             resultSet = statement.executeQuery(sql);
-            ResultSetMetaData metaData = resultSet.getMetaData();
+//            ResultSetMetaData metaData = resultSet.getMetaData();
 
             // TODO: implement a Row class to handle ResultSet and the mapping of SQL to Java types
-            while (resultSet.next()) {
-                String[] row = new String[metaData.getColumnCount()];
-                for (int i = 0; i < metaData.getColumnCount(); i++) {
-                    String value = resultSet.getString(i);
-                    row[i] = value;
-                }
-                resultList.add(row);
-            }
+            results = resultSet.toString();
         } catch (SQLException e) {
             printSQLException(e);
         } finally {
@@ -58,7 +56,7 @@ public class DatabaseUtilities {
         if (sqlException != null) {
             throw sqlException;
         }
-        return resultList;
+        return results;
     }
 
     public static void printSQLException(SQLException ex) {
@@ -66,7 +64,6 @@ public class DatabaseUtilities {
         for (Throwable e : ex) {
             if (e instanceof SQLException) {
                 if (!ignoreSQLException(((SQLException)e).getSQLState())) {
-                    e.printStackTrace(System.err);
                     System.err.println("SQLState: " + ((SQLException)e).getSQLState());
                     System.err.println("Error Code: " + ((SQLException)e).getErrorCode());
                     System.err.println("Message: " + e.getMessage());
