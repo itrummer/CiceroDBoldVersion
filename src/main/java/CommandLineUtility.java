@@ -1,5 +1,9 @@
+import db.DatabaseUtilities;
+import db.RowCollection;
+import voice.VoiceGenerator;
+import voice.WatsonVoiceGenerator;
+
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CommandLineUtility
@@ -32,8 +36,8 @@ public class CommandLineUtility
             }
 
             try {
-                String results = DatabaseUtilities.executeQuery(input);
-                System.out.println("Results: " + results);
+                RowCollection results = DatabaseUtilities.executeQuery(input);
+                System.out.println("Results: \n" + results);
                 // TODO: output results as speech
                 // voiceGenerator.generateSpeech(input);
             } catch (SQLException e) {}

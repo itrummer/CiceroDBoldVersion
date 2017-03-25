@@ -1,3 +1,5 @@
+package voice;
+
 import com.ibm.watson.developer_cloud.text_to_speech.v1.TextToSpeech;
 import com.ibm.watson.developer_cloud.text_to_speech.v1.model.AudioFormat;
 import com.ibm.watson.developer_cloud.text_to_speech.v1.model.Voice;
@@ -9,7 +11,7 @@ import javax.sound.sampled.Clip;
 import java.io.InputStream;
 
 /**
- * A VoiceGenerator that uses IBM's Watson service to generate and play audio representation of text.
+ * A voice.VoiceGenerator that uses IBM's Watson service to generate and play audio representation of text.
  */
 public class WatsonVoiceGenerator extends VoiceGenerator {
 

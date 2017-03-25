@@ -1,3 +1,5 @@
+package voice;
+
 /**
  * An abstract class for generating speech from an input text
  */

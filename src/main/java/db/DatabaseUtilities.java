@@ -1,3 +1,4 @@
+package db;
 
 import java.sql.*;
 
@@ -16,11 +17,11 @@ public class DatabaseUtilities {
      * @return String representation of the results of executing sql
      * @throws SQLException
      */
-    public static String executeQuery(String sql) throws SQLException {
+    public static RowCollection executeQuery(String sql) throws SQLException {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
-        String results = "";
+        RowCollection rowCollection = null;
 
         SQLException sqlException = null;
 
@@ -29,10 +30,9 @@ public class DatabaseUtilities {
             statement = connection.createStatement();
             statement.setMaxRows(MAX_ROWS);
             resultSet = statement.executeQuery(sql);
-//            ResultSetMetaData metaData = resultSet.getMetaData();
 
-            // TODO: implement a Row class to handle ResultSet and the mapping of SQL to Java types
-            results = resultSet.toString();
+            rowCollection = RowCollection.rowCollectionFromResultSet(resultSet);
+
         } catch (SQLException e) {
             printSQLException(e);
         } finally {
@@ -56,7 +56,8 @@ public class DatabaseUtilities {
         if (sqlException != null) {
             throw sqlException;
         }
-        return results;
+
+        return rowCollection;
     }
 
     public static void printSQLException(SQLException ex) {

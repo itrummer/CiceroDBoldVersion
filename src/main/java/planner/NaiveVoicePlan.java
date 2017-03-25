@@ -1,3 +1,5 @@
+package planner;
+
 /**
  * A naive implementation of a voice plan. Lists all results in a query as individual tuples.
  */
