@@ -53,11 +53,10 @@ public class Row {
 
     @Override
     public String toString() {
-        String result = "(";
+        String result = "";
         for (Object value : getValues()) {
             result += value.toString() + "\t";
         }
-        result += ")";
         return result;
     }
 }
