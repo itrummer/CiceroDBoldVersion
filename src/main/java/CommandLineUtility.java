@@ -1,5 +1,7 @@
 import db.DatabaseUtilities;
 import db.RowCollection;
+import planner.NaiveVoicePlanner;
+import planner.VoicePlanner;
 import voice.VoiceGenerator;
 import voice.WatsonVoiceGenerator;
 
@@ -37,9 +39,12 @@ public class CommandLineUtility
 
             try {
                 RowCollection results = DatabaseUtilities.executeQuery(input);
-                System.out.println("Results: \n" + results);
-                // TODO: output results as speech
-                // voiceGenerator.generateSpeech(input);
+                if (results != null) {
+                    NaiveVoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
+                    results.accept(naiveVoicePlanner);
+                    System.out.println("Naive Voice Plan: " + naiveVoicePlanner.getResult());
+                    voiceGenerator.generateSpeech(naiveVoicePlanner.getResult());
+                }
             } catch (SQLException e) {}
         }
     }

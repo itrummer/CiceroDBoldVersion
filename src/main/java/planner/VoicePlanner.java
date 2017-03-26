@@ -1,12 +1,23 @@
 package planner;
 
-/**
- * Created by mabryan on 3/21/17.
- */
-public class VoicePlanner {
+import db.Row;
+import db.RowCollection;
 
-    public VoicePlan createPlan(String query) {
-        // TODO: implement NaivePlan
-        return null;
-    }
+/**
+ * Abstract representation of VoicePlanners
+ */
+public abstract class VoicePlanner {
+
+    /**
+     * Visits a RowCollection to construct a VoicePlan that represents the contents of rowCollection
+     * @param rowCollection The data to represent in speech
+     */
+    public abstract void visit(RowCollection rowCollection);
+
+    /**
+     * Visits a Row and includes it in the VoicePlan
+     * @param row The row to be included in the voice plan
+     */
+    public abstract void visit(Row row);
+
 }

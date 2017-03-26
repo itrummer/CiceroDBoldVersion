@@ -1,5 +1,8 @@
 package db;
 
+import planner.PlanItem;
+import planner.VoicePlanner;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -8,12 +11,20 @@ import java.util.ArrayList;
 /**
  * Class representation of a collection of rows returned from a SQL query
  */
-public class RowCollection {
+public class RowCollection implements PlanItem {
 
     ArrayList<Row> rows;
 
     public RowCollection(ArrayList<Row> rows) {
         this.rows = rows;
+    }
+
+    public ArrayList<Row> getRows() {
+        return rows;
+    }
+
+    public void accept(VoicePlanner voicePlanner) {
+        voicePlanner.visit(this);
     }
 
     /**
