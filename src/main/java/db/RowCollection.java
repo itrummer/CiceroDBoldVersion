@@ -4,10 +4,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
- * Created by mabryan on 3/25/17.
+ * Class representation of a collection of rows returned from a SQL query
  */
 public class RowCollection {
 
@@ -17,6 +16,13 @@ public class RowCollection {
         this.rows = rows;
     }
 
+    /**
+     * Utility method to extract all tuples from a ResultSet into Rows, which are
+     * then added to a RowCollection
+     * @param resultSet The ResultSet from which to read tuples
+     * @return A RowCollection representing the tuples in resultSet. Null if resultSet is null or if a
+     *          SQLException is encountered
+     */
     public static RowCollection rowCollectionFromResultSet(ResultSet resultSet) {
         if (resultSet == null) {
             return null;
@@ -29,13 +35,12 @@ public class RowCollection {
             int columnCount = metaData.getColumnCount();
 
             while (resultSet.next()) {
-                HashMap<String, Object> attributeValuePairs = new HashMap<String, Object>();
+                ArrayList<Object> values = new ArrayList<Object>();
                 for (int i = 1; i <= columnCount; i++) {
-                    String column = metaData.getColumnClassName(i);
                     Object value = resultSet.getObject(i);
-                    attributeValuePairs.put(column, value);
+                    values.add(value);
                 }
-                rows.add(new Row(attributeValuePairs));
+                rows.add(new Row(values));
             }
         } catch (SQLException e) {
             e.printStackTrace();

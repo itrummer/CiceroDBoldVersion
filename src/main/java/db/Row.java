@@ -4,9 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Date;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * Represents a row in a database table
@@ -33,22 +32,18 @@ public class Row {
         TYPES.put("TIMESTAMP", Timestamp.class);
     }
 
-    public HashMap<String, Object> attributeValuePairs;
+    public ArrayList<Object> values;
 
     public Row() {
-        this(new HashMap<String, Object>());
+        this(new ArrayList<Object>());
     }
 
-    public Row(HashMap<String, Object> attributeValuePairs) {
-        this.attributeValuePairs = attributeValuePairs;
+    public Row(ArrayList<Object> values) {
+        this.values = values;
     }
 
-    public Set<String> getAttributes() {
-        return attributeValuePairs.keySet();
-    }
-
-    public Collection<Object> getValues() {
-        return attributeValuePairs.values();
+    public ArrayList<Object> getValues() {
+        return values;
     }
 
     @Override
