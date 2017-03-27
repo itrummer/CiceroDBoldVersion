@@ -41,8 +41,8 @@ public class CommandLineUtility
                 RowCollection results = DatabaseUtilities.executeQuery(input);
                 if (results != null) {
                     NaiveVoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
-                    results.accept(naiveVoicePlanner);
-                    System.out.println("Naive Voice Plan: " + naiveVoicePlanner.getResult());
+                    naiveVoicePlanner.plan(results);
+                    System.out.println(naiveVoicePlanner.getResult());
                     voiceGenerator.generateSpeech(naiveVoicePlanner.getResult());
                 }
             } catch (SQLException e) {}

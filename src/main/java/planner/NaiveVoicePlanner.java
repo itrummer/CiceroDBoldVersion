@@ -15,7 +15,7 @@ public class NaiveVoicePlanner extends VoicePlanner {
     String result;
 
     @Override
-    public void visit(RowCollection rowCollection) {
+    public void plan(RowCollection rowCollection) {
         result = "";
         ArrayList<Row> rows = rowCollection.getRows();
         if (rows.size() == 0) {
@@ -23,13 +23,13 @@ public class NaiveVoicePlanner extends VoicePlanner {
         } else {
             for (int i = 0; i < rows.size(); i++) {
                 result += "Item " + (i + 1) + ": ";
-                visit(rows.get(i));
+                plan(rows.get(i));
             }
         }
     }
 
     @Override
-    public void visit(Row row) {
+    public void plan(Row row) {
         ArrayList<Object> values = row.getValues();
         for (int i = 0; i < values.size(); i++) {
             // TODO: incorporate column names in result

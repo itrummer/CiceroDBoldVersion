@@ -1,8 +1,5 @@
 package db;
 
-import planner.PlanItem;
-import planner.VoicePlanner;
-
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -13,7 +10,7 @@ import java.util.HashMap;
 /**
  * Represents a row in a database table
  */
-public class Row implements PlanItem {
+public class Row {
     public static HashMap<String, Class> TYPES;
     static {
         TYPES = new HashMap<String, Class>();
@@ -37,20 +34,12 @@ public class Row implements PlanItem {
 
     public ArrayList<Object> values;
 
-    public Row() {
-        this(new ArrayList<Object>());
-    }
-
     public Row(ArrayList<Object> values) {
         this.values = values;
     }
 
     public ArrayList<Object> getValues() {
         return values;
-    }
-
-    public void accept(VoicePlanner voicePlanner) {
-        voicePlanner.visit(this);
     }
 
     @Override

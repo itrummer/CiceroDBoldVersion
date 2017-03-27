@@ -1,7 +1,7 @@
 package planner;
 
 /**
- * Created by mabryan on 3/21/17.
+ * Representation of a VoicePlan
  */
 public abstract class VoicePlan {
 
