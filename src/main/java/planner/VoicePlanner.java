@@ -1,6 +1,6 @@
 package planner;
 
-import db.Row;
+import db.Tuple;
 import db.RowCollection;
 
 /**
@@ -15,9 +15,9 @@ public abstract class VoicePlanner {
     public abstract void plan(RowCollection rowCollection);
 
     /**
-     * Visits a Row and includes it in the VoicePlan
+     * Visits a Tuple and includes it in the VoicePlan
      * @param row The row to be included in the voice plan
      */
-    public abstract void plan(Row row);
+    public abstract void plan(Tuple row);
 
 }

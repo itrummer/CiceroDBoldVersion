@@ -1,6 +1,6 @@
 package planner;
 
-import db.Row;
+import db.Tuple;
 import db.RowCollection;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class NaiveVoicePlanner extends VoicePlanner {
     @Override
     public void plan(RowCollection rowCollection) {
         result = "";
-        ArrayList<Row> rows = rowCollection.getRows();
+        ArrayList<Tuple> rows = rowCollection.getRows();
         if (rows.size() == 0) {
             result = EMPTY_ROW_COLLECTION_PLAN;
         } else {
@@ -29,7 +29,7 @@ public class NaiveVoicePlanner extends VoicePlanner {
     }
 
     @Override
-    public void plan(Row row) {
+    public void plan(Tuple row) {
         ArrayList<Object> values = row.getValues();
         for (int i = 0; i < values.size(); i++) {
             // TODO: incorporate column names in result

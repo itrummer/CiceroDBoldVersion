@@ -10,13 +10,13 @@ import java.util.ArrayList;
  */
 public class RowCollection {
 
-    ArrayList<Row> rows;
+    ArrayList<Tuple> rows;
 
-    public RowCollection(ArrayList<Row> rows) {
+    public RowCollection(ArrayList<Tuple> rows) {
         this.rows = rows;
     }
 
-    public ArrayList<Row> getRows() {
+    public ArrayList<Tuple> getRows() {
         return rows;
     }
 
@@ -32,7 +32,7 @@ public class RowCollection {
             return null;
         }
 
-        ArrayList<Row> rows = new ArrayList<Row>();
+        ArrayList<Tuple> rows = new ArrayList<Tuple>();
 
         try {
             ResultSetMetaData metaData = resultSet.getMetaData();
@@ -44,7 +44,7 @@ public class RowCollection {
                     Object value = resultSet.getObject(i);
                     values.add(value);
                 }
-                rows.add(new Row(values));
+                rows.add(new Tuple(values));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -60,7 +60,7 @@ public class RowCollection {
         }
 
         String result = "";
-        for (Row row : rows) {
+        for (Tuple row : rows) {
             result += row.toString() + "\n";
         }
 
