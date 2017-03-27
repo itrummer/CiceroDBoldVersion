@@ -1,7 +1,6 @@
 import db.DatabaseUtilities;
-import db.RowCollection;
+import db.TupleCollection;
 import planner.NaiveVoicePlanner;
-import planner.VoicePlanner;
 import voice.VoiceGenerator;
 import voice.WatsonVoiceGenerator;
 
@@ -38,7 +37,7 @@ public class CommandLineUtility
             }
 
             try {
-                RowCollection results = DatabaseUtilities.executeQuery(input);
+                TupleCollection results = DatabaseUtilities.executeQuery(input);
                 if (results != null) {
                     NaiveVoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
                     naiveVoicePlanner.plan(results);

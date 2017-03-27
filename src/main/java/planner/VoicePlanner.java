@@ -1,7 +1,7 @@
 package planner;
 
 import db.Tuple;
-import db.RowCollection;
+import db.TupleCollection;
 
 /**
  * Abstract representation of VoicePlanners
@@ -9,15 +9,15 @@ import db.RowCollection;
 public abstract class VoicePlanner {
 
     /**
-     * Visits a RowCollection to construct a VoicePlan that represents the contents of rowCollection
-     * @param rowCollection The data to represent in speech
+     * Visits a TupleCollection to construct a VoiceOutputPlan that represents the contents of rowCollection
+     * @param tupleCollection The data to represent in speech
      */
-    public abstract void plan(RowCollection rowCollection);
+    public abstract void plan(TupleCollection tupleCollection);
 
     /**
-     * Visits a Tuple and includes it in the VoicePlan
-     * @param row The row to be included in the voice plan
+     * Visits a Tuple and includes it in the VoiceOutputPlan
+     * @param tuple The row to be included in the voice plan
      */
-    public abstract void plan(Tuple row);
+    public abstract void plan(Tuple tuple);
 
 }

@@ -17,11 +17,11 @@ public class DatabaseUtilities {
      * @return String representation of the results of executing sql
      * @throws SQLException
      */
-    public static RowCollection executeQuery(String sql) throws SQLException {
+    public static TupleCollection executeQuery(String sql) throws SQLException {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
-        RowCollection rowCollection = null;
+        TupleCollection tupleCollection = null;
 
         SQLException sqlException = null;
 
@@ -31,7 +31,7 @@ public class DatabaseUtilities {
             statement.setMaxRows(MAX_ROWS);
             resultSet = statement.executeQuery(sql);
 
-            rowCollection = RowCollection.rowCollectionFromResultSet(resultSet);
+            tupleCollection = TupleCollection.rowCollectionFromResultSet(resultSet);
 
         } catch (SQLException e) {
             printSQLException(e);
@@ -57,7 +57,7 @@ public class DatabaseUtilities {
             throw sqlException;
         }
 
-        return rowCollection;
+        return tupleCollection;
     }
 
     public static void printSQLException(SQLException ex) {

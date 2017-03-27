@@ -8,11 +8,11 @@ import java.util.ArrayList;
 /**
  * Class representation of a collection of rows returned from a SQL query
  */
-public class RowCollection {
+public class TupleCollection {
 
     ArrayList<Tuple> rows;
 
-    public RowCollection(ArrayList<Tuple> rows) {
+    public TupleCollection(ArrayList<Tuple> rows) {
         this.rows = rows;
     }
 
@@ -22,12 +22,12 @@ public class RowCollection {
 
     /**
      * Utility method to extract all tuples from a ResultSet into Rows, which are
-     * then added to a RowCollection
+     * then added to a TupleCollection
      * @param resultSet The ResultSet from which to read tuples
-     * @return A RowCollection representing the tuples in resultSet. Null if resultSet is null or if a
+     * @return A TupleCollection representing the tuples in resultSet. Null if resultSet is null or if a
      *          SQLException is encountered
      */
-    public static RowCollection rowCollectionFromResultSet(ResultSet resultSet) {
+    public static TupleCollection rowCollectionFromResultSet(ResultSet resultSet) {
         if (resultSet == null) {
             return null;
         }
@@ -50,7 +50,7 @@ public class RowCollection {
             e.printStackTrace();
             return null;
         }
-        return new RowCollection(rows);
+        return new TupleCollection(rows);
     }
 
     @Override

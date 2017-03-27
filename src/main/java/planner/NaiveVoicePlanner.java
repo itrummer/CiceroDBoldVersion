@@ -1,7 +1,7 @@
 package planner;
 
 import db.Tuple;
-import db.RowCollection;
+import db.TupleCollection;
 
 import java.util.ArrayList;
 
@@ -15,9 +15,9 @@ public class NaiveVoicePlanner extends VoicePlanner {
     String result;
 
     @Override
-    public void plan(RowCollection rowCollection) {
+    public void plan(TupleCollection tupleCollection) {
         result = "";
-        ArrayList<Tuple> rows = rowCollection.getRows();
+        ArrayList<Tuple> rows = tupleCollection.getRows();
         if (rows.size() == 0) {
             result = EMPTY_ROW_COLLECTION_PLAN;
         } else {
