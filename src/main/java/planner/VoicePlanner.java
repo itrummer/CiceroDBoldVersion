@@ -10,14 +10,9 @@ public abstract class VoicePlanner {
 
     /**
      * Visits a TupleCollection to construct a VoiceOutputPlan that represents the contents of rowCollection
-     * @param tupleCollection The data to represent in speech
+     * @param tupleCollection
+     * @return The VoiceOutputPlan for the TupleCollection
      */
-    public abstract void plan(TupleCollection tupleCollection);
-
-    /**
-     * Visits a Tuple and includes it in the VoiceOutputPlan
-     * @param tuple The row to be included in the voice plan
-     */
-    public abstract void plan(Tuple tuple);
+    public abstract VoiceOutputPlan plan(TupleCollection tupleCollection);
 
 }

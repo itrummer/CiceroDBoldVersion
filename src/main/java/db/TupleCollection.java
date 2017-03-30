@@ -42,6 +42,8 @@ public class TupleCollection {
                 ArrayList<Object> values = new ArrayList<Object>();
                 for (int i = 1; i <= columnCount; i++) {
                     Object value = resultSet.getObject(i);
+                    String column = metaData.getColumnName(i);
+                    System.out.println("Column: " + column);
                     values.add(value);
                 }
                 rows.add(new Tuple(values));

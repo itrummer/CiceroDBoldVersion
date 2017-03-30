@@ -1,6 +1,7 @@
 import db.DatabaseUtilities;
 import db.TupleCollection;
 import planner.NaiveVoicePlanner;
+import planner.VoiceOutputPlan;
 import voice.VoiceGenerator;
 import voice.WatsonVoiceGenerator;
 
@@ -40,9 +41,10 @@ public class CommandLineUtility
                 TupleCollection results = DatabaseUtilities.executeQuery(input);
                 if (results != null) {
                     NaiveVoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
-                    naiveVoicePlanner.plan(results);
-                    System.out.println(naiveVoicePlanner.getResult());
-                    voiceGenerator.generateSpeech(naiveVoicePlanner.getResult());
+                    VoiceOutputPlan outputPlan = naiveVoicePlanner.plan(results);
+                    String speechText = outputPlan.toSpeechText();
+                    System.out.println(speechText);
+//                    voiceGenerator.generateSpeech(speechText);
                 }
             } catch (SQLException e) {}
         }
