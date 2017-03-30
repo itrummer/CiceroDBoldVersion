@@ -1,6 +1,7 @@
-package planner;
+package planner.elements;
 
 import db.Tuple;
+import planner.elements.Context;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,7 @@
 package planner;
 
+import planner.elements.Scope;
+
 import java.util.ArrayList;
 
 /**

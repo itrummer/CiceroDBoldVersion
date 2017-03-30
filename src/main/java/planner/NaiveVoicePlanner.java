@@ -1,9 +1,7 @@
 package planner;
 
-import db.Tuple;
 import db.TupleCollection;
-
-import java.util.ArrayList;
+import planner.elements.Scope;
 
 /**
  * A naive implementation of a voice plan. Lists all results in a query as individual tuples.
