@@ -20,6 +20,13 @@ public class TupleCollection {
         return rows;
     }
 
+    public int getAttributeCount() {
+        if (rows.size() == 0) {
+            return 0;
+        }
+        return rows.get(0).getValues().size();
+    }
+
     /**
      * Utility method to extract all tuples from a ResultSet into Rows, which are
      * then added to a TupleCollection
