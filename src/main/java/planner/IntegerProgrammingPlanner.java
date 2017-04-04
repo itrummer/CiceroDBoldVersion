@@ -62,18 +62,45 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         int numAttributes = tupleCollection.getAttributeCount();
         int cMax = numRows / 2;
 
+        // TODO: replace valueCount array with data from tupleCollection
+        // uniqueValueCount represents the permissible values that appear in the tupleCollection
+        int[] uniqueValueCount = new int[numAttributes];
+        for (int i = 0; i < uniqueValueCount.length; i++) {
+            uniqueValueCount[i] = 8;
+        }
+
         try {
             IloCplex cplex = new IloCplex();
 
-            // w[r,c] : 1 if row r is mapped to context c, else 0
-            IloNumVar[][] w = new IloNumVar[numRows][cMax];
+            // w(c,r) : 1 if row r is mapped to context c, else 0
+            IloIntVar[][] w = new IloIntVar[cMax][];
+            for (int c = 0; c < w.length; c++) {
+                w[c] = cplex.intVarArray(numRows, 0, 1);
+            }
 
-            // f[c,a] : 1 if context c contains a domain mapping for attribute a, else 0
-            IloNumVar[][] f = new IloNumVar[numRows][cMax];
+            // f(c,a) : 1 if context c contains a domain mapping for attribute a, else 0
+            IloIntVar[][] f = new IloIntVar[cMax][];
+            for (int c = 0; c < w.length; c++) {
+                f[c] = cplex.intVarArray(numAttributes, 0, 1);
+            }
 
-            // TODO: determine number of possible values for each attribute and initialize the array to be the size of this
-            // l[c,a,v], u[c,a,v] : 1 if context c assigns value v as the lower or upper bound for attribute a, else 0
+            // l(c,a,v), u(c,a,v) : 1 if context c assigns value v as the lower or upper bound for attribute a, else 0
             IloNumVar[][][] l = new IloNumVar[cMax][numAttributes][];
+            IloNumVar[][][] u = new IloNumVar[cMax][numAttributes][];
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < numAttributes; a++) {
+                    l[c][a] = cplex.intVarArray(uniqueValueCount[a], 0, 1);
+                    u[c][a] = cplex.intVarArray(uniqueValueCount[a], 0, 1);
+                }
+            }
+
+            // d(c,a,v) : 1 if value v is within the value domain that context c assigns to attribute a, else 0
+            IloNumVar[][][] d = new IloNumVar[cMax][numAttributes][];
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < numAttributes; a++) {
+                    d[c][a] = cplex.intVarArray(uniqueValueCount[a], 0, 1);
+                }
+            }
 
         } catch (IloException e) {
             e.printStackTrace();
@@ -81,4 +108,5 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
         return null;
     }
+
 }
