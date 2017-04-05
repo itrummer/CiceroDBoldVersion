@@ -10,6 +10,9 @@ import ilog.cplex.*;
  */
 public class IntegerProgrammingPlanner extends VoicePlanner {
 
+    // mS : number of attribute mappings per context
+    static int MAXIMAL_CONTEXT_SIZE = 4;
+
     /**
      * Constructs a VoiceOutputPlan using the CPLEX integer programming solver. Below are the
      * variables and constraints that model the plan search space.
@@ -80,11 +83,11 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
             // Constraint : each row r can be mapped to at most 1 context
             for (int r = 0; r < numRows; r++) {
-                IloLinearIntExpr sumOfWMappingsForRow = cplex.linearIntExpr();
+                IloLinearIntExpr sumOfMappingsForRow = cplex.linearIntExpr();
                 for (int c = 0; c < cMax; c++) {
-                    sumOfWMappingsForRow.addTerm(1, w[c][r]);
+                    sumOfMappingsForRow.addTerm(1, w[c][r]);
                 }
-                cplex.addLe(sumOfWMappingsForRow, 1);
+                cplex.addLe(sumOfMappingsForRow, 1);
             }
 
             // f(c,a) : 1 if context c contains a domain mapping for attribute a, else 0
@@ -92,6 +95,16 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             for (int c = 0; c < w.length; c++) {
                 f[c] = cplex.intVarArray(numAttributes, 0, 1);
             }
+
+            // Constraint: Each context can contain at most mS contexts
+            for (int c = 0; c < cMax; c++) {
+                IloLinearIntExpr sumOfMappingsForContext = cplex.linearIntExpr();
+                for (int a = 0; a < f[c].length; a++) {
+                    sumOfMappingsForContext.addTerm(1, f[c][a]);
+                }
+                cplex.addLe(sumOfMappingsForContext, MAXIMAL_CONTEXT_SIZE);
+            }
+
 
             // l(c,a,v), u(c,a,v) : 1 if context c assigns value v as the lower or upper bound for attribute a, else 0
             IloNumVar[][][] l = new IloNumVar[cMax][numAttributes][];
