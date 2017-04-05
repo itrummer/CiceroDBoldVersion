@@ -78,6 +78,15 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 w[c] = cplex.intVarArray(numRows, 0, 1);
             }
 
+            // Constraint : each row r can be mapped to at most 1 context
+            for (int r = 0; r < numRows; r++) {
+                IloLinearIntExpr sumOfWMappingsForRow = cplex.linearIntExpr();
+                for (int c = 0; c < cMax; c++) {
+                    sumOfWMappingsForRow.addTerm(1, w[c][r]);
+                }
+                cplex.addLe(sumOfWMappingsForRow, 1);
+            }
+
             // f(c,a) : 1 if context c contains a domain mapping for attribute a, else 0
             IloIntVar[][] f = new IloIntVar[cMax][];
             for (int c = 0; c < w.length; c++) {
