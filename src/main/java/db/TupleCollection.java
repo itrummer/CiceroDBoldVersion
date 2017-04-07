@@ -6,32 +6,38 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 /**
- * Class representation of a collection of rows returned from a SQL query
+ * Class representation of a collection of Tuples returned from a SQL query
  */
 public class TupleCollection {
+    ArrayList<Tuple> tuples;
 
-    ArrayList<Tuple> rows;
-
-    public TupleCollection(ArrayList<Tuple> rows) {
-        this.rows = rows;
+    /**
+     * Constructs a TupleCollection with 0 rows.
+     */
+    public TupleCollection() {
+        this.tuples = new ArrayList<Tuple>();
     }
 
-    public ArrayList<Tuple> getRows() {
-        return rows;
+    public ArrayList<Tuple> getTuples() {
+        return tuples;
     }
 
     public int getAttributeCount() {
-        if (rows.size() == 0) {
+        if (tuples.size() == 0) {
             return 0;
         }
-        return rows.get(0).getValues().size();
+        return tuples.get(0).getDimension();
+    }
+
+    public void addTuple(Tuple tuple) {
+        tuples.add(tuple);
     }
 
     /**
-     * Utility method to extract all tuples from a ResultSet into Rows, which are
+     * Utility method to extract all Tuples from a ResultSet into Rows, which are
      * then added to a TupleCollection
-     * @param resultSet The ResultSet from which to read tuples
-     * @return A TupleCollection representing the tuples in resultSet. Null if resultSet is null or if a
+     * @param resultSet The ResultSet from which to read Tuples
+     * @return A TupleCollection representing the Tuples in resultSet. Null if resultSet is null or if a
      *          SQLException is encountered
      */
     public static TupleCollection rowCollectionFromResultSet(ResultSet resultSet) {
@@ -39,40 +45,38 @@ public class TupleCollection {
             return null;
         }
 
-        ArrayList<Tuple> rows = new ArrayList<Tuple>();
+        TupleCollection tupleCollection = new TupleCollection();
 
         try {
             ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
 
             while (resultSet.next()) {
+                Tuple tuple = new Tuple();
                 ArrayList<Object> values = new ArrayList<Object>();
-                for (int i = 1; i <= columnCount; i++) {
-                    Object value = resultSet.getObject(i);
-                    String column = metaData.getColumnName(i);
-                    System.out.println("Column: " + column);
-                    values.add(value);
+                for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                    tuple.addValueAssignment(metaData.getColumnName(i), resultSet.getObject(i));
                 }
-                rows.add(new Tuple(values));
+                tupleCollection.addTuple(tuple);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
-        return new TupleCollection(rows);
+        return tupleCollection;
     }
 
     @Override
     public String toString() {
-        if (rows.size() == 0) {
+        if (tuples.size() == 0) {
             return "empty";
         }
 
         String result = "";
-        for (Tuple row : rows) {
-            result += row.toString() + "\n";
+        for (Tuple tuple : tuples) {
+            result += tuple.toString() + ".\n";
         }
 
         return result;
     }
+
 }

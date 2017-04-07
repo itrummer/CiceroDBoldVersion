@@ -9,7 +9,6 @@ import java.util.ArrayList;
  * A Scope represents an optional context with a set tuples that match the context
  */
 public class Scope {
-
     public Context context;
     public ArrayList<Tuple> tuples;
     String cachedResult;

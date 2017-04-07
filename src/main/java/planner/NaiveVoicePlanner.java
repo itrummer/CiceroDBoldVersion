@@ -11,7 +11,7 @@ public class NaiveVoicePlanner extends VoicePlanner {
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
         VoiceOutputPlan outputPlan = new VoiceOutputPlan();
-        outputPlan.addScope(new Scope(tupleCollection.getRows()));
+        outputPlan.addScope(new Scope(tupleCollection.getTuples()));
         return outputPlan;
     }
 

@@ -60,8 +60,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      */
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
-
-        int numRows = tupleCollection.getRows().size();
+        int numRows = tupleCollection.getTuples().size();
         int numAttributes = tupleCollection.getAttributeCount();
         int cMax = numRows / 2;
 
