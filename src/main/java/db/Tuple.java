@@ -46,8 +46,14 @@ public class Tuple {
     @Override
     public String toString() {
         String result = "";
-        for (ValueAssignment valueAssignment : getValueAssignments()) {
-            result += valueAssignment.toString() + ", ";
+        ArrayList<ValueAssignment> valueAssignments = getValueAssignments();
+        for (int i = 0; i < valueAssignments.size(); i++) {
+            result += valueAssignments.get(i).toString();
+            if (i != valueAssignments.size() - 1) {
+                result += ", ";
+            } else {
+                result += ".";
+            }
         }
         return result;
     }

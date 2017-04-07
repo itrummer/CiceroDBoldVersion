@@ -41,16 +41,16 @@ public class Scope {
             return cachedResult;
         }
 
-        StringBuilder builder = new StringBuilder("");
+        cachedResult = "";
         if (context == null) {
             for (Tuple tuple : tuples) {
-                builder.append(tuple.toString());
+                cachedResult += tuple + "\n";
             }
         } else {
-//            TODO: won't be called yet, but implement for non-null contexts
+            cachedResult = "Entries for ";
+
         }
 
-        cachedResult = builder.toString();
         return cachedResult;
     }
 }

@@ -1,12 +1,5 @@
 package db;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.SQLType;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.HashMap;
-
 /**
  * Assigns a column name to a value for a specific Tuple
  */
@@ -30,5 +23,14 @@ public class ValueAssignment {
     @Override
     public String toString() {
         return column + " : " + value;
+    }
+
+    public String toSpeechText() {
+        // TODO: translate numbers to words for better calculation of time costs
+        return toString();
+    }
+
+    public boolean isCategorical() {
+        return value instanceof String;
     }
 }

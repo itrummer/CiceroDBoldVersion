@@ -95,7 +95,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 f[c] = cplex.intVarArray(numAttributes, 0, 1);
             }
 
-            // Constraint: Each context can contain at most mS contexts
+            // Constraint: Each context can contain at most mS domain mappings
             for (int c = 0; c < cMax; c++) {
                 IloLinearIntExpr sumOfMappingsForContext = cplex.linearIntExpr();
                 for (int a = 0; a < f[c].length; a++) {

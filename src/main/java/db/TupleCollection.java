@@ -1,5 +1,6 @@
 package db;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,12 +11,14 @@ import java.util.ArrayList;
  */
 public class TupleCollection {
     ArrayList<Tuple> tuples;
+    ArrayList<String> attributes;
 
     /**
      * Constructs a TupleCollection with 0 rows.
      */
-    public TupleCollection() {
+    public TupleCollection(ArrayList<String> attributes) {
         this.tuples = new ArrayList<Tuple>();
+        this.attributes = attributes;
     }
 
     public ArrayList<Tuple> getTuples() {
@@ -23,10 +26,7 @@ public class TupleCollection {
     }
 
     public int getAttributeCount() {
-        if (tuples.size() == 0) {
-            return 0;
-        }
-        return tuples.get(0).getDimension();
+        return attributes.size();
     }
 
     public void addTuple(Tuple tuple) {
@@ -45,10 +45,15 @@ public class TupleCollection {
             return null;
         }
 
-        TupleCollection tupleCollection = new TupleCollection();
-
         try {
             ResultSetMetaData metaData = resultSet.getMetaData();
+
+            ArrayList<String> attributes = new ArrayList<String>();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                attributes.add(metaData.getColumnName(i));
+            }
+
+            TupleCollection tupleCollection = new TupleCollection(attributes);
 
             while (resultSet.next()) {
                 Tuple tuple = new Tuple();
@@ -58,16 +63,16 @@ public class TupleCollection {
                 }
                 tupleCollection.addTuple(tuple);
             }
+            return  tupleCollection;
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
         }
-        return tupleCollection;
+        return null;
     }
 
     @Override
     public String toString() {
-        if (tuples.size() == 0) {
+        if (tuples.isEmpty()) {
             return "empty";
         }
 
