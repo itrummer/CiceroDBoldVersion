@@ -49,21 +49,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         try {
             IloCplex cplex = new IloCplex();
             IloIntVar[][] w = initializeTupleContextMappingConstraints(cplex, cMax, tupleCount);
-
-            // f(c,a) : 1 if context c contains a domain mapping for attribute a, else 0
-            IloIntVar[][] f = new IloIntVar[cMax][];
-            for (int c = 0; c < w.length; c++) {
-                f[c] = cplex.intVarArray(numAttributes, 0, 1);
-            }
-
-            // Constraint: Each context can contain at most mS domain mappings
-            for (int c = 0; c < cMax; c++) {
-                IloLinearIntExpr sumOfMappingsForContext = cplex.linearIntExpr();
-                for (int a = 0; a < f[c].length; a++) {
-                    sumOfMappingsForContext.addTerm(1, f[c][a]);
-                }
-                cplex.addLe(sumOfMappingsForContext, MAXIMAL_CONTEXT_SIZE);
-            }
+            IloIntVar[][] f = initializeContextAttributeDomainConstraints(cplex, cMax, tupleCount);
 
             // l(c,a,v), u(c,a,v) : 1 if context c assigns value v as the lower or upper bound for attribute a, else 0
             IloIntVar[][][] l = new IloIntVar[cMax][numericalValues.length][];
@@ -173,5 +159,35 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             cplex.addLe(sumOfMappingsForTuple, 1);
         }
         return w;
+    }
+
+    /**
+     * Helper method to initialize the integer variables that represent the context-attribute assignments.
+     * For each context c, attribute a combination we create a variable in our CPLEX model to represent the
+     * possibility that context c may assign a domain of values for the attribute a. Also, we add constraints
+     * that only allow contexts to have at most a certain number of domain assignments for the corresponding
+     * number of attributes. This is the configuration parameter MAXIMAL_CONTEXT_SIZE.
+     *
+     * @param cplex The CPLEX model to be used to initialize variables and to which constraints will be added
+     * @param contextCount The number of contexts for which to create variables and constraints
+     * @param attributeCount The number of tuples for which to create variables and constraints
+     * @return A 2D matrix containing the IloIntVars initialized in the CPLEX model. Entry f[c][a] contains
+     * the IloIntVar for context c and attribute a
+     * @throws IloException
+     */
+    private IloIntVar[][] initializeContextAttributeDomainConstraints(IloCplex cplex, int contextCount, int attributeCount) throws IloException {
+        IloIntVar[][] f = new IloIntVar[contextCount][];
+        for (int c = 0; c < contextCount; c++) {
+            f[c] = cplex.intVarArray(attributeCount, 0, 1);
+        }
+
+        for (int c = 0; c < contextCount; c++) {
+            IloLinearIntExpr sumOfMappingsForContext = cplex.linearIntExpr();
+            for (int a = 0; a < f[c].length; a++) {
+                sumOfMappingsForContext.addTerm(1, f[c][a]);
+            }
+            cplex.addLe(sumOfMappingsForContext, MAXIMAL_CONTEXT_SIZE);
+        }
+        return f;
     }
 }
