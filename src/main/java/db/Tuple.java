@@ -1,18 +1,19 @@
 package db;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Represents a tuple in a database table
  */
 public class Tuple {
-    public ArrayList<ValueAssignment> valueAssignments;
+    public HashMap<String, Object> valueAssignments;
 
     /**
      * Constructor of a Tuple from an ArrayList of ValueAssignments
      * @param valueAssignments
      */
-    public Tuple(ArrayList<ValueAssignment> valueAssignments) {
+    public Tuple(HashMap<String, Object> valueAssignments) {
         this.valueAssignments = valueAssignments;
     }
 
@@ -20,10 +21,10 @@ public class Tuple {
      * Constructor for a Tuple without ValueAssignments
      */
     public Tuple() {
-        this.valueAssignments = new ArrayList<ValueAssignment>();
+        this.valueAssignments = new HashMap<String, Object>();
     }
 
-    public ArrayList<ValueAssignment> getValueAssignments() {
+    public HashMap<String, Object> getValueAssignments() {
         return valueAssignments;
     }
 
@@ -40,16 +41,21 @@ public class Tuple {
      * @param value The value for the new value assignment
      */
     public void addValueAssignment(String column, Object value) {
-        valueAssignments.add(new ValueAssignment(column, value));
+        valueAssignments.put(column, value);
+    }
+
+    public Object valueForAttribute(String attribute) {
+        return valueAssignments.get(attribute);
     }
 
     @Override
     public String toString() {
         String result = "";
-        ArrayList<ValueAssignment> valueAssignments = getValueAssignments();
-        for (int i = 0; i < valueAssignments.size(); i++) {
-            result += valueAssignments.get(i).toString();
-            if (i != valueAssignments.size() - 1) {
+        int count = 0;
+        for (String column : valueAssignments.keySet()) {
+            result += column + " : " + valueAssignments.get(column);
+            count ++;
+            if (count != valueAssignments.keySet().size()) {
                 result += ", ";
             } else {
                 result += ".";

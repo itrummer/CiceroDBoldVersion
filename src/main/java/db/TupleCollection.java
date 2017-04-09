@@ -1,10 +1,10 @@
 package db;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Class representation of a collection of Tuples returned from a SQL query
@@ -23,6 +23,10 @@ public class TupleCollection {
 
     public ArrayList<Tuple> getTuples() {
         return tuples;
+    }
+
+    public String attributeForIndex(int i) {
+        return attributes.get(i);
     }
 
     public int getAttributeCount() {
@@ -82,6 +86,34 @@ public class TupleCollection {
         }
 
         return result;
+    }
+
+    public Object[] valuesForAttribute(String attribute) {
+        HashSet<Object> values = new HashSet<Object>();
+        for (Tuple tuple : tuples) {
+            values.add(tuple.valueForAttribute(attribute));
+        }
+        return values.toArray();
+    }
+
+    public Object[][] getValueMatrix(boolean isCategorical) {
+        if (getTuples().isEmpty()) {
+            return new Object[getAttributeCount()][];
+        }
+        ArrayList<Object[]> categoricalValues = new ArrayList<Object[]>();
+        ArrayList<Object[]> numericalValues = new ArrayList<Object[]>();
+        for (String attribute : attributes) {
+            if (getTuples().get(0).valueForAttribute(attribute).getClass().equals(String.class)) {
+                categoricalValues.add(valuesForAttribute(attribute));
+            } else {
+                numericalValues.add(valuesForAttribute(attribute));
+            }
+        }
+        if (isCategorical) {
+            return (Object[][]) categoricalValues.toArray();
+        } else {
+            return  (Object[][]) numericalValues.toArray();
+        }
     }
 
 }

@@ -8,8 +8,7 @@ import java.util.ArrayList;
  * Representation of a VoiceOutputPlan
  */
 public class VoiceOutputPlan {
-
-    public ArrayList<Scope> scopes;
+    ArrayList<Scope> scopes;
     String cachedResult;
 
     public VoiceOutputPlan(ArrayList<Scope> scopes) {

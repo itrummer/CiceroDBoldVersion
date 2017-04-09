@@ -9,41 +9,17 @@ import ilog.cplex.*;
  * integer programming solver to plan
  */
 public class IntegerProgrammingPlanner extends VoicePlanner {
-
-    // mS : number of attribute mappings per context
+    // mS : maximum number of attribute mappings per context
     static int MAXIMAL_CONTEXT_SIZE = 4;
+    // mW : maximum allowable size for a numerical attribute domain
+    static int MAXIMAL_NUMERICAL_DOMAIN_WIDTH = 5;
+    // mC : maximum allowable size for a categorical attribute domain
+    static int MAXIMAL_CATEGORICAL_DOMAIN_SIZE = 3;
 
     /**
-     * Constructs a VoiceOutputPlan using the CPLEX integer programming solver. Below are the
-     * variables and constraints that model the plan search space.
+     * Constructs a VoiceOutputPlan using the CPLEX integer programming solver.
      *
-     * Inputs:
-     *   n : number of Tuples in tupleCollection
-     *   cMax := n / 2; maximum number of contexts
-     *   mS : maximal context size
-     *   mC : maximum number of values a context can assign to a domain for an attribute
-     *   mW : maximum width of an assigned value domain for a numerical attribute; config parameter
-     *
-     * Constraints:
-     *   Each row can be mapped to at most one context
-     *      sum(c) w(r,c) <= 1 for all rows r
-     *
-     *   Each context can contain at most mS contexts
-     *      sum(a) f(c,a) <= mS for all contexts c
-     *
-     *   Each context c can assign at most mC values for each categorical attribute a
-     *      sum(v) d(c,a,v) <= mC for each context c and attribute a
-     *
-     *   Each context must assign a lower and upper bound for all numerical attributes it assigns a value domain to
-     *      sum(v) l(c,a,v) <= f(c,a)
-     *      sum(v) u(c,a,v) <= f(c,a)
-     *
-     *   Lower bounds must be below upper bound
-     *      sum(v) v * l(c,a,v) <= sum(v) u(c,a,v)
-     *
-     *   For numerical attributes, the upper bound must be less than the maximum allowed upper bound for a given lower bound
-     *      sum(v) v * u(c,a,v) <= mW * sum(v) l(c,a,v)
-     *
+     * Constraints TODO:
      *   Only allow rows to be assigned to "matching" contexts
      *      let v_r : value in row r for attribute a
      *      if a is numerical:
@@ -62,14 +38,10 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
         int numRows = tupleCollection.getTuples().size();
         int numAttributes = tupleCollection.getAttributeCount();
-        int cMax = numRows / 2;
+        int cMax = numRows/2;
 
-        // TODO: replace valueCount array with data from tupleCollection
-        // uniqueValueCount represents the permissible values that appear in the tupleCollection
-        int[] uniqueValueCount = new int[numAttributes];
-        for (int i = 0; i < uniqueValueCount.length; i++) {
-            uniqueValueCount[i] = 8;
-        }
+        Object[][] categoricalValues = tupleCollection.getValueMatrix(true);
+        Object[][] numericalValues = tupleCollection.getValueMatrix(false);
 
         try {
             IloCplex cplex = new IloCplex();
@@ -104,19 +76,18 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 cplex.addLe(sumOfMappingsForContext, MAXIMAL_CONTEXT_SIZE);
             }
 
-            // TODO: Constraint: Each context c can assign at most mC values for each categorical attribute a
-
             // l(c,a,v), u(c,a,v) : 1 if context c assigns value v as the lower or upper bound for attribute a, else 0
-            IloIntVar[][][] l = new IloIntVar[cMax][numAttributes][];
-            IloIntVar[][][] u = new IloIntVar[cMax][numAttributes][];
+            IloIntVar[][][] l = new IloIntVar[cMax][numericalValues.length][];
+            IloIntVar[][][] u = new IloIntVar[cMax][numericalValues.length][];
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < numAttributes; a++) {
-                    l[c][a] = cplex.intVarArray(uniqueValueCount[a], 0, 1);
-                    u[c][a] = cplex.intVarArray(uniqueValueCount[a], 0, 1);
+                    l[c][a] = cplex.intVarArray(numericalValues[a].length, 0, 1);
+                    u[c][a] = cplex.intVarArray(numericalValues[a].length, 0, 1);
                 }
             }
 
-            // Constraint: Each context must assign a lower and upper bound for all numerical attributes it assigns a value domain to
+            // Constraint: Each context must assign a lower and upper bound for all numerical attributes
+            // to which it assigns a value domain
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < numAttributes; a++) {
                     IloLinearIntExpr sumOfLowerBounds = cplex.linearIntExpr();
@@ -132,11 +103,50 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            // d(c,a,v) : 1 if value v is within the value domain that context c assigns to attribute a, else 0
-            IloNumVar[][][] d = new IloNumVar[cMax][numAttributes][];
+            // Constraint: Lower bounds must be below upper bound
             for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < numAttributes; a++) {
-                    d[c][a] = cplex.intVarArray(uniqueValueCount[a], 0, 1);
+                for (int a = 0; a < numericalValues.length; a++) {
+                    IloLinearIntExpr sumOfLowerMinusUpper = cplex.linearIntExpr();
+                    for (int v = 0; v < numericalValues[a].length; v++) {
+                        // TODO: replace 1 and -1 with a LinearNumVar for each value, may need to create
+                        // a LinearNumVar for each distinct value
+                        sumOfLowerMinusUpper.addTerm(1, l[c][a][v]);
+                        sumOfLowerMinusUpper.addTerm(-1, u[c][a][v]);
+                    }
+                    // only one upper and lower bound set; thus lower minus upper needs to be negative
+                    cplex.addLe(sumOfLowerMinusUpper, 0);
+                }
+            }
+
+            // For numerical attributes, the upper bound must be less than the maximum allowed upper bound for a given lower bound
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < numericalValues.length; a++) {
+                    IloLinearIntExpr sumOfMaxAllowableUpperBoundMinusUpperBound = cplex.linearIntExpr();
+                    for (int v = 0; v < numericalValues[a].length; v++) {
+                        sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(MAXIMAL_NUMERICAL_DOMAIN_WIDTH, l[c][a][v]);
+                        // TODO: replace -1 with upper bound value
+                        sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(-1, u[c][a][v]);
+                    }
+                    cplex.addGe(sumOfMaxAllowableUpperBoundMinusUpperBound, 0);
+                }
+            }
+
+            // d(c,a,v) : 1 if value v is within the value domain that context c assigns to attribute a, else 0
+            IloIntVar[][][] d = new IloIntVar[cMax][categoricalValues.length][];
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < categoricalValues.length; a++) {
+                    d[c][a] = cplex.intVarArray(categoricalValues[a].length, 0, 1);
+                }
+            }
+
+            // Constraint: Each context c can assign at most mC values for each categorical attribute a
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < categoricalValues.length; a++) {
+                    IloLinearIntExpr sumOfCategoricalAssignments = cplex.linearIntExpr();
+                    for (int v = 0; v < categoricalValues[a].length; v++) {
+                        sumOfCategoricalAssignments.addTerm(1, d[c][a][v]);
+                    }
+                    cplex.addLe(sumOfCategoricalAssignments, MAXIMAL_CATEGORICAL_DOMAIN_SIZE);
                 }
             }
 
