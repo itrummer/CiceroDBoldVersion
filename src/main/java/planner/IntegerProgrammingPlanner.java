@@ -46,21 +46,13 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloCplex cplex = new IloCplex();
             IloIntVar[][] w = initializeTupleContextMappingConstraints(cplex, cMax, tupleCount);
             IloIntVar[][] f = initializeContextAttributeDomainConstraints(cplex, cMax, tupleCount);
-
-            // l(c,a,v), u(c,a,v) : 1 if context c assigns value v as the lower or upper bound for attribute a, else 0
-            IloIntVar[][][] l = new IloIntVar[cMax][numericalValueMatrix.length][];
-            IloIntVar[][][] u = new IloIntVar[cMax][numericalValueMatrix.length][];
-            for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < numAttributes; a++) {
-                    l[c][a] = cplex.intVarArray(numericalValueMatrix[a].length, 0, 1);
-                    u[c][a] = cplex.intVarArray(numericalValueMatrix[a].length, 0, 1);
-                }
-            }
+            IloIntVar[][][] l = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
+            IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
 
             // Constraint: Each context must assign a lower and upper bound for all numerical attributes
             // to which it assigns a value domain
             for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < numAttributes; a++) {
+                for (int a = 0; a < numericalValueMatrix.length; a++) {
                     IloLinearIntExpr sumOfLowerBounds = cplex.linearIntExpr();
                     IloLinearIntExpr sumOfUpperBounds = cplex.linearIntExpr();
                     for (int v = 0; v < l[c][a].length; v++) {
@@ -185,5 +177,26 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             cplex.addLe(sumOfMappingsForContext, MAXIMAL_CONTEXT_SIZE);
         }
         return f;
+    }
+
+    /**
+     * Helper method to initialize the 3D array that holds the lower or upper bound matrix. Each entry in this
+     * matrix represents the possibility that context c assigns value v as the lower or upper bound for attribute a
+     *
+     * @param cplex The CPLEX model used to initialize variables
+     * @param numericalValueMatrix The 2D matrix of numerical values. numerical[a] should contain the
+     *                             the distinct value list for numerical attribute a
+     * @return The 3D array containing the initialized integer programming variables. Object[c][a][v] is 1 if
+     * context c assigns value v as the lower or upper bound of attribute a, else it is 0.
+     * @throws IloException
+     */
+    private IloIntVar[][][] initializeLowerOrUpperBoundVariableMatrix(IloCplex cplex, int contextCount, Object[][] numericalValueMatrix) throws IloException {
+        IloIntVar[][][] matrix = new IloIntVar[contextCount][numericalValueMatrix.length][];
+        for (int c = 0; c < contextCount; c++) {
+            for (int a = 0; a < numericalValueMatrix.length; a++) {
+                matrix[c][a] = cplex.intVarArray(numericalValueMatrix[a].length, 0, 1);
+            }
+        }
+        return matrix;
     }
 }
