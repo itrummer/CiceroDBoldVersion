@@ -100,7 +100,7 @@ public class TupleCollection {
         return values.toArray();
     }
 
-    public Object[][] getValueMatrix(boolean isCategorical) {
+    private Object[][] getValueMatrix(boolean isCategorical) {
         if (getTuples().isEmpty()) {
             return new Object[attributeCount()][];
         }
@@ -118,6 +118,24 @@ public class TupleCollection {
         } else {
             return  (Object[][]) numericalValues.toArray();
         }
+    }
+
+    /**
+     * Constructs the matrix of unique categorical values that appear as values in Tuples in this TupleCollection.
+     * @return The distinct categorical values that appear in this TupleCollection. Let result : Object[][] be the matrix
+     * returned by this method, result[a] contains the array of distinct categorical values for categorical attribute a
+     */
+    public Object[][] getCategoricalValueMatrix() {
+        return getValueMatrix(true);
+    }
+
+    /**
+     * Constructs the matrix of unique numerical values that appear as values in Tuples in this TupleCollection.
+     * @return The distinct numerical values that appear in this TupleCollection. Let result : Object[][] be the matrix
+     * returned by this method, result[a] contains the array of distinct numerical values for numerical attribute a
+     */
+    public Object[][] getNumericalValueMatrix() {
+        return getValueMatrix(false);
     }
 
 }
