@@ -49,22 +49,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] l = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
             IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
 
-            // Constraint: Each context must assign a lower and upper bound for all numerical attributes
-            // to which it assigns a value domain
-            for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < numericalValueMatrix.length; a++) {
-                    IloLinearIntExpr sumOfLowerBounds = cplex.linearIntExpr();
-                    IloLinearIntExpr sumOfUpperBounds = cplex.linearIntExpr();
-                    for (int v = 0; v < l[c][a].length; v++) {
-                        sumOfLowerBounds.addTerm(1, l[c][a][v]);
-                        sumOfUpperBounds.addTerm(1, u[c][a][v]);
-                    }
-                    sumOfLowerBounds.addTerm(-1, f[c][a]);
-                    sumOfUpperBounds.addTerm(-1, f[c][a]);
-                    cplex.addEq(sumOfLowerBounds, 0);
-                    cplex.addEq(sumOfUpperBounds, 0);
-                }
-            }
+            addContraintsContextsMustAddLowerAndUpperBound(cplex, l, u, f);
 
             // Constraint: Lower bounds must be below upper bound
             for (int c = 0; c < cMax; c++) {
@@ -199,4 +184,40 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         }
         return matrix;
     }
+
+    /**
+     * Adds constraints to the CPLEX instance such that a context can only assign a lower bound to an attribute
+     * if and only if it applies an upper bound. We create this constraint by specifying that the total number of
+     * lower or upper bounds must be equal to the number of assignments a context has in numerical attributes.
+     * Equivalently, we specify that the total number of lower or upper bound assignments minus the number of
+     * domain assignments for a context must be 0.
+     *
+     * @param cplex The CPLEX model to which constraints will be added
+     * @param lowerBoundVars The 3D matrix of lower bound integer programming variables. lowerBoundVars[c][a][v] contains
+     *                       lower bound variable for the context c, attribute a, and value v combination
+     * @param upperBoundVars The 3D matrix of upper bound integer programming variables. upperBoundVars[c][a][v] contains
+     *                       upper bound variable for the context c, attribute a, and value v combination
+     * @param contextAttributeAssignments The 2D matrix containing variables that represent whether context c assigns a value
+     *                                    domain for an attribute a
+     */
+    private void addContraintsContextsMustAddLowerAndUpperBound(IloCplex cplex,
+                                                                IloIntVar[][][] lowerBoundVars,
+                                                                IloIntVar[][][] upperBoundVars,
+                                                                IloIntVar[][] contextAttributeAssignments) throws IloException {
+        for (int c = 0; c < lowerBoundVars.length; c++) {
+            for (int a = 0; a < lowerBoundVars[c].length; a++) {
+                IloLinearIntExpr sumOfLowerBoundAssignments = cplex.linearIntExpr();
+                IloLinearIntExpr sumOfUpperBoundAssignments = cplex.linearIntExpr();
+                for (int v = 0; v < lowerBoundVars[c][a].length; v++) {
+                    sumOfLowerBoundAssignments.addTerm(1, lowerBoundVars[c][a][v]);
+                    sumOfUpperBoundAssignments.addTerm(1, upperBoundVars[c][a][v]);
+                }
+                sumOfLowerBoundAssignments.addTerm(-1, contextAttributeAssignments[c][a]);
+                sumOfUpperBoundAssignments.addTerm(-1, contextAttributeAssignments[c][a]);
+                cplex.addEq(sumOfLowerBoundAssignments, 0);
+                cplex.addEq(sumOfUpperBoundAssignments, 0);
+            }
+        }
+    }
+
 }
