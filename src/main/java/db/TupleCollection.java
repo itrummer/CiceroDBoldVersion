@@ -25,11 +25,15 @@ public class TupleCollection {
         return tuples;
     }
 
+    public int tupleCount() {
+        return tuples.size();
+    }
+
     public String attributeForIndex(int i) {
         return attributes.get(i);
     }
 
-    public int getAttributeCount() {
+    public int attributeCount() {
         return attributes.size();
     }
 
@@ -98,7 +102,7 @@ public class TupleCollection {
 
     public Object[][] getValueMatrix(boolean isCategorical) {
         if (getTuples().isEmpty()) {
-            return new Object[getAttributeCount()][];
+            return new Object[attributeCount()][];
         }
         ArrayList<Object[]> categoricalValues = new ArrayList<Object[]>();
         ArrayList<Object[]> numericalValues = new ArrayList<Object[]>();

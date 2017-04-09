@@ -36,30 +36,19 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      */
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
-        int numRows = tupleCollection.getTuples().size();
-        int numAttributes = tupleCollection.getAttributeCount();
-        int cMax = numRows/2;
+        int tupleCount = tupleCollection.tupleCount();
+        int numAttributes = tupleCollection.attributeCount();
+        int cMax = tupleCount/2;
 
         Object[][] categoricalValues = tupleCollection.getValueMatrix(true);
         Object[][] numericalValues = tupleCollection.getValueMatrix(false);
 
+        System.out.println("Categorical: " + categoricalValues);
+        System.out.println("Numerical: " + numericalValues);
+
         try {
             IloCplex cplex = new IloCplex();
-
-            // w(c,r) : 1 if row r is mapped to context c, else 0
-            IloIntVar[][] w = new IloIntVar[cMax][];
-            for (int c = 0; c < w.length; c++) {
-                w[c] = cplex.intVarArray(numRows, 0, 1);
-            }
-
-            // Constraint : each row r can be mapped to at most 1 context
-            for (int r = 0; r < numRows; r++) {
-                IloLinearIntExpr sumOfMappingsForRow = cplex.linearIntExpr();
-                for (int c = 0; c < cMax; c++) {
-                    sumOfMappingsForRow.addTerm(1, w[c][r]);
-                }
-                cplex.addLe(sumOfMappingsForRow, 1);
-            }
+            IloIntVar[][] w = initializeTupleContextMappingConstraints(cplex, cMax, tupleCount);
 
             // f(c,a) : 1 if context c contains a domain mapping for attribute a, else 0
             IloIntVar[][] f = new IloIntVar[cMax][];
@@ -157,4 +146,32 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         return null;
     }
 
+    /**
+     * Helper method to initialize the integer variables that represent the tuple-context mappings.
+     * For each tuple t, context c combination we create a variable in our CPLEX model to represent
+     * the possibility that tuple t may be matched to context c. This variable will be 1 if tuple t
+     * is mapped to context c, else it will be 0.
+     *
+     * @param cplex The CPLEX model to be used to initialize variables and to which constraints will be added
+     * @param contextCount The number of contexts for which to create variables and constraints
+     * @param tupleCount The number of tuples for which to create variables and constraints
+     * @return A 2D matrix containing the IloIntVars initialized in the CPLEX model. Entry w[c][t] contains
+     * the IloIntVar for context c and tuple t
+     * @throws IloException
+     */
+    private IloIntVar[][] initializeTupleContextMappingConstraints(IloCplex cplex, int contextCount, int tupleCount) throws IloException {
+        IloIntVar[][] w = new IloIntVar[contextCount][];
+        for (int c = 0; c < w.length; c++) {
+            w[c] = cplex.intVarArray(tupleCount, 0, 1);
+        }
+
+        for (int t = 0; t < tupleCount; t++) {
+            IloLinearIntExpr sumOfMappingsForTuple = cplex.linearIntExpr();
+            for (int c = 0; c < contextCount; c++) {
+                sumOfMappingsForTuple.addTerm(1, w[c][t]);
+            }
+            cplex.addLe(sumOfMappingsForTuple, 1);
+        }
+        return w;
+    }
 }
