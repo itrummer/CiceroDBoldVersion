@@ -36,10 +36,14 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             addContraintsContextsMustAddLowerAndUpperBound(cplex, l, u, f);
             addConstraintsLowerBoundsLessThanUpperBound(cplex, l, u);
             addConstraintsUpperBoundWithinAllowedRange(cplex, l, u, numericalValueMatrix);
-
             addConstraintsCategoricalDomainSize(cplex, d, categoricalValueMatrix);
-
             addConstraintsOnlyAllowMatchingContexts(cplex, l, u);
+
+            // TODO: create cost expression
+
+            cplex.solve();
+
+            // TODO: extract plan from solved cplex
 
         } catch (IloException e) {
             e.printStackTrace();
