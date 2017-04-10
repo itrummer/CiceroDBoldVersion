@@ -15,12 +15,13 @@ public class CommandLineUtility
     public static String PROMPT = "audiolizer> ";
     public static String QUIT_COMMAND = "\\q";
     public static String HELP_COMMAND = "\\h";
-    public static String HELP_INFO = "Help: \n\tspecial commands: \\q = quit, \\h = help";
+    public static String HELP_INFO = "Help: \n\tspecial commands: \\q = quit, \\h = help, set-planner <naive,lp>";
 
     public static void main( String[] args )
     {
         Scanner scanner = new Scanner(System.in);
         VoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
+        VoicePlanner planner = new NaiveVoicePlanner();
 
         while(true) {
             System.out.print(PROMPT);
@@ -37,13 +38,24 @@ public class CommandLineUtility
             } else if (input.equals(HELP_COMMAND)) {
                 System.out.println(HELP_INFO);
                 continue;
+            } else if (input.startsWith("set-planner")) {
+                if (input.contains("naive")) {
+                    planner = new NaiveVoicePlanner();
+                    System.out.println("Set VoicePlanner to Naive");
+                } else if (input.contains("lp")) {
+                    planner = new IntegerProgrammingPlanner();
+                    System.out.println("Set VoicePlanner to LinearProgramming");
+                } else {
+                    System.out.println("Error: Missing or incorrect planner type. Leaving VoicePlanner unchanged.");
+                }
+                continue;
             }
 
             try {
                 TupleCollection results = DatabaseUtilities.executeQuery(input);
                 if (results != null) {
                     VoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
-                    VoiceOutputPlan outputPlan = naiveVoicePlanner.plan(results);
+                    VoiceOutputPlan outputPlan = planner.plan(results);
                     if (outputPlan != null) {
                         String speechText = outputPlan.toSpeechText();
                         System.out.println(speechText);
