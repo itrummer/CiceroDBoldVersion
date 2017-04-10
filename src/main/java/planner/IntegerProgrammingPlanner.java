@@ -34,7 +34,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
         int tupleCount = tupleCollection.tupleCount();
-        int numAttributes = tupleCollection.attributeCount();
         int cMax = tupleCount/2;
         Object[][] categoricalValueMatrix = tupleCollection.getCategoricalValueMatrix();
         Object[][] numericalValueMatrix = tupleCollection.getNumericalValueMatrix();
@@ -50,21 +49,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
 
             addContraintsContextsMustAddLowerAndUpperBound(cplex, l, u, f);
-
-            // Constraint: Lower bounds must be below upper bound
-            for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < numericalValueMatrix.length; a++) {
-                    IloLinearIntExpr sumOfLowerMinusUpper = cplex.linearIntExpr();
-                    for (int v = 0; v < numericalValueMatrix[a].length; v++) {
-                        // TODO: replace 1 and -1 with a LinearNumVar for each value, may need to create
-                        // a LinearNumVar for each distinct value
-                        sumOfLowerMinusUpper.addTerm(1, l[c][a][v]);
-                        sumOfLowerMinusUpper.addTerm(-1, u[c][a][v]);
-                    }
-                    // only one upper and lower bound set; thus lower minus upper needs to be negative
-                    cplex.addLe(sumOfLowerMinusUpper, 0);
-                }
-            }
+            addConstraintsLowerBoundsLessThanUpperBound(cplex, l, u);
 
             // For numerical attributes, the upper bound must be less than the maximum allowed upper bound for a given lower bound
             for (int c = 0; c < cMax; c++) {
@@ -118,7 +103,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      * the IloIntVar for context c and tuple t
      * @throws IloException
      */
-    private IloIntVar[][] initializeTupleContextMappingConstraints(IloCplex cplex, int contextCount, int tupleCount) throws IloException {
+    private IloIntVar[][] initializeTupleContextMappingConstraints(IloCplex cplex,
+                                                                   int contextCount,
+                                                                   int tupleCount) throws IloException {
         IloIntVar[][] w = new IloIntVar[contextCount][];
         for (int c = 0; c < w.length; c++) {
             w[c] = cplex.intVarArray(tupleCount, 0, 1);
@@ -148,7 +135,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      * the IloIntVar for context c and attribute a
      * @throws IloException
      */
-    private IloIntVar[][] initializeContextAttributeDomainConstraints(IloCplex cplex, int contextCount, int attributeCount) throws IloException {
+    private IloIntVar[][] initializeContextAttributeDomainConstraints(IloCplex cplex,
+                                                                      int contextCount,
+                                                                      int attributeCount) throws IloException {
         IloIntVar[][] f = new IloIntVar[contextCount][];
         for (int c = 0; c < contextCount; c++) {
             f[c] = cplex.intVarArray(attributeCount, 0, 1);
@@ -175,7 +164,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      * context c assigns value v as the lower or upper bound of attribute a, else it is 0.
      * @throws IloException
      */
-    private IloIntVar[][][] initializeLowerOrUpperBoundVariableMatrix(IloCplex cplex, int contextCount, Object[][] numericalValueMatrix) throws IloException {
+    private IloIntVar[][][] initializeLowerOrUpperBoundVariableMatrix(IloCplex cplex,
+                                                                      int contextCount,
+                                                                      Object[][] numericalValueMatrix) throws IloException {
         IloIntVar[][][] matrix = new IloIntVar[contextCount][numericalValueMatrix.length][];
         for (int c = 0; c < contextCount; c++) {
             for (int a = 0; a < numericalValueMatrix.length; a++) {
@@ -216,6 +207,32 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 sumOfUpperBoundAssignments.addTerm(-1, contextAttributeAssignments[c][a]);
                 cplex.addEq(sumOfLowerBoundAssignments, 0);
                 cplex.addEq(sumOfUpperBoundAssignments, 0);
+            }
+        }
+    }
+
+    /**
+     * Adds constraint that the lower bounds must be less than the upper bounds
+     *
+     * @param cplex The CPLEX model to which constraints will be added
+     * @param lowerBoundVars The 3D matrix of lower bound integer programming variables. lowerBoundVars[c][a][v] contains
+     *                       lower bound variable for the context c, attribute a, and value v combination
+     * @param upperBoundVars The 3D matrix of upper bound integer programming variables. upperBoundVars[c][a][v] contains
+     *                       upper bound variable for the context c, attribute a, and value v combination
+     * @throws IloException
+     */
+    private void addConstraintsLowerBoundsLessThanUpperBound(IloCplex cplex,
+                                                            IloIntVar[][][] lowerBoundVars,
+                                                            IloIntVar[][][] upperBoundVars) throws IloException {
+        for (int c = 0; c < lowerBoundVars.length; c++) {
+            for (int a = 0; a < lowerBoundVars[c].length; a++) {
+                IloLinearIntExpr sumOfLowerMinusUpper = cplex.linearIntExpr();
+                for (int v = 0; v < lowerBoundVars[c][a].length; v++) {
+                    // TODO: replace 1 and -1 with a LinearNumVar for each value, may need to create a LinearNumVar for each entry in the 2D numerical matrix
+                    sumOfLowerMinusUpper.addTerm(1, lowerBoundVars[c][a][v]);
+                    sumOfLowerMinusUpper.addTerm(-1, upperBoundVars[c][a][v]);
+                }
+                cplex.addLe(sumOfLowerMinusUpper, 0);
             }
         }
     }
