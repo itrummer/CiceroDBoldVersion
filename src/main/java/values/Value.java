@@ -1,7 +1,10 @@
 package values;
 
+import planner.Speakable;
+
 /**
- * Created by mabryan on 4/10/17.
+ *
  */
-public class Value {
+public abstract class Value implements Speakable {
+    public abstract String toSpeechText();
 }

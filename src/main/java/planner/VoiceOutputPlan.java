@@ -7,7 +7,7 @@ import java.util.ArrayList;
 /**
  * Representation of a VoiceOutputPlan
  */
-public class VoiceOutputPlan {
+public class VoiceOutputPlan implements Speakable {
     ArrayList<Scope> scopes;
     String cachedResult;
 

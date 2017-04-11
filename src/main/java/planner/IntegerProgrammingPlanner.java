@@ -24,14 +24,20 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         int cMax = tupleCount/2;
         Object[][] categoricalValueMatrix = tupleCollection.getCategoricalValueMatrix();
         Object[][] numericalValueMatrix = tupleCollection.getNumericalValueMatrix();
+        int categoricalAttributeCount = numericalValueMatrix.length;
+        int numericalAttributeCount = categoricalValueMatrix.length;
 
         try {
             IloCplex cplex = new IloCplex();
             IloIntVar[][] w = initializeTupleContextMappingConstraints(cplex, cMax, tupleCount);
             IloIntVar[][] f = initializeContextAttributeDomainConstraints(cplex, cMax, tupleCount);
+            IloIntVar[][] fNumerical = initializeContextAttributeDomainConstraints(cplex, cMax, numericalAttributeCount);
+            IloIntVar[][] fCategorical = initializeContextAttributeDomainConstraints(cplex, cMax, categoricalAttributeCount);
             IloIntVar[][][] l = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
             IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
             IloIntVar[][][] d = initializeCategoricalAssignmentVariables(cplex, cMax, categoricalValueMatrix);
+            IloIntVar[][][] sNumerical = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
+            IloIntVar[][][] sCategorical = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, categoricalValueMatrix);
 
             addContraintsContextsMustAddLowerAndUpperBound(cplex, l, u, f);
             addConstraintsLowerBoundsLessThanUpperBound(cplex, l, u);
@@ -40,6 +46,67 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             addConstraintsOnlyAllowMatchingContexts(cplex, l, u);
 
             // TODO: create cost expression
+
+            // minimize speaking time (proportional to number of characters)
+            IloIntVar[] g = cplex.intVarArray(cMax, 0,1);
+            for (int c = 0; c < cMax; c++) {
+                for (int t = 0; t < tupleCount; t++) {
+                    cplex.addGe(g[c], w[c][t]);
+                }
+            }
+
+            IloIntVar[][][] e = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < numericalValueMatrix.length; a++) {
+                    for (int v = 0; v < numericalValueMatrix[a].length; v++) {
+                        cplex.addLe(e[c][a][v], l[c][a][v]);
+                        cplex.addLe(e[c][a][v], u[c][a][v]);
+                    }
+                }
+            }
+
+            IloLinearIntExpr contextOverhead = cplex.linearIntExpr();
+            for (int c = 0; c < cMax; c++) {
+                contextOverhead.addTerm("Entries for are:".length(), g[c]);
+            }
+
+            IloLinearIntExpr categoricalContextTime = cplex.linearIntExpr();
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < categoricalValueMatrix.length; a++) {
+                    // TODO: replace with cost of actual column name
+                    categoricalContextTime.addTerm(f[c][a], "column name".length());
+                    for (int v = 0; v < categoricalValueMatrix[a].length; v++) {
+                        // TODO: replace with actual value
+                        categoricalContextTime.addTerm(d[c][a][v], "value".length());
+                    }
+                }
+            }
+
+            IloLinearIntExpr contextNumericalTime = cplex.linearIntExpr();
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < numericalValueMatrix.length; a++) {
+                    contextNumericalTime.addTerm(f[c][a], "column name".length());
+                    for (int v = 0; v < numericalValueMatrix[a].length; v++) {
+                        contextNumericalTime.addTerm(l[c][a][v], "lower bound cost".length());
+                        contextNumericalTime.addTerm(u[c][a][v], "upper bound cost".length());
+                        contextNumericalTime.addTerm(sNumerical[c][a][v], -"upper bound cost".length());
+                    }
+                }
+            }
+
+            // cost for remaining tuples
+            // iterate over all cells (2D)
+            // use s to figure out if the cell is fixed by the context
+            for (int t = 0; t < tupleCount; t++) {
+                for (int a = 0; a < numericalAttributeCount; a++) {
+
+                }
+                for (int a = 0; a < categoricalAttributeCount; a++) {
+
+                }
+            }
+
+            cplex.sum(contextOverhead, contextNumericalTime, categoricalContextTime);
 
             cplex.solve();
 
@@ -203,7 +270,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             for (int a = 0; a < lowerBoundVars[c].length; a++) {
                 IloLinearIntExpr sumOfLowerMinusUpper = cplex.linearIntExpr();
                 for (int v = 0; v < lowerBoundVars[c][a].length; v++) {
-                    // TODO: replace 1 and -1 with a LinearNumVar for each value, may need to create a LinearNumVar for each entry in the 2D numerical matrix
+                    // TODO: replace 1 and -1 with a LinearNumVar for each value
                     sumOfLowerMinusUpper.addTerm(1, lowerBoundVars[c][a][v]);
                     sumOfLowerMinusUpper.addTerm(-1, upperBoundVars[c][a][v]);
                 }
