@@ -1,6 +1,4 @@
-package values.numerical;
-
-import values.numerical.NumericalValue;
+package values;
 
 /**
  */
@@ -12,7 +10,7 @@ public class IntegerValue extends NumericalValue {
     }
 
     @Override
-    double getLinearProgrammingCoefficient() {
+    public Double getLinearProgrammingCoefficient() {
         return (double) value;
     }
 

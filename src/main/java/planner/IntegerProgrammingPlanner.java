@@ -3,6 +3,8 @@ package planner;
 import db.TupleCollection;
 import ilog.concert.*;
 import ilog.cplex.*;
+import values.CategoricalValue;
+import values.NumericalValue;
 
 /**
  * This class constructs VoiceOutputPlans according to the integer programming model. It specifically uses the CPLEX
@@ -22,25 +24,25 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
         int tupleCount = tupleCollection.tupleCount();
         int cMax = tupleCount/2;
-        Object[][] categoricalValueMatrix = tupleCollection.getCategoricalValueMatrix();
-        Object[][] numericalValueMatrix = tupleCollection.getNumericalValueMatrix();
+        CategoricalValue[][] categoricalValueMatrix = tupleCollection.getCategoricalValueMatrix();
+        NumericalValue[][] numericalValueMatrix = tupleCollection.getNumericalValueMatrix();
         int categoricalAttributeCount = numericalValueMatrix.length;
         int numericalAttributeCount = categoricalValueMatrix.length;
 
         try {
             IloCplex cplex = new IloCplex();
             IloIntVar[][] w = initializeTupleContextMappingConstraints(cplex, cMax, tupleCount);
-            IloIntVar[][] f = initializeContextAttributeDomainConstraints(cplex, cMax, tupleCount);
+//            IloIntVar[][] f = initializeContextAttributeDomainConstraints(cplex, cMax, tupleCount);
             IloIntVar[][] fNumerical = initializeContextAttributeDomainConstraints(cplex, cMax, numericalAttributeCount);
             IloIntVar[][] fCategorical = initializeContextAttributeDomainConstraints(cplex, cMax, categoricalAttributeCount);
             IloIntVar[][][] l = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
             IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
             IloIntVar[][][] d = initializeCategoricalAssignmentVariables(cplex, cMax, categoricalValueMatrix);
             IloIntVar[][][] sNumerical = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, numericalValueMatrix);
-            IloIntVar[][][] sCategorical = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, categoricalValueMatrix);
+//            IloIntVar[][][] sCategorical = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, categoricalValueMatrix);
 
-            addContraintsContextsMustAddLowerAndUpperBound(cplex, l, u, f);
-            addConstraintsLowerBoundsLessThanUpperBound(cplex, l, u);
+            addContraintsContextsMustAddLowerAndUpperBound(cplex, l, u, fNumerical);
+            addConstraintsLowerBoundsLessThanUpperBound(cplex, l, u, numericalValueMatrix);
             addConstraintsUpperBoundWithinAllowedRange(cplex, l, u, numericalValueMatrix);
             addConstraintsCategoricalDomainSize(cplex, d, categoricalValueMatrix);
             addConstraintsOnlyAllowMatchingContexts(cplex, l, u);
@@ -72,24 +74,25 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
             IloLinearIntExpr categoricalContextTime = cplex.linearIntExpr();
             for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < categoricalValueMatrix.length; a++) {
+                for (int a = 0; a < categoricalAttributeCount; a++) {
                     // TODO: replace with cost of actual column name
-                    categoricalContextTime.addTerm(f[c][a], "column name".length());
+                    categoricalContextTime.addTerm(fCategorical[c][a], "column name".length());
                     for (int v = 0; v < categoricalValueMatrix[a].length; v++) {
                         // TODO: replace with actual value
-                        categoricalContextTime.addTerm(d[c][a][v], "value".length());
+                        categoricalContextTime.addTerm(d[c][a][v], categoricalValueMatrix[a][v].toSpeechText().length());
                     }
                 }
             }
 
             IloLinearIntExpr contextNumericalTime = cplex.linearIntExpr();
             for (int c = 0; c < cMax; c++) {
-                for (int a = 0; a < numericalValueMatrix.length; a++) {
-                    contextNumericalTime.addTerm(f[c][a], "column name".length());
+                for (int a = 0; a < numericalAttributeCount; a++) {
+                    contextNumericalTime.addTerm(fNumerical[c][a], "column name".length());
                     for (int v = 0; v < numericalValueMatrix[a].length; v++) {
-                        contextNumericalTime.addTerm(l[c][a][v], "lower bound cost".length());
-                        contextNumericalTime.addTerm(u[c][a][v], "upper bound cost".length());
-                        contextNumericalTime.addTerm(sNumerical[c][a][v], -"upper bound cost".length());
+                        int valueCost = numericalValueMatrix[a][v].toSpeechText().length();
+                        contextNumericalTime.addTerm(l[c][a][v], valueCost);
+                        contextNumericalTime.addTerm(u[c][a][v], valueCost);
+                        contextNumericalTime.addTerm(sNumerical[c][a][v], -valueCost);
                     }
                 }
             }
@@ -108,7 +111,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
             cplex.sum(contextOverhead, contextNumericalTime, categoricalContextTime);
 
+            System.out.println("Solving CPLEX...");
             cplex.solve();
+            System.out.println("Solved!");
 
             // TODO: extract plan from solved cplex
 
@@ -195,7 +200,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      */
     private IloIntVar[][][] initializeLowerOrUpperBoundVariableMatrix(IloCplex cplex,
                                                                       int contextCount,
-                                                                      Object[][] numericalValueMatrix) throws IloException {
+                                                                      NumericalValue[][] numericalValueMatrix) throws IloException {
         IloIntVar[][][] matrix = new IloIntVar[contextCount][numericalValueMatrix.length][];
         for (int c = 0; c < contextCount; c++) {
             for (int a = 0; a < numericalValueMatrix.length; a++) {
@@ -208,7 +213,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     // d(c,a,v) : 1 if value v is within the value domain that context c assigns to attribute a, else 0
     private IloIntVar[][][] initializeCategoricalAssignmentVariables(IloCplex cplex,
                                                                      int contextCount,
-                                                                     Object[][] categoricalValueMatrix) throws IloException {
+                                                                     CategoricalValue[][] categoricalValueMatrix) throws IloException {
         IloIntVar[][][] d = new IloIntVar[contextCount][categoricalValueMatrix.length][];
         for (int c = 0; c < contextCount; c++) {
             for (int a = 0; a < categoricalValueMatrix.length; a++) {
@@ -265,14 +270,14 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      */
     private void addConstraintsLowerBoundsLessThanUpperBound(IloCplex cplex,
                                                              IloIntVar[][][] lowerBoundVars,
-                                                             IloIntVar[][][] upperBoundVars) throws IloException {
+                                                             IloIntVar[][][] upperBoundVars,
+                                                             NumericalValue[][] numericalValues) throws IloException {
         for (int c = 0; c < lowerBoundVars.length; c++) {
             for (int a = 0; a < lowerBoundVars[c].length; a++) {
-                IloLinearIntExpr sumOfLowerMinusUpper = cplex.linearIntExpr();
+                IloLinearNumExpr sumOfLowerMinusUpper = cplex.linearNumExpr();
                 for (int v = 0; v < lowerBoundVars[c][a].length; v++) {
-                    // TODO: replace 1 and -1 with a LinearNumVar for each value
-                    sumOfLowerMinusUpper.addTerm(1, lowerBoundVars[c][a][v]);
-                    sumOfLowerMinusUpper.addTerm(-1, upperBoundVars[c][a][v]);
+                    sumOfLowerMinusUpper.addTerm(numericalValues[a][v].getLinearProgrammingCoefficient(), lowerBoundVars[c][a][v]);
+                    sumOfLowerMinusUpper.addTerm(-numericalValues[a][v].getLinearProgrammingCoefficient(), upperBoundVars[c][a][v]);
                 }
                 cplex.addLe(sumOfLowerMinusUpper, 0);
             }
@@ -283,14 +288,14 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     private void addConstraintsUpperBoundWithinAllowedRange(IloCplex cplex,
                                                             IloIntVar[][][] lowerBoundVars,
                                                             IloIntVar[][][] upperBoundVars,
-                                                            Object[][] numericalValueMatrix) throws IloException {
+                                                            NumericalValue[][] numericalValueMatrix) throws IloException {
         for (int c = 0; c < numericalValueMatrix.length; c++) {
             for (int a = 0; a < numericalValueMatrix.length; a++) {
-                IloLinearIntExpr sumOfMaxAllowableUpperBoundMinusUpperBound = cplex.linearIntExpr();
+                IloLinearNumExpr sumOfMaxAllowableUpperBoundMinusUpperBound = cplex.linearNumExpr();
                 for (int v = 0; v < numericalValueMatrix[a].length; v++) {
                     sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(MAXIMAL_NUMERICAL_DOMAIN_WIDTH, lowerBoundVars[c][a][v]);
                     // TODO: replace -1 with upper bound value
-                    sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(-1, upperBoundVars[c][a][v]);
+                    sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(-numericalValueMatrix[a][v].getLinearProgrammingCoefficient(), upperBoundVars[c][a][v]);
                 }
                 cplex.addGe(sumOfMaxAllowableUpperBoundMinusUpperBound, 0);
             }
@@ -300,7 +305,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     // Constraint: Each context c can assign at most mC values for each categorical attribute a
     private void addConstraintsCategoricalDomainSize(IloCplex cplex,
                                                      IloIntVar[][][] valueAssignmentVars,
-                                                     Object[][] categoricalValueMatrix) throws IloException {
+                                                     CategoricalValue[][] categoricalValueMatrix) throws IloException {
         for (int c = 0; c < valueAssignmentVars.length; c++) {
             for (int a = 0; a < categoricalValueMatrix.length; a++) {
                 IloLinearIntExpr sumOfCategoricalAssignments = cplex.linearIntExpr();

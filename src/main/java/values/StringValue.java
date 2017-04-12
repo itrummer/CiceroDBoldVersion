@@ -1,6 +1,4 @@
-package values.categorical;
-
-import values.categorical.CategoricalValue;
+package values;
 
 /**
  * Created by mabryan on 4/10/17.

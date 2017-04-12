@@ -1,5 +1,9 @@
 package db;
 
+import values.CategoricalValue;
+import values.NumericalValue;
+import values.Value;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -67,7 +71,7 @@ public class TupleCollection {
                 Tuple tuple = new Tuple();
                 ArrayList<Object> values = new ArrayList<Object>();
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                    tuple.addValueAssignment(metaData.getColumnName(i), resultSet.getObject(i));
+                    tuple.addValueAssignment(metaData.getColumnName(i), Value.createValueObject(resultSet.getObject(i)));
                 }
                 tupleCollection.addTuple(tuple);
             }
@@ -92,41 +96,37 @@ public class TupleCollection {
         return result;
     }
 
-    public Object[] valuesForAttribute(String attribute) {
-        HashSet<Object> values = new HashSet<Object>();
-        for (Tuple tuple : tuples) {
-            values.add(tuple.valueForAttribute(attribute));
-        }
-        return values.toArray();
-    }
-
-    private Object[][] getValueMatrix(boolean isCategorical) {
-        if (getTuples().isEmpty()) {
-            return new Object[attributeCount()][];
-        }
-        ArrayList<Object[]> categoricalValues = new ArrayList<Object[]>();
-        ArrayList<Object[]> numericalValues = new ArrayList<Object[]>();
-        for (String attribute : attributes) {
-            if (getTuples().get(0).valueForAttribute(attribute).getClass().equals(String.class)) {
-                categoricalValues.add(valuesForAttribute(attribute));
-            } else {
-                numericalValues.add(valuesForAttribute(attribute));
-            }
-        }
-        if (isCategorical) {
-            return (Object[][]) categoricalValues.toArray();
-        } else {
-            return  (Object[][]) numericalValues.toArray();
-        }
-    }
-
     /**
      * Constructs the matrix of unique categorical values that appear as values in Tuples in this TupleCollection.
      * @return The distinct categorical values that appear in this TupleCollection. Let result : Object[][] be the matrix
      * returned by this method, result[a] contains the array of distinct categorical values for categorical attribute a
      */
-    public Object[][] getCategoricalValueMatrix() {
-        return getValueMatrix(true);
+    public CategoricalValue[][] getCategoricalValueMatrix() {
+        // TODO: create better workaround for avoiding using the toArray() method on the ArrayList and HashSet
+        // We cannot use this convenient method since casting an Object[] array to Value[] array throws a runtime exception
+        ArrayList<CategoricalValue[]> categoricalValues = new ArrayList<CategoricalValue[]>();
+        for (String a : attributes) {
+            // use HashSet to eliminate duplicates
+            HashSet<CategoricalValue> valuesForAttribute = new HashSet<CategoricalValue>();
+            for (Tuple t : getTuples()) {
+                Value v = t.valueForAttribute(a);
+                if (v instanceof CategoricalValue) {
+                    valuesForAttribute.add((CategoricalValue) v);
+                }
+            }
+            CategoricalValue[] temp = new CategoricalValue[valuesForAttribute.size()];
+            int i = 0;
+            for (CategoricalValue v : valuesForAttribute) {
+                temp[i] = v;
+                i++;
+            }
+            categoricalValues.add(temp);
+        }
+        CategoricalValue[][] result = new CategoricalValue[categoricalValues.size()][];
+        for (int i = 0; i < categoricalValues.size(); i++) {
+            result[i] = categoricalValues.get(i);
+        }
+        return result;
     }
 
     /**
@@ -134,8 +134,31 @@ public class TupleCollection {
      * @return The distinct numerical values that appear in this TupleCollection. Let result : Object[][] be the matrix
      * returned by this method, result[a] contains the array of distinct numerical values for numerical attribute a
      */
-    public Object[][] getNumericalValueMatrix() {
-        return getValueMatrix(false);
+    public NumericalValue[][] getNumericalValueMatrix() {
+        // TODO: create better workaround for avoiding using the toArray() method on the ArrayList and HashSet
+        // We cannot use this convenient method since casting an Object[] array to Value[] array throws a runtime exception
+        ArrayList<NumericalValue[]> numericalValues = new ArrayList<NumericalValue[]>();
+        for (String a : attributes) {
+            // use HashSet to eliminate duplicates
+            HashSet<NumericalValue> valuesForAttribute = new HashSet<NumericalValue>();
+            for (Tuple t : getTuples()) {
+                Value v = t.valueForAttribute(a);
+                if (v instanceof NumericalValue) {
+                    valuesForAttribute.add((NumericalValue) v);
+                }
+            }
+            NumericalValue[] temp = new NumericalValue[valuesForAttribute.size()];
+            int i = 0;
+            for (NumericalValue v : valuesForAttribute) {
+                temp[i] = v;
+                i++;
+            }
+            numericalValues.add(temp);
+        }
+        NumericalValue[][] result = new NumericalValue[numericalValues.size()][];
+        for (int i = 0; i < numericalValues.size(); i++) {
+            result[i] = numericalValues.get(i);
+        }
+        return result;
     }
-
 }
