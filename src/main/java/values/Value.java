@@ -29,5 +29,10 @@ public abstract class Value implements Speakable {
         return null;
     }
 
+    public abstract boolean isCategorical();
+
+    public boolean isNumerical() {
+        return !isCategorical();
+    }
 
 }

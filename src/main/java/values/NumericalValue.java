@@ -21,4 +21,9 @@ public abstract class NumericalValue extends Value {
     public int hashCode() {
         return getLinearProgrammingCoefficient().hashCode();
     }
+
+    @Override
+    public boolean isCategorical() {
+        return false;
+    }
 }
