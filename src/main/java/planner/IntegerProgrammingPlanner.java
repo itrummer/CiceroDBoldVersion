@@ -6,6 +6,7 @@ import ilog.cplex.*;
 import values.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * This class constructs VoiceOutputPlans according to the integer programming model. It specifically uses the CPLEX
@@ -30,6 +31,8 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         if (attributeValueLists.isEmpty()) {
             return null;
         }
+        // valueMatrix[t][a] contains the tuple t's value for attribute a
+        Value[][] valueMatrix = tupleCollection.getValueArraysForTuples();
 
         try {
             IloCplex cplex = new IloCplex();
@@ -46,7 +49,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             addConstraintsLowerBoundsLessThanUpperBound(cplex, cMax, attributeCount, l, u, attributeValueLists);
             addConstraintsUpperBoundWithinAllowedRange(cplex, cMax, attributeCount, l, u, attributeValueLists);
             addConstraintsCategoricalDomainSize(cplex, cMax, attributeCount, d, attributeValueLists);
-//            addConstraintsOnlyAllowMatchingContexts(cplex, l, u);
+            addConstraintsOnlyAllowMatchingContexts(cplex, cMax, attributeCount, l, u, d, w, f, tupleCollection, valueMatrix, attributeValueLists);
 
             // TODO: create cost expression
 
@@ -348,34 +351,59 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
     }
 
     /**
-     * TODO: only allow matching contexts
-     * let v_r : value in row r for attribute a
-     * if a is numerical:
-     *   for each c and v > v_r:
-     *     l(c,a,v) + w(c,r) + f(c,a) <= 2
-     *   for each c and v < v_r:
-     *     u(c,a,v) + w(c,r) + f(c,a) <= 2
-     * if a is categorical:
-     *   for each c:
-     *     (1 - d(c,a,v_r)) + w(c,r) + f(c,a) <= 2
+     * Adds constraints such that tuples are only matched to "matching" contexts. Deals with numerical and categorical
+     * attributes in separate ways.
      */
     private void addConstraintsOnlyAllowMatchingContexts(IloCplex cplex,
                                                          int contextCount,
-                                                         IloIntVar[][][] lowerBoundVars,
-                                                         IloIntVar[][][] upperBoundVars,
-                                                         IloIntVar[][][] categoricalAssignmentVars,
-                                                         IloIntVar[][] numericalDomainAssignments, // fNumerical
-                                                         NumericalValue[][] numericalValues,
-                                                         CategoricalValue[][] categoricalValues) {
-//        for (int a = 0; a < numericalValues.length; a++) {
-//            for (int c = 0; c < contextCount; c++) {
-//                for (int v = 0; v < numericalValues[a].length; v++) {
-//                    // vT is the value for attribute a in tuple T
-//                    double vT = numericalValues[a][v].getLinearProgrammingCoefficient();
-//                    for (int altV = 0; v <)
-//                }
-//            }
-//        }
+                                                         int attributeCount,
+                                                         IloIntVar[][][] l,
+                                                         IloIntVar[][][] u,
+                                                         IloIntVar[][][] d,
+                                                         IloIntVar[][] w,
+                                                         IloIntVar[][] f,
+                                                         TupleCollection tupleCollection,
+                                                         Value[][] valueMatrix,
+                                                         ArrayList<ArrayList<Value>> attributeValueLists) throws IloException {
+        // TODO: This is very messy, but works for now. Will clean up later...
+        ArrayList<HashMap<Value, Integer>> distinctValueIndexForAttribute = tupleCollection.listOfIndicesForValues();
+        for (int a = 0; a < attributeCount; a++) {
+            ArrayList<Value> valueList = attributeValueLists.get(a);
+            HashMap<Value, Integer> indexMap = distinctValueIndexForAttribute.get(a);
+            for (int c = 0; c < contextCount; c++) {
+                if (valueList.get(0).isCategorical()) {
+                    for (int t = 0; t < valueMatrix.length; t++) {
+                        // for each context c and tuple t combination, we find which distinct value index
+                        // to use to extract the corresponding IloIntVar
+                        Value vT = valueMatrix[t][a];
+                        int vTIndex = indexMap.get(vT);
+                        // (1 - d(c,a,v_r)) + w(c,r) + f(c,a) <= 2
+                        // ==> -d(c,a,v,v_r + w(c,r) + f(c,a) <= 1
+                        IloLinearIntExpr firstTerm = cplex.linearIntExpr();
+                        firstTerm.addTerm(-1, d[c][a][vTIndex]);
+                        cplex.le(cplex.sum(firstTerm, w[c][t], f[c][a]), 1);
+                    }
+                } else {
+                    for (int t = 0; t < valueMatrix.length; t++) {
+                        NumericalValue vT = (NumericalValue) valueMatrix[t][a];
+                        int vTIndex = indexMap.get(vT);
+                        for (int otherV = 0; otherV < valueList.size(); otherV++) {
+                            // for each of the other distinct values
+                            NumericalValue v = (NumericalValue) valueList.get(otherV);
+                            if (v.compareTo(vT) > 0) {
+                                // v > vT
+                                // l(c,a,v) + w(c,r) + f(c,a) <= 2
+                                cplex.addLe(cplex.sum(l[c][a][otherV], w[c][t], f[c][a]), 2);
+                            } else if (v.compareTo(vT) < 0) {
+                                // v < VT
+                                // u(c,a,v) + w(c,r) + f(c,a) <= 2
+                                cplex.addLe(cplex.sum(u[c][a][otherV], w[c][t], f[c][a]), 2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

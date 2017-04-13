@@ -18,6 +18,7 @@ import java.util.HashSet;
 public class TupleCollection {
     ArrayList<Tuple> tuples;
     ArrayList<String> attributes;
+    HashMap<Integer, String> indicesForAttributes;
     HashMap<String, HashSet<Value>> valueMatrix;
 
     /**
@@ -28,7 +29,14 @@ public class TupleCollection {
         this.attributes = attributes;
         this.valueMatrix = new HashMap<String, HashSet<Value>>();
         for (String a : attributes) {
+
             valueMatrix.put(a, new HashSet<Value>());
+        }
+        this.indicesForAttributes = new HashMap<Integer, String>();
+        int index = 0;
+        for (String a : attributes) {
+            indicesForAttributes.put(index, a);
+            index++;
         }
     }
 
@@ -128,4 +136,40 @@ public class TupleCollection {
 
         return result;
     }
+
+
+    /**
+     * Returns the tuple collection as a 2D array. matrix[t][a] retrieves the value for the a'th attribute
+     * for the t'th tuple
+     * @return
+     */
+    public Value[][] getValueArraysForTuples() {
+        Value[][] matrix = new Value[tupleCount()][attributeCount()];
+        for (int t = 0; t < tupleCount(); t++) {
+            Tuple tuple = tuples.get(t);
+            for (int a = 0; a < attributeCount(); a++) {
+                matrix[t][a] = tuple.valueForAttribute(indicesForAttributes.get(a));
+            }
+        }
+        return matrix;
+    }
+
+    public ArrayList<HashMap<Value, Integer>> listOfIndicesForValues() {
+        // need to be able to look up for a given attribute, which of the "distinct" value indices this maps to
+        ArrayList<HashMap<Value, Integer>> list = new ArrayList<HashMap<Value, Integer>>();
+        ArrayList<ArrayList<Value>> attributeValueLists = getAttributeValueLists();
+        for (int a = 0; a < attributeCount(); a++) {
+            ArrayList<Value> distinctValuesForAttribute = attributeValueLists.get(a);
+            HashMap<Value, Integer> mapOfIndices = new HashMap<Value, Integer>();
+            int vIndex = 0;
+            for (Value v : distinctValuesForAttribute) {
+                mapOfIndices.put(v, vIndex);
+                vIndex++;
+            }
+            list.add(mapOfIndices);
+        }
+        return list;
+    }
+
+
 }
