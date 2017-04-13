@@ -1,10 +1,14 @@
 package planner;
 
-import db.TupleCollection;
+import db.*;
+import db.ValueAssignment;
 import ilog.concert.*;
 import ilog.cplex.*;
+import planner.elements.Context;
+import planner.elements.Scope;
 import values.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -44,6 +48,17 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, attributeCount, attributeValueLists);
             IloIntVar[][][] d = initializeCategoricalAssignmentVariables(cplex, cMax, attributeCount, attributeValueLists);
 //            IloIntVar[][][] s = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, attributeCount, attributeValueLists); // TODO: not correct
+            IloIntVar[][][] s = new IloIntVar[cMax][tupleCount][]; // whether we save the time for outputting the value of the attribute by the use of context slot c
+            for (int c = 0; c < cMax; c++) {
+                for (int t = 0; t < tupleCount; t++) {
+                    s[c][t] = cplex.intVarArray(attributeCount, 0, 1);
+                    for (int a = 0; a < attributeCount; a++) {
+                        // saving time is only possible if the following constraints hold:
+                        cplex.addLe(s[c][t][a], w[c][t]); // t is output in context c in the first place
+                        cplex.addLe(s[c][t][a], f[c][a]); // context c fixes the value for attribute a
+                    }
+                }
+            }
 
             addContraintsContextsMustAddLowerAndUpperBound(cplex, cMax, attributeCount, l, u, f);
             addConstraintsLowerBoundsLessThanUpperBound(cplex, cMax, attributeCount, l, u, attributeValueLists);
@@ -104,6 +119,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             for (int a = 0; a < attributeCount; a++) {
                 for (int t = 0; t < tupleCount; t++) {
                     // TODO: use s to figure out if the cell is fixed by the context
+//                    IloLinearIntExpr oneMinusS = cplex.linearIntExpr();
+//                    oneMinusS.setConstant(1);
+//                    oneMinusS.addTerm(-1, s[c][t][a]);
                 }
             }
 
@@ -111,7 +129,68 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
             cplex.solve();
 
-            // TODO: extract plan from solved cplex
+            // 1. see which contexts are used, create an empty context for each used "slot" and
+            //    add it by its slot number to the scopes map, as each context is assigned to one scope
+            HashMap<Integer, Scope> scopes = new HashMap<Integer, Scope>();
+            for (int c = 0; c < cMax; c++) {
+                if (cplex.getValue(g[c]) == 1) {
+                    scopes.put(c, new Scope(new Context()));
+                }
+            }
+
+            // 2. iterate through categorical assignments, create categorical value assignments to the appropriate context
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < attributeCount; a++) {
+                    ArrayList<Value> valueList = attributeValueLists.get(a);
+                    for (int v = 0; v < valueList.size(); v++) {
+                        ArrayList<CategoricalValue> valuesInDomain = new ArrayList<CategoricalValue>();
+                        if (cplex.getValue(d[c][a][v]) == 1) {
+                            valuesInDomain.add((CategoricalValue) valueList.get(v));
+                        }
+                        if (valuesInDomain.size() > 0) {
+                            Context context = scopes.get(c).getContext();
+                            context.addCategoricalValueAssignment(new CategoricalValueAssignment(tupleCollection.attributeForIndex(a), valuesInDomain));
+                        }
+                    }
+                }
+            }
+
+            // 3. iterate through lower and upper bounds, create numerical value assignments to the appropriate context
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < attributeCount; a++) {
+                    ArrayList<Value> valueList = attributeValueLists.get(a);
+                    for (int v = 0; v < valueList.size(); v++) {
+                        // TODO
+                    }
+                }
+            }
+
+            // 4. iterate through all tuples and add them to the matching context within a scope, or add them to the
+            //    scope with an empty context if they are not assigned to any context
+            Scope emptyContextScope = new Scope();
+            for (int t = 0; t < tupleCount; t++) {
+                boolean matched = false;
+                for (int c = 0; c < cMax; c++) {
+                    if (cplex.getValue(w[c][t]) == 1) {
+                        matched = true;
+                        scopes.get(c).addMatchingTuple(tupleCollection.getTuples().get(t));
+                    }
+                }
+                if (!matched) {
+                    emptyContextScope.addMatchingTuple(tupleCollection.getTuples().get(t));
+                }
+            }
+
+            ArrayList<Scope> scopeList = new ArrayList<Scope>();
+            for (Scope scope : scopes.values()) {
+                scopeList.add(scope);
+            }
+
+            // add the empty context scope at the end
+            scopeList.add(emptyContextScope);
+
+            // 5. add all scopes to a VoiceOutputPlan
+            return new VoiceOutputPlan(scopeList);
 
         } catch (IloException e) {
             e.printStackTrace();

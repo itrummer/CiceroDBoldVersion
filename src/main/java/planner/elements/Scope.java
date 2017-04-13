@@ -31,6 +31,25 @@ public class Scope {
         this(null, tuples);
     }
 
+    public Scope(Context context) {
+        this(context, new ArrayList<Tuple>());
+    }
+
+    /**
+     * Constructor for a scope without a context
+     */
+    public Scope() {
+        this(new ArrayList<Tuple>());
+    }
+
+    public void addMatchingTuple(Tuple t) {
+        tuples.add(t);
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
     /**
      * Returns the String representation of this Scope. Caches the result so later calls
      * do not recalculate the result

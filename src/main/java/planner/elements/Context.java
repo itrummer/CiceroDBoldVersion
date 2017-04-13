@@ -2,6 +2,8 @@ package planner.elements;
 
 import db.Tuple;
 import db.ValueAssignment;
+import values.CategoricalValue;
+import values.CategoricalValueAssignment;
 
 import java.util.ArrayList;
 
@@ -10,15 +12,21 @@ import java.util.ArrayList;
  */
 public class Context {
     ArrayList<ValueAssignment> valueAssignments;
+    ArrayList<CategoricalValueAssignment> categoricalValueAssignments;
     String cachedResult;
 
     public Context() {
         this.valueAssignments = new ArrayList<ValueAssignment>();
+        this.categoricalValueAssignments = new ArrayList<CategoricalValueAssignment>();
         this.cachedResult = null;
     }
 
     public void addValueAssignment(ValueAssignment valueAssignment) {
         valueAssignments.add(valueAssignment);
+    }
+
+    public void addCategoricalValueAssignment(CategoricalValueAssignment valueAssignment) {
+        categoricalValueAssignments.add(valueAssignment);
     }
 
     public ArrayList<ValueAssignment> getValueAssignments() {
