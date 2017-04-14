@@ -6,17 +6,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Class representation of a collection of Tuples returned from a SQL query
  */
 public class TupleCollection {
-    ArrayList<Tuple> tuples;
     ArrayList<String> attributes;
-    HashMap<Integer, String> indicesForAttributes;
-    HashMap<String, HashSet<Value>> valueMatrix;
+    ArrayList<Tuple> tuples;
 
     // attributeCount x tupleCount matrix
     ArrayList<ArrayList<Value>> values;
@@ -38,20 +34,8 @@ public class TupleCollection {
      * Constructs a TupleCollection with 0 rows.
      */
     public TupleCollection(ArrayList<String> attributes) {
-        this.tuples = new ArrayList<Tuple>();
         this.attributes = attributes;
-        this.valueMatrix = new HashMap<String, HashSet<Value>>();
-        for (String a : attributes) {
-            valueMatrix.put(a, new HashSet<Value>());
-        }
-        this.indicesForAttributes = new HashMap<Integer, String>();
-        int index = 0;
-        for (String a : attributes) {
-            indicesForAttributes.put(index, a);
-            index++;
-        }
-
-        // initialize matrices
+        this.tuples = new ArrayList<Tuple>();
         this.values = new ArrayList<ArrayList<Value>>();
         this.distinctValues = new ArrayList<ArrayList<Value>>();
         this.indexMap = new ArrayList<ArrayList<Integer>>();
@@ -74,10 +58,6 @@ public class TupleCollection {
         return attributes.get(i);
     }
 
-    public int indexForAttribute(String a) {
-        return attributes.indexOf(a);
-    }
-
     public int attributeCount() {
         return attributes.size();
     }
@@ -97,8 +77,6 @@ public class TupleCollection {
             ArrayList<Value> aDistinctValues = distinctValues.get(a);
             if (!distinctValues.contains(tValue)) {
                 aDistinctValues.add(tValue);
-            } else {
-                System.out.println("FOUND DUPLICATE VALUE, SKIPPING");
             }
         }
     }
@@ -146,7 +124,6 @@ public class TupleCollection {
         return lengths;
     }
 
-
     /**
      * Returns the Value of Tuple t that corresponds to attribute at index a
      * @param a The index of the desired attribute
@@ -163,10 +140,6 @@ public class TupleCollection {
 
     public int distinctValueCountForAttribute(int a) {
         return distinctValues.get(a).size();
-    }
-
-    public ArrayList<Value> distinctValuesForAttribute(int a) {
-        return distinctValues.get(a);
     }
 
     /**
@@ -205,23 +178,8 @@ public class TupleCollection {
         return null;
     }
 
-    /**
-     * Both Categorical and Numerical values
-     * @return
-     */
-    public ArrayList<ArrayList<Value>>  getAttributeValueLists() {
-        if (tupleCount() == 0 || attributeCount() == 0) {
-            return new ArrayList<ArrayList<Value>>();
-        }
-        // here we are guaranteed to have at least one value for each list and at least one attribute
-        // this is so we can call isCategorical() on the first attribute
-        ArrayList<ArrayList<Value>> attributesAndValues = new ArrayList<ArrayList<Value>>();
-        for (int a = 0; a < attributes.size(); a++) {
-            ArrayList<Value> valueList = new ArrayList<Value>();
-            valueList.addAll(valueMatrix.get(attributes.get(a)));
-            attributesAndValues.add(valueList);
-        }
-        return attributesAndValues;
+    public int costForAttribute(int a) {
+        return attributes.get(a).length();
     }
 
     @Override
@@ -237,32 +195,4 @@ public class TupleCollection {
 
         return result;
     }
-
-    public int costForAttribute(int a) {
-        return attributes.get(a).length();
-    }
-
-    // 2D matrix: attributeCount x distinctValueCount
-    public ArrayList<ArrayList<Value>> getDistinctValueMatrix() {
-        return distinctValues;
-    }
-
-    public ArrayList<HashMap<Value, Integer>> listOfIndicesForValues() {
-        // need to be able to look up for a given attribute, which of the "distinct" value indices this maps to
-        ArrayList<HashMap<Value, Integer>> list = new ArrayList<HashMap<Value, Integer>>();
-        ArrayList<ArrayList<Value>> attributeValueLists = getAttributeValueLists();
-        for (int a = 0; a < attributeCount(); a++) {
-            ArrayList<Value> distinctValuesForAttribute = attributeValueLists.get(a);
-            HashMap<Value, Integer> mapOfIndices = new HashMap<Value, Integer>();
-            int vIndex = 0;
-            for (Value v : distinctValuesForAttribute) {
-                mapOfIndices.put(v, vIndex);
-                vIndex++;
-            }
-            list.add(mapOfIndices);
-        }
-        return list;
-    }
-
-
 }

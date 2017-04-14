@@ -29,8 +29,8 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         int tupleCount = tupleCollection.tupleCount();
         int attributeCount = tupleCollection.attributeCount();
         int cMax = tupleCount/2;
-        ArrayList<ArrayList<Value>> attributeValueLists = tupleCollection.getAttributeValueLists();
-        if (attributeValueLists.isEmpty()) {
+        if (tupleCollection.getTuples().isEmpty()) {
+            // TODO: EmptyResultVoiceOutputPlan ?
             return null;
         }
 
@@ -111,8 +111,39 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            // TODO: simplify
-            addConstraintsOnlyAllowMatchingContexts(cplex, cMax, attributeCount, l, u, d, w, f, tupleCollection);
+            // only allow matching contexts
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < attributeCount; a++) {
+                    if (tupleCollection.attributeIsCategorical(a)) {
+                        for (int t = 0; t < tupleCollection.tupleCount(); t++) {
+                            Value vT = tupleCollection.getValueForAttributeAndTuple(a, t);
+                            int vTIndex = tupleCollection.getIndexOfDistinctValue(a, t);
+                            // (1 - d(c,a,v_r)) + w(c,r) + f(c,a) <= 2
+                            // ==> -d(c,a,v_r)  + w(c,r) + f(c,a) <= 1
+                            // ==>                w(c,r) + f(c,a) <= 1 + d(c,a,v)
+                            cplex.addLe(cplex.sum(w[c][t], f[c][a]), cplex.sum(1, d[c][a][vTIndex]));
+                        }
+                    } else {
+                        for (int t = 0; t < tupleCollection.tupleCount(); t++) {
+//                        Value vT = valueMatrix[t][a];
+//                        int vTIndex = indexMap.get(vT);
+//                        for (int otherV = 0; otherV < valueList.size(); otherV++) {
+//                            // for each of the other distinct values
+//                            Value v = valueList.get(otherV);
+//                            if (v.compareTo(vT) > 0) {
+//                                // v > vT
+//                                // l(c,a,v) + w(c,r) + f(c,a) <= 2
+//                                cplex.addLe(cplex.sum(l[c][a][otherV], w[c][t], f[c][a]), 2);
+//                            } else if (v.compareTo(vT) < 0) {
+//                                // v < VT
+//                                // u(c,a,v) + w(c,r) + f(c,a) <= 2
+//                                cplex.addLe(cplex.sum(u[c][a][otherV], w[c][t], f[c][a]), 2);
+//                            }
+//                        }
+                        }
+                    }
+                }
+            }
 
             // g[c] is 1 (i.e. context c is used) iff at least one tuple is matched to it
             for (int c = 0; c < cMax; c++) {
@@ -141,10 +172,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                     // 1. add the cost of speaking the attribute
                     contextTime.addTerm(f[c][a], tupleCollection.attributeForIndex(a).length());
 
-                    ArrayList<Value> valueList = attributeValueLists.get(a);
-                    for (int v = 0; v < valueList.size(); v++) {
-                        int valueCost = valueList.get(v).toSpeechText().length();
-                        if (valueList.get(0).isCategorical()) {
+                    for (int v = 0; v < tupleCollection.distinctValueCountForAttribute(a); v++) {
+                        int valueCost = tupleCollection.getDistinctValue(a, v).toSpeechText().length();
+                        if (tupleCollection.attributeIsCategorical(a)) {
                             // 2. add the cost of all fixed values for attribute a
                             contextTime.addTerm(d[c][a][v], valueCost);
                         } else {
@@ -185,11 +215,10 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             // 2. iterate through categorical assignments, create categorical value assignments to the appropriate context
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < attributeCount; a++) {
-                    ArrayList<Value> valueList = attributeValueLists.get(a);
-                    for (int v = 0; v < valueList.size(); v++) {
+                    for (int v = 0; v < tupleCollection.distinctValueCountForAttribute(a); v++) {
                         ArrayList<Value> valuesInDomain = new ArrayList<Value>();
                         if (cplex.getValue(d[c][a][v]) > 0.5) {
-                            valuesInDomain.add(valueList.get(v));
+                            valuesInDomain.add(tupleCollection.getDistinctValue(a, v));
                         }
                         if (valuesInDomain.size() > 0) {
                             Context context = scopes.get(c).getContext();
@@ -202,8 +231,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             // 3. iterate through lower and upper bounds, create numerical value assignments to the appropriate context
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < attributeCount; a++) {
-                    ArrayList<Value> valueList = attributeValueLists.get(a);
-                    for (int v = 0; v < valueList.size(); v++) {
+                    for (int v = 0; v < tupleCollection.distinctValueCountForAttribute(a); v++) {
                         // TODO
                     }
                 }
@@ -270,52 +298,4 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         }
         return m;
     }
-
-    /**
-     * Adds constraints such that tuples are only matched to "matching" contexts. Deals with numerical and categorical
-     * attributes in separate ways.
-     */
-    private void addConstraintsOnlyAllowMatchingContexts(IloCplex cplex,
-                                                         int contextCount,
-                                                         int attributeCount,
-                                                         IloIntVar[][][] l,
-                                                         IloIntVar[][][] u,
-                                                         IloIntVar[][][] d,
-                                                         IloIntVar[][] w,
-                                                         IloIntVar[][] f,
-                                                         TupleCollection tupleCollection) throws IloException {
-        for (int c = 0; c < contextCount; c++) {
-            for (int a = 0; a < attributeCount; a++) {
-                if (tupleCollection.attributeIsCategorical(a)) {
-                    for (int t = 0; t < tupleCollection.tupleCount(); t++) {
-                        Value vT = tupleCollection.getValueForAttributeAndTuple(a, t);
-                        int vTIndex = tupleCollection.getIndexOfDistinctValue(a, t);
-                        // (1 - d(c,a,v_r)) + w(c,r) + f(c,a) <= 2
-                        // ==> -d(c,a,v_r)  + w(c,r) + f(c,a) <= 1
-                        // ==>                w(c,r) + f(c,a) <= 1 + d(c,a,v)
-                        cplex.addLe(cplex.sum(w[c][t], f[c][a]), cplex.sum(1, d[c][a][vTIndex]));
-                    }
-                } else {
-                    for (int t = 0; t < tupleCollection.tupleCount(); t++) {
-//                        Value vT = valueMatrix[t][a];
-//                        int vTIndex = indexMap.get(vT);
-//                        for (int otherV = 0; otherV < valueList.size(); otherV++) {
-//                            // for each of the other distinct values
-//                            Value v = valueList.get(otherV);
-//                            if (v.compareTo(vT) > 0) {
-//                                // v > vT
-//                                // l(c,a,v) + w(c,r) + f(c,a) <= 2
-//                                cplex.addLe(cplex.sum(l[c][a][otherV], w[c][t], f[c][a]), 2);
-//                            } else if (v.compareTo(vT) < 0) {
-//                                // v < VT
-//                                // u(c,a,v) + w(c,r) + f(c,a) <= 2
-//                                cplex.addLe(cplex.sum(u[c][a][otherV], w[c][t], f[c][a]), 2);
-//                            }
-//                        }
-                    }
-                }
-            }
-        }
-    }
-
 }
