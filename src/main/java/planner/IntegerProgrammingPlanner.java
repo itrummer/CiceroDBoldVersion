@@ -15,7 +15,7 @@ import java.util.HashMap;
  * integer programming solver to plan
  */
 public class IntegerProgrammingPlanner extends VoicePlanner {
-    private static int MAXIMAL_CONTEXT_SIZE = 4;
+    private static int MAXIMAL_CONTEXT_SIZE = 3;
     private static int MAXIMAL_NUMERICAL_DOMAIN_WIDTH = 2;
     private static int MAXIMAL_CATEGORICAL_DOMAIN_SIZE = 2;
 
@@ -46,7 +46,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] s = initializeFull3DCPLEXMatrix(cplex, cMax, tupleCount, attributeCount);
             IloIntVar[] g = cplex.intVarArray(cMax, 0,1);
 
-            // Each tuple can be mapped to at most one context
+            // each tuple can be mapped to at most one context
             for (int t = 0; t < tupleCount; t++) {
                 IloLinearIntExpr sumOfMappingsForTuple = cplex.linearIntExpr();
                 for (int c = 0; c < cMax; c++) {
@@ -55,12 +55,12 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 cplex.addLe(sumOfMappingsForTuple, 1);
             }
 
-            // Each context can fix domains for at most MAXIMAL_CONTEXT_SIZE attributes
+            // each context can fix domains for at most MAXIMAL_CONTEXT_SIZE attributes
             for (int c = 0; c < f.length; c++) {
                 cplex.addLe(cplex.sum(f[c]), MAXIMAL_CONTEXT_SIZE);
             }
 
-            // We save time only if t is output in context c and if context c fixes the value for attribute a
+            // we save time only if t is output in context c and if context c fixes the value for attribute a
             for (int c = 0; c < cMax; c++) {
                 for (int t = 0; t < tupleCount; t++) {
                     s[c][t] = cplex.intVarArray(attributeCount, 0, 1);
@@ -81,8 +81,16 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
+            // constrain each context to fix at most MAXIMAL_CATEGORICAL_DOMAIN_SIZE values for a categorical attribute
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < attributeCount; a++) {
+                    if (d[c][a].length > 0) {
+                        cplex.addLe(cplex.sum(d[c][a]), MAXIMAL_CATEGORICAL_DOMAIN_SIZE);
+                    }
+                }
+            }
+
             constrainBounds(cplex, cMax, attributeCount, l, u, tupleCollection);
-            addConstraintsCategoricalDomainSize(cplex, cMax, attributeCount, d, attributeValueLists);
             addConstraintsOnlyAllowMatchingContexts(cplex, cMax, attributeCount, l, u, d, w, f, tupleCollection);
 
             // minimize speaking time (proportional to number of characters)
@@ -250,12 +258,8 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
      *                       upper bound variable for the context c, attribute a, and value v combination
      * @throws IloException
      */
-    private void constrainBounds(IloCplex cplex,
-                                 int contextCount,
-                                 int attributeCount,
-                                 IloIntVar[][][] l,
-                                 IloIntVar[][][] u,
-                                 TupleCollection tupleCollection) throws IloException {
+    private void constrainBounds(IloCplex cplex, int contextCount, int attributeCount, IloIntVar[][][] l,
+                                 IloIntVar[][][] u, TupleCollection tupleCollection) throws IloException {
         for (int c = 0; c < contextCount; c++) {
             for (int a = 0; a < attributeCount; a++) {
                 if (l[c][a].length > 0) {
@@ -269,21 +273,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                     }
                     cplex.addLe(lowerBound, upperBound);
                     cplex.addLe(upperBound, cplex.prod(lowerBound, MAXIMAL_NUMERICAL_DOMAIN_WIDTH));
-                }
-            }
-        }
-    }
-
-    // Constraint: Each context c can assign at most mC values for each categorical attribute a
-    private void addConstraintsCategoricalDomainSize(IloCplex cplex,
-                                                     int contextCount,
-                                                     int attributeCount,
-                                                     IloIntVar[][][] d,
-                                                     ArrayList<ArrayList<Value>> attributeValueLists) throws IloException {
-        for (int c = 0; c < contextCount; c++) {
-            for (int a = 0; a < attributeCount; a++) {
-                if (d[c][a].length > 0) {
-                    cplex.addLe(cplex.sum(d[c][a]), MAXIMAL_CATEGORICAL_DOMAIN_SIZE);
                 }
             }
         }
