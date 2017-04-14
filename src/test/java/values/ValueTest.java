@@ -2,6 +2,8 @@ package values;
 
 import junit.framework.TestCase;
 
+import java.util.HashSet;
+
 /**
  * Created by mabryan on 4/13/17.
  */
@@ -66,4 +68,15 @@ public class ValueTest extends TestCase {
         // hashCode() tests
         assertEquals(v1.hashCode(), v1Copy.hashCode());
     }
+
+    public void testHashSetStringValues() {
+        HashSet<Value> testSet = new HashSet<Value>();
+        testSet.add(new Value("test string"));
+        testSet.add(new Value("test string"));
+        assertEquals(1, testSet.size());
+
+        testSet.add(new Value("test string 2"));
+        assertEquals(2, testSet.size());
+    }
+
 }

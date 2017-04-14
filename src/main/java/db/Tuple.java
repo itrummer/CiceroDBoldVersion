@@ -1,13 +1,14 @@
 package db;
 
+import planner.Speakable;
 import values.Value;
 import java.util.HashMap;
 
 /**
  * Represents a tuple in a database table
  */
-public class Tuple {
-    public HashMap<String, Value> valueAssignments;
+public class Tuple implements Speakable {
+    HashMap<String, Value> valueAssignments;
 
     /**
      * Constructor of a Tuple from an ArrayList of ValueAssignments
@@ -29,13 +30,6 @@ public class Tuple {
     }
 
     /**
-     * Returns the dimension of the tuple, which is the same as the number of values or the number of attributes
-     */
-    public int getDimension() {
-        return valueAssignments.size();
-    }
-
-    /**
      * Adds a ValueAssignment to this Tuple.
      * @param column The attribute or column name for the value
      * @param value The value for the new value assignment
@@ -48,12 +42,11 @@ public class Tuple {
         return valueAssignments.get(attribute);
     }
 
-    @Override
-    public String toString() {
+    public String toSpeechText() {
         String result = "";
         int count = 0;
         for (String column : valueAssignments.keySet()) {
-            result += column + " : " + valueAssignments.get(column);
+            result += column + " : " + valueAssignments.get(column).toSpeechText();
             count ++;
             if (count != valueAssignments.keySet().size()) {
                 result += ", ";

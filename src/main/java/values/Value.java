@@ -98,14 +98,14 @@ public class Value implements Speakable, Comparable<Value> {
         return "<" + type.name() + ": " + value.toString() + ">";
     }
 
-    public Double linearProgrammingCoefficient() {
-        Double coefficient = 0.0;
+    public double linearProgrammingCoefficient() {
+        double coefficient = 0.0;
         switch (type) {
             case DOUBLE:
-                coefficient = (Double) value;
+                coefficient = ((Double) value);
                 break;
             case INTEGER:
-                coefficient = (Double) value;
+                coefficient = ((Integer) value).doubleValue();
                 break;
         }
         return coefficient;

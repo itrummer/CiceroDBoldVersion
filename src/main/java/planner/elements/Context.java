@@ -10,13 +10,13 @@ import java.util.HashMap;
  * A set of value assignments
  */
 public class Context {
-    HashMap<String, CategoricalValueAssignment> categoricalValueAssignments;
-    ArrayList<NumericalValueAssignment> numericalValueAssignments;
+    HashMap<String, CategoricalValueDomain> categoricalValueAssignments;
+    HashMap<String, NumericalValueDomain> numericalValueAssignments;
     String cachedResult;
 
     public Context() {
-        this.categoricalValueAssignments = new HashMap<String, CategoricalValueAssignment>();
-        this.numericalValueAssignments = new ArrayList<NumericalValueAssignment>();
+        this.categoricalValueAssignments = new HashMap<String, CategoricalValueDomain>();
+        this.numericalValueAssignments = new HashMap<String, NumericalValueDomain>();
         this.cachedResult = null;
     }
 
@@ -24,7 +24,7 @@ public class Context {
         if (categoricalValueAssignments.containsKey(attribute)) {
             categoricalValueAssignments.get(attribute).addValueToDomain(value);
         } else {
-            categoricalValueAssignments.put(attribute, new CategoricalValueAssignment(attribute, value));
+            categoricalValueAssignments.put(attribute, new CategoricalValueDomain(attribute, value));
         }
     }
 
@@ -35,7 +35,11 @@ public class Context {
     }
 
     public void addNumericalValueAssignment(String attribute, Value lowerBound, Value upperBound) {
-        numericalValueAssignments.add(new NumericalValueAssignment(attribute, lowerBound, upperBound));
+        numericalValueAssignments.put(attribute, new NumericalValueDomain(attribute, lowerBound, upperBound));
+    }
+
+    public boolean isAttributeFixed(String attribute) {
+        return categoricalValueAssignments.containsKey(attribute) || numericalValueAssignments.containsKey(attribute);
     }
 
     /**
@@ -53,18 +57,17 @@ public class Context {
             return cachedResult;
         }
 
+        cachedResult = "";
 
-        cachedResult = "TODO...Context";
+        for (CategoricalValueDomain categoricalValueDomain : categoricalValueAssignments.values()) {
+            cachedResult += categoricalValueDomain.toSpeechText() + ", ";
+        }
+
+        for (NumericalValueDomain numericalValueDomain : numericalValueAssignments.values()) {
+            cachedResult += numericalValueDomain.toSpeechText() + ", ";
+        }
+
         return cachedResult;
-//        for (int i = 0; i < valueAssignments.size(); i++) {
-//            cachedResult += valueAssignments.get(i).toSpeechText();
-//            if (i < valueAssignments.size() - 1) {
-//                cachedResult += ", ";
-//            } else {
-//                cachedResult += ": ";
-//            }
-//        }
-//        return cachedResult;
     }
 
     @Override

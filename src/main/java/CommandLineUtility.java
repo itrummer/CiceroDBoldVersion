@@ -38,16 +38,13 @@ public class CommandLineUtility
             } else if (input.equals(HELP_COMMAND)) {
                 System.out.println(HELP_INFO);
                 continue;
-            } else if (input.startsWith("set-planner")) {
-                if (input.contains("naive")) {
-                    planner = new NaiveVoicePlanner();
-                    System.out.println("Set VoicePlanner to Naive");
-                } else if (input.contains("lp")) {
-                    planner = new IntegerProgrammingPlanner();
-                    System.out.println("Set VoicePlanner to LinearProgramming");
-                } else {
-                    System.out.println("Error: Missing or incorrect planner type. Leaving VoicePlanner unchanged.");
-                }
+            } else if (input.startsWith("naive")) {
+                planner = new NaiveVoicePlanner();
+                System.out.println("Set VoicePlanner to Naive");
+                continue;
+            } else if (input.startsWith("lp")) {
+                planner = new IntegerProgrammingPlanner();
+                System.out.println("Set VoicePlanner to LinearProgramming");
                 continue;
             }
 
@@ -63,7 +60,6 @@ public class CommandLineUtility
                     } else {
                         System.err.println("Output plan was null");
                     }
-
                 }
             } catch (SQLException e) {}
         }

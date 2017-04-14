@@ -2,8 +2,10 @@ package planner.elements;
 
 import db.Tuple;
 import planner.elements.Context;
+import values.Value;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * A Scope represents an optional context with a set tuples that match the context
@@ -63,11 +65,20 @@ public class Scope {
         cachedResult = "";
         if (context == null) {
             for (Tuple tuple : tuples) {
-                cachedResult += tuple + "\n";
+                cachedResult += tuple.toSpeechText() + "\n";
             }
         } else {
             cachedResult = "Entries for ";
             cachedResult += context.toSpeechText();
+            cachedResult += ": ";
+            for (Tuple t : tuples) {
+                for (Map.Entry<String, Value> entry : t.getValueAssignments().entrySet()) {
+                    if (!context.isAttributeFixed(entry.getKey())) {
+                        cachedResult += entry.getKey() + ", " + entry.getValue().toSpeechText();
+                    }
+                }
+                cachedResult += "\n";
+            }
         }
 
         return cachedResult;
