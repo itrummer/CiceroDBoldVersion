@@ -40,9 +40,9 @@ public class CategoricalValueDomain implements Speakable {
         }
 
         // example: "category Italian, American, or Pub Food"
-        String result = "category " + domainValues.get(0);
+        String result = "category " + domainValues.get(0).toSpeechText();
         for (int i = 1; i < domainValues.size(); i++) {
-            result += ", " + domainValues.get(i);
+            result += ", " + domainValues.get(i).toSpeechText();
         }
 
         return result;

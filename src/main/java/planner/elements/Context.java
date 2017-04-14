@@ -59,14 +59,26 @@ public class Context {
 
         cachedResult = "";
 
+        ArrayList<String> parsed = new ArrayList<String>();
+
         for (CategoricalValueDomain categoricalValueDomain : categoricalValueAssignments.values()) {
-            cachedResult += categoricalValueDomain.toSpeechText() + ", ";
+            parsed.add(categoricalValueDomain.toSpeechText());
         }
 
         for (NumericalValueDomain numericalValueDomain : numericalValueAssignments.values()) {
-            cachedResult += numericalValueDomain.toSpeechText() + ", ";
+            parsed.add(numericalValueDomain.toSpeechText());
         }
 
+        if (parsed.size() == 1) {
+            cachedResult = parsed.get(0);
+        } else if (parsed.size() == 2) {
+            cachedResult += parsed.get(0) + " and " + parsed.get(1);
+        } else if (parsed.size() > 2) {
+            cachedResult += parsed.get(0);
+            for (int i = 1; i < parsed.size(); i++) {
+                cachedResult += ", " + parsed.get(i);
+            }
+        }
         return cachedResult;
     }
 
