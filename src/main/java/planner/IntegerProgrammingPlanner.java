@@ -46,6 +46,20 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] s = initializeFull3DCPLEXMatrix(cplex, cMax, tupleCount, attributeCount);
             IloIntVar[] g = cplex.intVarArray(cMax, 0,1);
 
+            // Each tuple can be mapped to at most one context
+            for (int t = 0; t < tupleCount; t++) {
+                IloLinearIntExpr sumOfMappingsForTuple = cplex.linearIntExpr();
+                for (int c = 0; c < cMax; c++) {
+                    sumOfMappingsForTuple.addTerm(1, w[c][t]);
+                }
+                cplex.addLe(sumOfMappingsForTuple, 1);
+            }
+
+            // Each context can fix domains for at most MAXIMAL_CONTEXT_SIZE attributes
+            for (int c = 0; c < f.length; c++) {
+                cplex.addLe(cplex.sum(f[c]), MAXIMAL_CONTEXT_SIZE);
+            }
+
             // constraint for saving time
             for (int c = 0; c < cMax; c++) {
                 for (int t = 0; t < tupleCount; t++) {
@@ -57,8 +71,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            constrainTuplesMatchedToOneContext(cplex, w, cMax, tupleCount);
-            initializeContextAttributeDomainConstraints(cplex, f);
             addContraintsContextsMustAddLowerAndUpperBound(cplex, cMax, attributeCount, l, u, f);
             constrainBounds(cplex, cMax, attributeCount, l, u, tupleCollection);
             addConstraintsCategoricalDomainSize(cplex, cMax, attributeCount, d, attributeValueLists);
@@ -217,62 +229,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             }
         }
         return m;
-    }
-
-    /**
-     * Helper method to initialize the integer variables that represent the tuple-context mappings.
-     * For each tuple t, context c combination we create a variable in our CPLEX model to represent
-     * the possibility that tuple t may be matched to context c. This variable will be 1 if tuple t
-     * is mapped to context c, else it will be 0.
-     *
-     * @param cplex The CPLEX model to be used to initialize variables and to which constraints will be added
-     * @return A 2D matrix containing the IloIntVars initialized in the CPLEX model. Entry w[c][t] contains
-     * the IloIntVar for context c and tuple t
-     * @throws IloException
-     */
-    private void constrainTuplesMatchedToOneContext(IloCplex cplex, IloIntVar[][] w, int contextCount, int tupleCount) throws IloException {
-        for (int t = 0; t < tupleCount; t++) {
-            IloLinearIntExpr sumOfMappingsForTuple = cplex.linearIntExpr();
-            for (int c = 0; c < contextCount; c++) {
-                sumOfMappingsForTuple.addTerm(1, w[c][t]);
-            }
-            cplex.addLe(sumOfMappingsForTuple, 1);
-        }
-    }
-
-    /**
-     * Helper method to initialize the integer variables that represent the context-attribute assignments.
-     * For each context c, attribute a combination we create a variable in our CPLEX model to represent the
-     * possibility that context c may assign a domain of values for the attribute a. Also, we add constraints
-     * that only allow contexts to have at most a certain number of domain assignments for the corresponding
-     * number of attributes. This is the configuration parameter MAXIMAL_CONTEXT_SIZE.
-     *
-     * @param cplex The CPLEX model to be used to initialize variables and to which constraints will be added
-     * @return A 2D matrix containing the IloIntVars initialized in the CPLEX model. Entry f[c][a] contains
-     * the IloIntVar for context c and attribute a
-     * @throws IloException
-     */
-    private void initializeContextAttributeDomainConstraints(IloCplex cplex, IloIntVar[][] f) throws IloException {
-        for (int c = 0; c < f.length; c++) {
-            cplex.addLe(cplex.sum(f[c]), MAXIMAL_CONTEXT_SIZE);
-        }
-    }
-
-    // d(c,a,v) : 1 if value v is within the value domain that context c assigns to attribute a, else 0
-    private IloIntVar[][][] initializeCategoricalAssignmentVariables(IloCplex cplex,
-                                                                     int contextCount,
-                                                                     int attributeCount,
-                                                                     TupleCollection tupleCollection) throws IloException {
-        IloIntVar[][][] d = new IloIntVar[contextCount][attributeCount][0];
-        for (int c = 0; c < contextCount; c++) {
-            for (int a = 0; a < attributeCount; a++) {
-                if (tupleCollection.attributeIsCategorical(a)) {
-                    // only create d variables for categorical attributes, else leave as a 0-length array
-                    d[c][a] = cplex.intVarArray(tupleCollection.distinctValueCountForAttribute(a), 0, 1);
-                }
-            }
-        }
-        return d;
     }
 
     /**
