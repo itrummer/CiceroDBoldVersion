@@ -214,7 +214,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
     private IloIntVar[][] initialize2DCPLEXMatrix(IloCplex cplex, int rows, int columns) throws IloException {
         IloIntVar[][] m = new IloIntVar[rows][];
-        for (int r = 0; r < columns; r++) {
+        for (int r = 0; r < rows; r++) {
             m[r] = cplex.intVarArray(columns, 0, 1);
         }
         return m;
