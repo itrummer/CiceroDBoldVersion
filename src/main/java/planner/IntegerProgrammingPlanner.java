@@ -47,7 +47,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] l = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, attributeCount, attributeValueLists);
             IloIntVar[][][] u = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, attributeCount, attributeValueLists);
             IloIntVar[][][] d = initializeCategoricalAssignmentVariables(cplex, cMax, attributeCount, attributeValueLists);
-//            IloIntVar[][][] s = initializeLowerOrUpperBoundVariableMatrix(cplex, cMax, attributeCount, attributeValueLists); // TODO: not correct
             IloIntVar[][][] s = new IloIntVar[cMax][tupleCount][]; // whether we save the time for outputting the value of the attribute by the use of context slot c
             for (int c = 0; c < cMax; c++) {
                 for (int t = 0; t < tupleCount; t++) {
@@ -88,7 +87,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
             IloLinearIntExpr contextOverhead = cplex.linearIntExpr();
             for (int c = 0; c < cMax; c++) {
-                contextOverhead.addTerm("Entries for are:".length(), g[c]);
+                contextOverhead.addTerm("Entries for  are:".length(), g[c]);
             }
 
             IloLinearIntExpr contextTime = cplex.linearIntExpr();
@@ -113,20 +112,19 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            // cost for remaining tuples
-            // iterate over all cells (2D)
-            IloLinearIntExpr costOfRemainingTuples = cplex.linearIntExpr();
+            IloLinearIntExpr negativeSavings = cplex.linearIntExpr();
             for (int a = 0; a < attributeCount; a++) {
+
                 for (int t = 0; t < tupleCount; t++) {
-                    // TODO: use s to figure out if the cell is fixed by the context
-//                    IloLinearIntExpr oneMinusS = cplex.linearIntExpr();
-//                    oneMinusS.setConstant(1);
-//                    oneMinusS.addTerm(-1, s[c][t][a]);
+                    for (int c = 0; c < cMax; c++) {
+                        int cost = valueMatrix[t][a].toSpeechText().length() + tupleCollection.costForAttribute(a);
+                        negativeSavings.addTerm(-cost, s[c][t][a]);
+                    }
                 }
             }
 
-            cplex.sum(contextOverhead, contextTime, costOfRemainingTuples);
-
+            // minimize the objective function
+            cplex.addMinimize(cplex.sum(contextOverhead, contextTime, negativeSavings));
             cplex.solve();
 
             // 1. see which contexts are used, create an empty context for each used "slot" and

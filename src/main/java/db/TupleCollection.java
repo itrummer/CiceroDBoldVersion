@@ -137,6 +137,10 @@ public class TupleCollection {
         return result;
     }
 
+    public int costForAttribute(int a) {
+        return attributes.get(a).length();
+    }
+
 
     /**
      * Returns the tuple collection as a 2D array. matrix[t][a] retrieves the value for the a'th attribute
