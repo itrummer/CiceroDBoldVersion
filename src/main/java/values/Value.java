@@ -82,16 +82,28 @@ public class Value implements Speakable, Comparable<Value> {
     }
 
     public String toSpeechText() {
-        // TODO: implement based on type
+        return value.toString();
+    }
+
+    /**
+     * Expands numeric types to their word values, then returns the length of the long-form number. For
+     * Categorical types, it returns the length of the String value.
+     * @return The speech cost for this Value
+     */
+    public int speechCost() {
+        String expandedValue = "";
         switch (type) {
             case INTEGER:
+                expandedValue = EnglishNumberToWords.convert(((Integer) value).longValue());
                 break;
             case DOUBLE:
+                expandedValue = EnglishNumberToWords.convert(((Double) value).longValue());
                 break;
             case STRING:
+                expandedValue = (String) value;
                 break;
         }
-        return value.toString();
+        return expandedValue.length();
     }
 
     public String toString() {

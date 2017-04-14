@@ -175,7 +175,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                     contextTime.addTerm(f[c][a], tupleCollection.attributeForIndex(a).length());
 
                     for (int v = 0; v < tupleCollection.distinctValueCountForAttribute(a); v++) {
-                        int valueCost = tupleCollection.getDistinctValue(a, v).toSpeechText().length();
+                        int valueCost = tupleCollection.getDistinctValue(a, v).speechCost();
                         if (tupleCollection.attributeIsCategorical(a)) {
                             // 2. add the cost of all fixed values for attribute a
                             contextTime.addTerm(d[c][a][v], valueCost);
@@ -193,7 +193,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             for (int a = 0; a < attributeCount; a++) {
                 for (int t = 0; t < tupleCount; t++) {
                     for (int c = 0; c < cMax; c++) {
-                        int cost = tupleCollection.getValueForAttributeAndTuple(a, t).toSpeechText().length() + tupleCollection.costForAttribute(a);
+                        int cost = tupleCollection.getValueForAttributeAndTuple(a, t).speechCost() + tupleCollection.costForAttribute(a);
                         negativeSavings.addTerm(-cost, s[c][t][a]);
                     }
                 }

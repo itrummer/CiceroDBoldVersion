@@ -74,7 +74,7 @@ public class Scope {
             for (Tuple t : tuples) {
                 for (Map.Entry<String, Value> entry : t.getValueAssignments().entrySet()) {
                     if (!context.isAttributeFixed(entry.getKey())) {
-                        cachedResult += entry.getKey() + ": " + entry.getValue().toSpeechText();
+                        cachedResult += entry.getKey() + ": " + entry.getValue().toSpeechText() + " ";
                     }
                 }
             }
