@@ -3,14 +3,34 @@ package values;
 import java.util.ArrayList;
 
 /**
- * Created by mabryan on 4/13/17.
  */
 public class CategoricalValueAssignment {
     String attribute;
-    ArrayList<CategoricalValue> values;
+    ArrayList<Value> domainValues;
 
-    public CategoricalValueAssignment(String attribute, ArrayList<CategoricalValue> values) {
+    public CategoricalValueAssignment(String attribute, ArrayList<Value> domainValues) {
         this.attribute = attribute;
-        this.values = values;
+        this.domainValues = domainValues;
+    }
+
+    public CategoricalValueAssignment(String attribute) {
+        this(attribute, new ArrayList<Value>());
+    }
+
+    public CategoricalValueAssignment(String attribute, Value firstValue) {
+        this(attribute);
+        addValueToDomain(firstValue);
+    }
+
+    public void addValueToDomain(Value value) {
+        addValueToDomain(value);
+    }
+
+    public int getDomainSize() {
+        return domainValues.size();
+    }
+
+    public String getAttribute() {
+        return attribute;
     }
 }

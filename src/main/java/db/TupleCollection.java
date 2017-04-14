@@ -1,10 +1,7 @@
 package db;
 
-import values.CategoricalValue;
-import values.NumericalValue;
 import values.Value;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

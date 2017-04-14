@@ -1,14 +1,12 @@
 package planner;
 
 import db.*;
-import db.ValueAssignment;
 import ilog.concert.*;
 import ilog.cplex.*;
 import planner.elements.Context;
 import planner.elements.Scope;
 import values.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -64,8 +62,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             addConstraintsUpperBoundWithinAllowedRange(cplex, cMax, attributeCount, l, u, attributeValueLists);
             addConstraintsCategoricalDomainSize(cplex, cMax, attributeCount, d, attributeValueLists);
             addConstraintsOnlyAllowMatchingContexts(cplex, cMax, attributeCount, l, u, d, w, f, tupleCollection, valueMatrix, attributeValueLists);
-
-            // TODO: create cost expression
 
             // minimize speaking time (proportional to number of characters)
             IloIntVar[] g = cplex.intVarArray(cMax, 0,1);
@@ -141,13 +137,13 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 for (int a = 0; a < attributeCount; a++) {
                     ArrayList<Value> valueList = attributeValueLists.get(a);
                     for (int v = 0; v < valueList.size(); v++) {
-                        ArrayList<CategoricalValue> valuesInDomain = new ArrayList<CategoricalValue>();
+                        ArrayList<Value> valuesInDomain = new ArrayList<Value>();
                         if (cplex.getValue(d[c][a][v]) == 1) {
-                            valuesInDomain.add((CategoricalValue) valueList.get(v));
+                            valuesInDomain.add(valueList.get(v));
                         }
                         if (valuesInDomain.size() > 0) {
                             Context context = scopes.get(c).getContext();
-                            context.addCategoricalValueAssignment(new CategoricalValueAssignment(tupleCollection.attributeForIndex(a), valuesInDomain));
+                            context.addCategoricalValueAssignments(tupleCollection.attributeForIndex(a), valuesInDomain);
                         }
                     }
                 }
@@ -277,7 +273,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         for (int c = 0; c < contextCount; c++) {
             for (int a = 0; a < attributeCount; a++) {
                 ArrayList<Value> valuesForAttribute = attributeValueLists.get(a);
-                if (valuesForAttribute.get(0).isNumerical()) {
+                if (!valuesForAttribute.get(0).isCategorical()) {
                     // only create lower or upper bound variables for numerical attributes
                     // if this attribute is categorical, it will be left as a 0 length array in matrix
                     matrix[c][a] = cplex.intVarArray(valuesForAttribute.size(), 0, 1);
@@ -372,7 +368,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 IloLinearNumExpr sumOfLowerMinusUpper = cplex.linearNumExpr();
                 ArrayList<Value> valuesForAttribute = attributeValueLists.get(a);
                 for (int v = 0; v < l[c][a].length; v++) {
-                    Double coefficient = ((NumericalValue) valuesForAttribute.get(v)).getLinearProgrammingCoefficient();
+                    Double coefficient = valuesForAttribute.get(v).linearProgrammingCoefficient();
                     sumOfLowerMinusUpper.addTerm(coefficient, l[c][a][v]);
                     sumOfLowerMinusUpper.addTerm(-coefficient, u[c][a][v]);
                 }
@@ -397,7 +393,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 IloLinearNumExpr sumOfMaxAllowableUpperBoundMinusUpperBound = cplex.linearNumExpr();
                 for (int v = 0; v < l[c][a].length; v++) {
                     ArrayList<Value> valuesForAttribute = attributeValueLists.get(a);
-                    Double coefficient = ((NumericalValue) valuesForAttribute.get(v)).getLinearProgrammingCoefficient();
+                    Double coefficient = valuesForAttribute.get(v).linearProgrammingCoefficient();
                     sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(MAXIMAL_NUMERICAL_DOMAIN_WIDTH, l[c][a][v]);
                     sumOfMaxAllowableUpperBoundMinusUpperBound.addTerm(-coefficient, u[c][a][v]);
                 }
@@ -462,11 +458,11 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                     }
                 } else {
                     for (int t = 0; t < valueMatrix.length; t++) {
-                        NumericalValue vT = (NumericalValue) valueMatrix[t][a];
+                        Value vT = valueMatrix[t][a];
                         int vTIndex = indexMap.get(vT);
                         for (int otherV = 0; otherV < valueList.size(); otherV++) {
                             // for each of the other distinct values
-                            NumericalValue v = (NumericalValue) valueList.get(otherV);
+                            Value v = valueList.get(otherV);
                             if (v.compareTo(vT) > 0) {
                                 // v > vT
                                 // l(c,a,v) + w(c,r) + f(c,a) <= 2

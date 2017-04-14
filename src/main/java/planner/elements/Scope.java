@@ -67,7 +67,7 @@ public class Scope {
             }
         } else {
             cachedResult = "Entries for ";
-
+            cachedResult += context.toSpeechText();
         }
 
         return cachedResult;

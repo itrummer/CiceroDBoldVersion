@@ -1,36 +1,41 @@
 package planner.elements;
 
 import db.Tuple;
-import db.ValueAssignment;
-import values.CategoricalValue;
-import values.CategoricalValueAssignment;
+import values.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A set of value assignments
  */
 public class Context {
-    ArrayList<ValueAssignment> valueAssignments;
-    ArrayList<CategoricalValueAssignment> categoricalValueAssignments;
+    HashMap<String, CategoricalValueAssignment> categoricalValueAssignments;
+    ArrayList<NumericalValueAssignment> numericalValueAssignments;
     String cachedResult;
 
     public Context() {
-        this.valueAssignments = new ArrayList<ValueAssignment>();
-        this.categoricalValueAssignments = new ArrayList<CategoricalValueAssignment>();
+        this.categoricalValueAssignments = new HashMap<String, CategoricalValueAssignment>();
+        this.numericalValueAssignments = new ArrayList<NumericalValueAssignment>();
         this.cachedResult = null;
     }
 
-    public void addValueAssignment(ValueAssignment valueAssignment) {
-        valueAssignments.add(valueAssignment);
+    public void addCategoricalValueAssignment(String attribute, Value value) {
+        if (categoricalValueAssignments.containsKey(attribute)) {
+            categoricalValueAssignments.get(attribute).addValueToDomain(value);
+        } else {
+            categoricalValueAssignments.put(attribute, new CategoricalValueAssignment(attribute, value));
+        }
     }
 
-    public void addCategoricalValueAssignment(CategoricalValueAssignment valueAssignment) {
-        categoricalValueAssignments.add(valueAssignment);
+    public void addCategoricalValueAssignments(String attribute, ArrayList<Value> valuesInDomain) {
+        for (Value v : valuesInDomain) {
+            addCategoricalValueAssignment(attribute, v);
+        }
     }
 
-    public ArrayList<ValueAssignment> getValueAssignments() {
-        return valueAssignments;
+    public void addNumericalValueAssignment(String attribute, Value lowerBound, Value upperBound) {
+        numericalValueAssignments.add(new NumericalValueAssignment(attribute, lowerBound, upperBound));
     }
 
     /**
@@ -48,15 +53,23 @@ public class Context {
             return cachedResult;
         }
 
-        cachedResult = "";
-        for (int i = 0; i < valueAssignments.size(); i++) {
-            cachedResult += valueAssignments.get(i).toSpeechText();
-            if (i < valueAssignments.size() - 1) {
-                cachedResult += ", ";
-            } else {
-                cachedResult += ": ";
-            }
-        }
+
+        cachedResult = "TODO...Context";
         return cachedResult;
+//        for (int i = 0; i < valueAssignments.size(); i++) {
+//            cachedResult += valueAssignments.get(i).toSpeechText();
+//            if (i < valueAssignments.size() - 1) {
+//                cachedResult += ", ";
+//            } else {
+//                cachedResult += ": ";
+//            }
+//        }
+//        return cachedResult;
+    }
+
+    @Override
+    public String toString() {
+        // TODO: summarize data structure
+        return super.toString();
     }
 }
