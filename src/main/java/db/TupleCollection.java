@@ -100,13 +100,6 @@ public class TupleCollection {
             } else {
                 System.out.println("FOUND DUPLICATE VALUE, SKIPPING");
             }
-
-            // add the index from distinctValues to the indexMap matrix
-            // so we can reverse lookup later to find where each tuple's
-            // value for each attribute falls in the distinct value matrix
-//            int i = distinctValues.indexOf(tValue);
-//            System.out.println("Distinct Value: " + i);
-//            indexMap.get(a).add(i);
         }
     }
 
@@ -162,6 +155,10 @@ public class TupleCollection {
      */
     public Value getValueForAttributeAndTuple(int a, int t) {
         return tuples.get(t).valueForAttribute(attributes.get(a));
+    }
+
+    public Value getDistinctValue(int a, int v) {
+        return distinctValues.get(a).get(v);
     }
 
     public int distinctValueCountForAttribute(int a) {
@@ -249,16 +246,6 @@ public class TupleCollection {
     public ArrayList<ArrayList<Value>> getDistinctValueMatrix() {
         return distinctValues;
     }
-
-    /**
-     * Returns the TupleCollection as a 2D ArrayList. matrix.get(a).get(t) returns
-     * Tuple t's value for attribute a
-     * @return
-     */
-    public ArrayList<ArrayList<Value>> getValueMatrix() {
-        return values;
-    }
-
 
     public ArrayList<HashMap<Value, Integer>> listOfIndicesForValues() {
         // need to be able to look up for a given attribute, which of the "distinct" value indices this maps to

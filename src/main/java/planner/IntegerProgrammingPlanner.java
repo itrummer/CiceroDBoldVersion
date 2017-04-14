@@ -37,6 +37,8 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
         try {
             IloCplex cplex = new IloCplex();
 
+            // INITIALIZE INTEGER PROGRAMMING VARIABLE MATRICES
+
             IloIntVar[][] w = initialize2DCPLEXMatrix(cplex, cMax, tupleCount);
             IloIntVar[][] f = initialize2DCPLEXMatrix(cplex, cMax, attributeCount);
             IloIntVar[][][] l = initializeVariable3DCPLEXMatrix(cplex, cMax, attributeCount, tupleCollection.getLengthsOfNumericalAttributes());
@@ -45,6 +47,8 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             IloIntVar[][][] e = initializeVariable3DCPLEXMatrix(cplex, cMax, attributeCount, tupleCollection.getLengthsOfNumericalAttributes());
             IloIntVar[][][] s = initializeFull3DCPLEXMatrix(cplex, cMax, tupleCount, attributeCount);
             IloIntVar[] g = cplex.intVarArray(cMax, 0,1);
+
+            // ADD CONSTRAINTS TO MODEL
 
             // each tuple can be mapped to at most one context
             for (int t = 0; t < tupleCount; t++) {
@@ -81,7 +85,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            // constrain each context to fix at most MAXIMAL_CATEGORICAL_DOMAIN_SIZE values for a categorical attribute
+            // each context can fix at most MAXIMAL_CATEGORICAL_DOMAIN_SIZE values for categorical attributes
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < attributeCount; a++) {
                     if (d[c][a].length > 0) {
@@ -90,16 +94,34 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            constrainBounds(cplex, cMax, attributeCount, l, u, tupleCollection);
+            // numerical upper bounds must be within a certain tolerance from the lower bound value
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < attributeCount; a++) {
+                    if (l[c][a].length > 0) {
+                        IloLinearNumExpr lowerBounds = cplex.linearNumExpr();
+                        IloLinearNumExpr upperBounds = cplex.linearNumExpr();
+                        for (int v = 0; v < l[c][a].length; v++) {
+                            Double coefficient = tupleCollection.getDistinctValue(a, v).linearProgrammingCoefficient();
+                            lowerBounds.addTerm(coefficient, l[c][a][v]);
+                            upperBounds.addTerm(coefficient, u[c][a][v]);
+                        }
+                        cplex.addLe(lowerBounds, upperBounds);
+                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, MAXIMAL_NUMERICAL_DOMAIN_WIDTH));
+                    }
+                }
+            }
+
+            // TODO: simplify
             addConstraintsOnlyAllowMatchingContexts(cplex, cMax, attributeCount, l, u, d, w, f, tupleCollection);
 
-            // minimize speaking time (proportional to number of characters)
+            // g[c] is 1 (i.e. context c is used) iff at least one tuple is matched to it
             for (int c = 0; c < cMax; c++) {
                 for (int t = 0; t < tupleCount; t++) {
                     cplex.addGe(g[c], w[c][t]);
                 }
             }
 
+            // e[c][a][v] is 1 iff both bounds are equal
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < attributeCount; a++) {
                     for (int v = 0; v < e[c][a].length; v++) {
@@ -109,10 +131,9 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            IloLinearIntExpr contextOverhead = cplex.linearIntExpr();
-            for (int c = 0; c < cMax; c++) {
-                contextOverhead.addTerm("Entries for  are:".length(), g[c]);
-            }
+            // ADD COST OBJECTIVE TO MODEL
+
+            IloIntExpr contextOverhead = cplex.prod("Entries for  are: ".length(), cplex.sum(g));
 
             IloLinearIntExpr contextTime = cplex.linearIntExpr();
             for (int c = 0; c < cMax; c++) {
@@ -149,6 +170,8 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             // minimize the objective function
             cplex.addMinimize(cplex.sum(contextOverhead, contextTime, negativeSavings));
             cplex.solve();
+
+            // EXTRACT SOLUTION AS A VoiceOutputPlan
 
             // 1. see which contexts are used, create an empty context for each used "slot" and
             //    add it by its slot number to the scopes map, as each context is assigned to one scope
@@ -246,36 +269,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             }
         }
         return m;
-    }
-
-    /**
-     * Adds constraint that the lower bounds must be less than the upper bounds
-     *
-     * @param cplex The CPLEX model to which constraints will be added
-     * @param l The 3D matrix of lower bound integer programming variables. lowerBoundVars[c][a][v] contains
-     *                       lower bound variable for the context c, attribute a, and value v combination
-     * @param u The 3D matrix of upper bound integer programming variables. upperBoundVars[c][a][v] contains
-     *                       upper bound variable for the context c, attribute a, and value v combination
-     * @throws IloException
-     */
-    private void constrainBounds(IloCplex cplex, int contextCount, int attributeCount, IloIntVar[][][] l,
-                                 IloIntVar[][][] u, TupleCollection tupleCollection) throws IloException {
-        for (int c = 0; c < contextCount; c++) {
-            for (int a = 0; a < attributeCount; a++) {
-                if (l[c][a].length > 0) {
-                    IloLinearNumExpr lowerBound = cplex.linearNumExpr();
-                    IloLinearNumExpr upperBound = cplex.linearNumExpr();
-                    ArrayList<Value> valuesForAttribute = tupleCollection.distinctValuesForAttribute(a);
-                    for (int v = 0; v < l[c][a].length; v++) {
-                        Double coefficient = valuesForAttribute.get(v).linearProgrammingCoefficient();
-                        lowerBound.addTerm(coefficient, l[c][a][v]);
-                        upperBound.addTerm(coefficient, u[c][a][v]);
-                    }
-                    cplex.addLe(lowerBound, upperBound);
-                    cplex.addLe(upperBound, cplex.prod(lowerBound, MAXIMAL_NUMERICAL_DOMAIN_WIDTH));
-                }
-            }
-        }
     }
 
     /**
