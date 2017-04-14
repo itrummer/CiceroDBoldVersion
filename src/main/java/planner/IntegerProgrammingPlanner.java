@@ -60,18 +60,27 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
                 cplex.addLe(cplex.sum(f[c]), MAXIMAL_CONTEXT_SIZE);
             }
 
-            // constraint for saving time
+            // We save time only if t is output in context c and if context c fixes the value for attribute a
             for (int c = 0; c < cMax; c++) {
                 for (int t = 0; t < tupleCount; t++) {
                     s[c][t] = cplex.intVarArray(attributeCount, 0, 1);
                     for (int a = 0; a < attributeCount; a++) {
-                        cplex.addLe(s[c][t][a], w[c][t]); // t is output in context c in the first place
-                        cplex.addLe(s[c][t][a], f[c][a]); // context c fixes the value for attribute a
+                        cplex.addLe(s[c][t][a], w[c][t]);
+                        cplex.addLe(s[c][t][a], f[c][a]);
                     }
                 }
             }
 
-            addContraintsContextsMustAddLowerAndUpperBound(cplex, cMax, attributeCount, l, u, f);
+            // Context c must assign a lower and upper bound if it fixes a domain for attribute a
+            for (int c = 0; c < cMax; c++) {
+                for (int a = 0; a < attributeCount; a++) {
+                    if (l[c][a].length > 0) {
+                        cplex.addEq(cplex.sum(l[c][a]), f[c][a]);
+                        cplex.addEq(cplex.sum(u[c][a]), f[c][a]);
+                    }
+                }
+            }
+
             constrainBounds(cplex, cMax, attributeCount, l, u, tupleCollection);
             addConstraintsCategoricalDomainSize(cplex, cMax, attributeCount, d, attributeValueLists);
             addConstraintsOnlyAllowMatchingContexts(cplex, cMax, attributeCount, l, u, d, w, f, tupleCollection);
@@ -229,48 +238,6 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
             }
         }
         return m;
-    }
-
-    /**
-     * Adds constraints to the CPLEX instance such that a context can only assign a lower bound to an attribute
-     * if and only if it applies an upper bound. We create this constraint by specifying that the total number of
-     * lower or upper bounds must be equal to the number of assignments a context has in numerical attributes.
-     * Equivalently, we specify that the total number of lower or upper bound assignments minus the number of
-     * domain assignments for a context must be 0.
-     *
-     * @param cplex The CPLEX model to which constraints will be added
-     * @param lowerBoundVars The 3D matrix of lower bound integer programming variables. lowerBoundVars[c][a][v] contains
-     *                       lower bound variable for the context c, attribute a, and value v combination
-     * @param upperBoundVars The 3D matrix of upper bound integer programming variables. upperBoundVars[c][a][v] contains
-     *                       upper bound variable for the context c, attribute a, and value v combination
-     * @param contextAttributeAssignments The 2D matrix containing variables that represent whether context c assigns a value
-     *                                    domain for an attribute a
-     */
-    private void addContraintsContextsMustAddLowerAndUpperBound(IloCplex cplex,
-                                                                int contextCount,
-                                                                int attributeCount,
-                                                                IloIntVar[][][] lowerBoundVars,
-                                                                IloIntVar[][][] upperBoundVars,
-                                                                IloIntVar[][] contextAttributeAssignments) throws IloException {
-        for (int c = 0; c < contextCount; c++) {
-            for (int a = 0; a < attributeCount; a++) {
-                if (lowerBoundVars[c][a].length == 0) {
-                    // this means that a is not a numerical attribute, thus we
-                    // do not need to create this constraint expression for a
-                    continue;
-                }
-                IloLinearIntExpr sumOfLowerBoundAssignments = cplex.linearIntExpr();
-                IloLinearIntExpr sumOfUpperBoundAssignments = cplex.linearIntExpr();
-                for (int v = 0; v < lowerBoundVars[c][a].length; v++) {
-                    sumOfLowerBoundAssignments.addTerm(1, lowerBoundVars[c][a][v]);
-                    sumOfUpperBoundAssignments.addTerm(1, upperBoundVars[c][a][v]);
-                }
-                sumOfLowerBoundAssignments.addTerm(-1, contextAttributeAssignments[c][a]);
-                sumOfUpperBoundAssignments.addTerm(-1, contextAttributeAssignments[c][a]);
-                cplex.addEq(sumOfLowerBoundAssignments, 0);
-                cplex.addEq(sumOfUpperBoundAssignments, 0);
-            }
-        }
     }
 
     /**
