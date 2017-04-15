@@ -51,12 +51,11 @@ public class CommandLineUtility
             try {
                 TupleCollection results = DatabaseUtilities.executeQuery(input);
                 if (results != null) {
-                    VoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
                     VoiceOutputPlan outputPlan = planner.plan(results);
                     if (outputPlan != null) {
                         String speechText = outputPlan.toSpeechText();
                         System.out.println(speechText);
-                        // voiceGenerator.generateSpeech(speechText);
+                        voiceGenerator.generateSpeech(speechText);
                     } else {
                         System.err.println("Output plan was null");
                     }

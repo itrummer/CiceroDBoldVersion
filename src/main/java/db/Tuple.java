@@ -50,8 +50,6 @@ public class Tuple implements Speakable {
             count ++;
             if (count != valueAssignments.keySet().size()) {
                 result += ", ";
-            } else {
-                result += ".";
             }
         }
         return result;

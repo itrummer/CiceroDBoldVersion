@@ -9,6 +9,7 @@ public class Value implements Speakable, Comparable<Value> {
     public enum ValueType {
         INTEGER,
         DOUBLE,
+        FLOAT,
         STRING
     }
 
@@ -23,6 +24,11 @@ public class Value implements Speakable, Comparable<Value> {
     public Value(Double d) {
         this.value = d;
         this.type= ValueType.DOUBLE;
+    }
+
+    public Value(Float f) {
+        this.value = f;
+        this.type = ValueType.FLOAT;
     }
 
     public Value(String s) {
@@ -77,6 +83,8 @@ public class Value implements Speakable, Comparable<Value> {
             return new Value((Integer) value);
         } else if (value instanceof Double) {
             return new Value((Double) value);
+        } else if (value instanceof Float) {
+            return new Value((Float) value);
         }
         return null;
     }
@@ -99,6 +107,9 @@ public class Value implements Speakable, Comparable<Value> {
             case DOUBLE:
                 expandedValue = EnglishNumberToWords.convert(((Double) value).longValue());
                 break;
+            case FLOAT:
+                expandedValue = EnglishNumberToWords.convert(((Float) value).longValue());
+                break;
             case STRING:
                 expandedValue = (String) value;
                 break;
@@ -119,6 +130,8 @@ public class Value implements Speakable, Comparable<Value> {
             case INTEGER:
                 coefficient = ((Integer) value).doubleValue();
                 break;
+            case FLOAT:
+                coefficient = ((Float) value).doubleValue();
         }
         return coefficient;
     }

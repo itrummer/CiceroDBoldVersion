@@ -11,6 +11,9 @@ import java.util.Map;
  * A Scope represents an optional context with a set tuples that match the context
  */
 public class Scope {
+    public static final String PRECONTEXT_PHRASE = "Entries for ";
+    public static final String POSTCONTEXT_PHRASE = " are: ";
+
     public Context context;
     public ArrayList<Tuple> tuples;
     String cachedResult;
@@ -64,20 +67,23 @@ public class Scope {
 
         cachedResult = "";
         if (context == null) {
-            for (Tuple tuple : tuples) {
-                cachedResult += tuple.toSpeechText() + "\n";
+            for (int i = 0; i < tuples.size(); i++) {
+                Tuple t = tuples.get(i);
+                cachedResult += t.toSpeechText();
+                if (i != tuples.size()-1) {
+                    cachedResult += ", ";
+                }
             }
         } else {
-            cachedResult = "Entries for ";
-            cachedResult += context.toSpeechText();
-            cachedResult += ": ";
+            cachedResult += PRECONTEXT_PHRASE + context.toSpeechText() + POSTCONTEXT_PHRASE;
             for (Tuple t : tuples) {
                 for (Map.Entry<String, Value> entry : t.getValueAssignments().entrySet()) {
                     if (!context.isAttributeFixed(entry.getKey())) {
-                        cachedResult += entry.getKey() + ": " + entry.getValue().toSpeechText() + " ";
+                        cachedResult += entry.getKey() + ": " + entry.getValue().toSpeechText() + ", ";
                     }
                 }
             }
+            cachedResult = cachedResult.substring(0, cachedResult.length() - 2);
         }
 
         return cachedResult;

@@ -65,9 +65,10 @@ public class Context {
             cachedResult += parsed.get(0) + " and " + parsed.get(1);
         } else if (parsed.size() > 2) {
             cachedResult += parsed.get(0);
-            for (int i = 1; i < parsed.size(); i++) {
+            for (int i = 1; i < parsed.size() - 1; i++) {
                 cachedResult += ", " + parsed.get(i);
             }
+            cachedResult += parsed.get(parsed.size()-1);
         }
         return cachedResult;
     }
