@@ -1,7 +1,6 @@
 package planner.elements;
 
 import db.Tuple;
-import planner.elements.Context;
 import values.Value;
 
 import java.util.ArrayList;
@@ -11,11 +10,11 @@ import java.util.Map;
  * A Scope represents an optional context with a set tuples that match the context
  */
 public class Scope {
-    public static final String PRECONTEXT_PHRASE = "Entries for ";
-    public static final String POSTCONTEXT_PHRASE = " are: ";
+    static final String PRECONTEXT_PHRASE = "Entries for ";
+    static final String POSTCONTEXT_PHRASE = " are: ";
 
-    public Context context;
-    public ArrayList<Tuple> tuples;
+    Context context;
+    ArrayList<Tuple> tuples;
     String cachedResult;
 
     /**
@@ -36,23 +35,42 @@ public class Scope {
         this(null, tuples);
     }
 
+    /**
+     * Constructor for a Scope with one Context
+     * @param context
+     */
     public Scope(Context context) {
         this(context, new ArrayList<Tuple>());
     }
 
     /**
-     * Constructor for a scope without a context
+     * Constructor for a scope with an empty context
      */
     public Scope() {
         this(new ArrayList<Tuple>());
     }
 
+    /**
+     * Adds Tuple t to this Scope as a Tuple that matches this Scope's Contexts
+     * @param t A matching Tuple
+     */
     public void addMatchingTuple(Tuple t) {
         tuples.add(t);
     }
 
+    /**
+     * Returns this Scope's Context. May be null
+     */
     public Context getContext() {
         return context;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static int contextOverheadCost() {
+        return PRECONTEXT_PHRASE.length() + POSTCONTEXT_PHRASE.length();
     }
 
     /**

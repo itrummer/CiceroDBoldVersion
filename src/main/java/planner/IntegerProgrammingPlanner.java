@@ -1,11 +1,11 @@
 package planner;
 
-import db.*;
+import db.TupleCollection;
 import ilog.concert.*;
 import ilog.cplex.*;
 import planner.elements.Context;
 import planner.elements.Scope;
-import values.*;
+import values.Value;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -166,7 +166,7 @@ public class IntegerProgrammingPlanner extends VoicePlanner {
 
             // ADD COST OBJECTIVE TO MODEL
 
-            IloIntExpr contextOverhead = cplex.prod("Entries for  are: ".length(), cplex.sum(g));
+            IloIntExpr contextOverhead = cplex.prod(Scope.contextOverheadCost(), cplex.sum(g));
 
             IloLinearIntExpr contextTime = cplex.linearIntExpr();
             for (int c = 0; c < cMax; c++) {

@@ -81,14 +81,33 @@ public class TupleCollection {
         }
     }
 
+    /**
+     * Returns true if the values for the attribute at index a are Categorical Values
+     * @param a The index of an attribute
+     * @return True is Values for attribute a are numerical
+     */
     public boolean attributeIsCategorical(int a) {
         return values.get(a).get(0).isCategorical();
     }
 
+    /**
+     * Returns true if the values for the attribute at index a are Numerical Values
+     * @param a The index of an attribute
+     * @return True is Values for attribute a are numerical
+     */
     public boolean attributeIsNumerical(int a) {
         return !attributeIsCategorical(a);
     }
 
+    /**
+     * Calculates which index in the distinct value matrix corresponds to Tuple t's Value for
+     * attribute a. This is used in the Linear Programming model, since we must create variables
+     * that correspond to distinct Values and match them to Contexts. This method will then
+     * help determine which distinct value, and thus which Contexts, this Tuple is mapped to.
+     * @param a The attribute index
+     * @param t The Tuple index
+     * @return The index of the distinct Value for attribute a
+     */
     public int getIndexOfDistinctValue(int a, int t) {
         Value v = getValueForAttributeAndTuple(a, t);
         ArrayList<Value> values = distinctValues.get(a);
@@ -100,6 +119,11 @@ public class TupleCollection {
         return -1;
     }
 
+    /**
+     * Returns an int array containing the number of distinct Categorical values for each attribute. If
+     * a given attribute a is not Categorical, then the value for entry int[a] is 0.
+     * @return An int array of size attributeCount()
+     */
     public int[] getLengthsOfCategoricalAttributes() {
         int[] lengths = new int[attributeCount()];
         for (int a = 0; a < attributeCount(); a++) {
@@ -112,6 +136,11 @@ public class TupleCollection {
         return lengths;
     }
 
+    /**
+     * Returns an int array containing the number of distinct Numerical values for each attribute. If
+     * a given attribute a is not Numerical, then the value for entry int[a] is 0.
+     * @return An int array of size attributeCount()
+     */
     public int[] getLengthsOfNumericalAttributes() {
         int[] lengths = new int[attributeCount()];
         for (int a = 0; a < attributeCount(); a++) {
@@ -134,10 +163,21 @@ public class TupleCollection {
         return tuples.get(t).valueForAttribute(attributes.get(a));
     }
 
+    /**
+     * Returns the v'th distinct Value for attribute a
+     * @param a The index of the attribute
+     * @param v The index of the distinct Value
+     * @return A Value object
+     */
     public Value getDistinctValue(int a, int v) {
         return distinctValues.get(a).get(v);
     }
 
+    /**
+     * Returns the number of distinct Values in attribute a for this TupleCollection
+     * @param a An attribute index
+     * @return The distinct Value count for attribute a
+     */
     public int distinctValueCountForAttribute(int a) {
         return distinctValues.get(a).size();
     }
@@ -178,21 +218,25 @@ public class TupleCollection {
         return null;
     }
 
+    /**
+     * Calculates the cost of an attribute. This is the number of characters in the attribute name.
+     * @param a The index of the attribute
+     * @return The cost of the attribute at index a
+     */
     public int costForAttribute(int a) {
         return attributes.get(a).length();
     }
 
     @Override
     public String toString() {
-        if (tuples.isEmpty()) {
-            return "empty";
+        if (tupleCount() == 0) {
+            return "TupleCollection: empty";
         }
 
         String result = "";
         for (Tuple tuple : tuples) {
-            result += tuple.toString() + ".\n";
+            result += tuple.toString() + ", ";
         }
-
-        return result;
+        return result.substring(result.length()-2);
     }
 }
