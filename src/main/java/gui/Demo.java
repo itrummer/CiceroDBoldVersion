@@ -15,6 +15,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import planner.IntegerProgrammingPlanner;
 import planner.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
@@ -23,7 +24,8 @@ import java.sql.SQLException;
 
 
 public class Demo extends Application {
-    VoicePlanner planner;
+    VoicePlanner naivePlanner;
+    VoicePlanner linearProgrammingPlanner;
 
     public static void main(String[] args) {
         launch(args);
@@ -31,7 +33,7 @@ public class Demo extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("JavaFX Welcome");
+        primaryStage.setTitle("CiceroDB Demo");
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -39,13 +41,14 @@ public class Demo extends Application {
         grid.setPadding(new Insets(25, 25, 25, 25));
 
         Text scenetitle = new Text("CiceroDB Demo");
-        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        scenetitle.setStyle("-fx-font-family: Roboto, sans-serif; -fx-font-size: 40");
         grid.add(scenetitle, 0, 0);
 
-        Label queryLabel = new Label("Enter query:");
+        Label queryLabel = new Label("Query:");
         grid.add(queryLabel, 0, 1);
 
         final TextField queryInput = new TextField();
+        queryInput.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 24;");
         grid.add(queryInput, 0, 2);
 
         Button button = new Button("Run Query");
@@ -54,37 +57,72 @@ public class Demo extends Application {
         hbBtn.getChildren().add(button);
         grid.add(hbBtn, 0, 3);
 
-        final TextArea output = new TextArea();
-        output.setFont(Font.font("Avenir Next", 12));
-        output.setEditable(false);
-        output.setWrapText(true);
-        grid.add(output, 0, 4);
+        Label naiveLabel = new Label("Naive Plan");
+        grid.add(naiveLabel, 0, 4);
 
+        final TextArea naiveOutput = new TextArea();
+        naiveOutput.setEditable(false);
+        naiveOutput.setWrapText(true);
+        grid.add(naiveOutput, 0, 5);
 
-        planner = new NaiveVoicePlanner();
+        final Label naiveCostLabel = new Label("Cost: ");
+        grid.add(naiveCostLabel, 0, 6);
+
+        final Label linearOutputLabel = new Label("Linear Programming Plan");
+        grid.add(linearOutputLabel, 0, 7);
+
+        final TextArea cplexOutput = new TextArea();
+        cplexOutput.setEditable(false);
+        cplexOutput.setWrapText(true);
+        grid.add(cplexOutput, 0, 8);
+
+        final Label cplexCostLabel = new Label("Cost: ");
+        grid.add(cplexCostLabel, 0, 9);
+
+        naivePlanner = new NaiveVoicePlanner();
+        linearProgrammingPlanner = new IntegerProgrammingPlanner();
 
         button.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
+                TupleCollection results;
                 try {
-                    TupleCollection results = DatabaseUtilities.executeQuery(queryInput.getText());
-                    if (results != null) {
-                        VoiceOutputPlan outputPlan = planner.plan(results);
-                        if (outputPlan != null) {
-                            String speechText = outputPlan.toSpeechText();
-                            output.setText(speechText);
-                        } else {
-                            output.setText("Error: output plan was null");
-                        }
-                    }
+                    results = DatabaseUtilities.executeQuery(queryInput.getText());
                 } catch (SQLException e) {
-                    output.setText(e.getMessage());
+                    naiveOutput.setText(e.getMessage());
+                    return;
+                }
+
+                if (results == null) {
+                    naiveOutput.setText("Error: result was null");
+                    return;
+                }
+
+                VoiceOutputPlan naivePlan = naivePlanner.plan(results);
+                if (naivePlan != null) {
+                    String speechText = naivePlan.toSpeechText();
+                    naiveOutput.setText(speechText);
+                    naiveCostLabel.setText("Cost: " + speechText.length());
+                } else {
+                    naiveOutput.setText("Error: output plan was null");
+                }
+
+                VoiceOutputPlan lpPlan = linearProgrammingPlanner.plan(results);
+                if (lpPlan != null) {
+                    String speechText = lpPlan.toSpeechText();
+                    cplexOutput.setText(speechText);
+                    cplexCostLabel.setText("Cost: " + speechText.length());
+                } else {
+                    cplexOutput.setText("Error");
                 }
 
             }
         });
 
-        Scene scene = new Scene(grid, 700, 400);
+        Scene scene = new Scene(grid, 900, 800);
+        scene.getStylesheets().add("https://fonts.googleapis.com/css?family=Inconsolata\n");
+        scene.getStylesheets().add("https://fonts.googleapis.com/css?family=Roboto\n");
         primaryStage.setScene(scene);
+        primaryStage.sizeToScene();
         primaryStage.show();
     }
 }
