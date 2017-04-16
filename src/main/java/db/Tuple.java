@@ -11,20 +11,15 @@ public class Tuple implements Speakable {
     HashMap<String, Value> valueAssignments;
 
     /**
-     * Constructor of a Tuple from an ArrayList of ValueAssignments
-     * @param valueAssignments
-     */
-    public Tuple(HashMap<String, Value> valueAssignments) {
-        this.valueAssignments = valueAssignments;
-    }
-
-    /**
-     * Constructor for a Tuple without ValueAssignments
+     * Constructor for a Tuple
      */
     public Tuple() {
         this.valueAssignments = new HashMap<String, Value>();
     }
 
+    /**
+     * Returns this Tuples value assignments. A value assignment is a mapping from a String attribute to a Value
+     */
     public HashMap<String, Value> getValueAssignments() {
         return valueAssignments;
     }
@@ -38,6 +33,9 @@ public class Tuple implements Speakable {
         valueAssignments.put(column, value);
     }
 
+    /**
+     * Retrieves the value for the specified attribute
+     */
     public Value valueForAttribute(String attribute) {
         return valueAssignments.get(attribute);
     }
