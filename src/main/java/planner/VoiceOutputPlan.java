@@ -23,6 +23,10 @@ public class VoiceOutputPlan implements Speakable {
         scopes.add(scope);
     }
 
+    public ArrayList<Scope> getScopes() {
+        return scopes;
+    }
+
     /**
      * Formats this VoiceOutputPlan to speech text suitable for a VoiceGenerator
      * @return The String representation of the speech output for this plan
