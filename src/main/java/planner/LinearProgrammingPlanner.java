@@ -14,7 +14,7 @@ import java.util.HashMap;
  * This class constructs VoiceOutputPlans according to the integer programming model. It specifically uses the CPLEX
  * integer programming solver to plan
  */
-public class IntegerProgrammingPlanner extends VoicePlanner {
+public class LinearProgrammingPlanner extends VoicePlanner {
     private static int MAXIMAL_CONTEXT_SIZE = 3;
     private static int MAXIMAL_NUMERICAL_DOMAIN_WIDTH = 2;
     private static int MAXIMAL_CATEGORICAL_DOMAIN_SIZE = 2;

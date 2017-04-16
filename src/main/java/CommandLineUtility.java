@@ -1,6 +1,6 @@
 import db.DatabaseUtilities;
 import db.TupleCollection;
-import planner.IntegerProgrammingPlanner;
+import planner.LinearProgrammingPlanner;
 import planner.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
@@ -43,7 +43,7 @@ public class CommandLineUtility
                 System.out.println("Set VoicePlanner to Naive");
                 continue;
             } else if (input.startsWith("lp")) {
-                planner = new IntegerProgrammingPlanner();
+                planner = new LinearProgrammingPlanner();
                 System.out.println("Set VoicePlanner to LinearProgramming");
                 continue;
             }

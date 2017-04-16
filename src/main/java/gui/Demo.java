@@ -11,11 +11,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import planner.IntegerProgrammingPlanner;
+import planner.LinearProgrammingPlanner;
 import planner.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
@@ -80,7 +78,7 @@ public class Demo extends Application {
         grid.add(cplexCostLabel, 0, 9);
 
         naivePlanner = new NaiveVoicePlanner();
-        linearProgrammingPlanner = new IntegerProgrammingPlanner();
+        linearProgrammingPlanner = new LinearProgrammingPlanner();
 
         button.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
