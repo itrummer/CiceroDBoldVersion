@@ -1,11 +1,8 @@
 package planner;
 
-import planner.elements.TupleCollection;
+import planner.elements.*;
 import ilog.concert.*;
 import ilog.cplex.*;
-import planner.elements.Context;
-import planner.elements.Scope;
-import planner.elements.Value;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,9 +12,13 @@ import java.util.HashMap;
  * integer programming solver to plan
  */
 public class LinearProgrammingPlanner extends VoicePlanner {
-    private static int MAXIMAL_CONTEXT_SIZE = 3;
+    private int maximalContextSize;
     private static int MAXIMAL_NUMERICAL_DOMAIN_WIDTH = 2;
     private static int MAXIMAL_CATEGORICAL_DOMAIN_SIZE = 2;
+
+    public LinearProgrammingPlanner(int mC) {
+        this.maximalContextSize = mC;
+    }
 
     /**
      * Constructs a VoiceOutputPlan using the CPLEX integer programming solver.
@@ -61,9 +62,9 @@ public class LinearProgrammingPlanner extends VoicePlanner {
                 cplex.addLe(sumOfMappingsForTuple, 1);
             }
 
-            // each context can fix domains for at most MAXIMAL_CONTEXT_SIZE attributes
+            // each context can fix domains for at most maximalContextSize attributes
             for (int c = 0; c < f.length; c++) {
-                cplex.addLe(cplex.sum(f[c]), MAXIMAL_CONTEXT_SIZE);
+                cplex.addLe(cplex.sum(f[c]), maximalContextSize);
             }
 
             // we save time only if t is output in context c and if context c fixes the value for attribute a
@@ -193,7 +194,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
             for (int a = 0; a < attributeCount; a++) {
                 for (int t = 0; t < tupleCount; t++) {
                     for (int c = 0; c < cMax; c++) {
-                        int cost = tupleCollection.getValueForAttributeAndTuple(a, t).speechCost() + tupleCollection.costForAttribute(a);
+                        int cost = tupleCollection.getValueForAttributeAndTuple(a, t).speechCost() + " ".length() + tupleCollection.costForAttribute(a);
                         negativeSavings.addTerm(-cost, s[c][t][a]);
                     }
                 }
@@ -270,7 +271,9 @@ public class LinearProgrammingPlanner extends VoicePlanner {
             }
 
             // add the empty context scope at the end
-            scopeList.add(emptyContextScope);
+            if (emptyContextScope.numberTuples() > 0) {
+                scopeList.add(emptyContextScope);
+            }
 
             // 5. add all scopes to a VoiceOutputPlan
             return new VoiceOutputPlan(scopeList);

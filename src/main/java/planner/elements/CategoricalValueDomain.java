@@ -31,16 +31,16 @@ public class CategoricalValueDomain implements Speakable {
     public String toSpeechText() {
         if (domainValues.size() == 1) {
             // example: "category Italian"
-            return attribute + " " + domainValues.get(0).toSpeechText();
+            return domainValues.get(0).toSpeechText() + " " + attribute;
         }
 
         // example: "category Italian or American"
         if (domainValues.size() == 2) {
-            return attribute + " " + domainValues.get(0).toSpeechText() + " or " + domainValues.get(1).toSpeechText();
+            return domainValues.get(0).toSpeechText() + " or " + domainValues.get(1).toSpeechText() + " " + attribute;
         }
 
         // example: "category Italian, American, or Pub Food"
-        String result = attribute + " " + domainValues.get(0).toSpeechText();
+        String result = domainValues.get(0).toSpeechText() + " " + attribute;
         for (int i = 1; i < domainValues.size(); i++) {
             result += ", " + domainValues.get(i).toSpeechText();
         }

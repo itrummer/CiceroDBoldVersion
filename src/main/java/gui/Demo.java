@@ -47,6 +47,16 @@ public class Demo extends Application {
         scenetitle.setStyle("-fx-font-family: Roboto, sans-serif; -fx-font-size: 40");
         grid.add(scenetitle, 0, 0);
 
+        // CONFIG OPTIONS
+
+        final ChoiceBox contextSizeOptions = new ChoiceBox();
+        contextSizeOptions.getItems().addAll(1, 2, 3, 4);
+        Label contextSizeLabel = new Label("Maximum Context Size:");
+        grid.add(contextSizeLabel, 0, 1);
+        grid.add(contextSizeOptions, 1, 1);
+
+
+
         Label queryLabel = new Label("Query:");
         grid.add(queryLabel, 0, 1);
 
@@ -156,7 +166,7 @@ public class Demo extends Application {
 
                 // run the linear planning in a background thread
 
-                final PlanningTask linearTask = new PlanningTask(results, new LinearProgrammingPlanner());
+                final PlanningTask linearTask = new PlanningTask(results, new LinearProgrammingPlanner((Integer) contextSizeOptions.getValue()));
                 linearTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
                         VoiceOutputPlan plan = linearTask.getValue();

@@ -200,10 +200,11 @@ public class TupleCollection {
                 attributes.add(metaData.getColumnName(i));
             }
 
+
             TupleCollection tupleCollection = new TupleCollection(attributes);
 
             while (resultSet.next()) {
-                Tuple tuple = new Tuple();
+                Tuple tuple = new Tuple(attributes);
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
                     tuple.addValueAssignment(metaData.getColumnName(i), Value.createValueObject(resultSet.getObject(i)));
                 }

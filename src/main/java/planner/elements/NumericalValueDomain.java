@@ -17,9 +17,9 @@ public class NumericalValueDomain implements Speakable {
 
     public String toSpeechText() {
         if (lowerBound.equals(upperBound)) {
-            return attribute + " " + lowerBound.toSpeechText() + " ";
+            return lowerBound.toSpeechText() + " " + attribute + " ";
         } else {
-            return attribute + " between " + lowerBound.toSpeechText() + " and " + upperBound.toSpeechText();
+            return "between " + lowerBound.toSpeechText() + " and " + upperBound.toSpeechText() + " " + attribute;
         }
     }
 }

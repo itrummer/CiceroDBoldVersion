@@ -1,19 +1,23 @@
 package planner.elements;
 
 import planner.Speakable;
-import planner.elements.Value;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Represents a tuple in a database table
  */
 public class Tuple implements Speakable {
+    ArrayList<String> attributes;
     HashMap<String, Value> valueAssignments;
+    String primaryKey;
 
     /**
      * Constructor for a Tuple
      */
-    public Tuple() {
+    public Tuple(ArrayList<String> attributes) {
+        this.attributes = attributes;
         this.valueAssignments = new HashMap<String, Value>();
     }
 
@@ -33,6 +37,14 @@ public class Tuple implements Speakable {
         valueAssignments.put(column, value);
     }
 
+    public void setPrimaryKey(String s) {
+        primaryKey = s;
+    }
+
+    public ArrayList<String> getAttributes() {
+        return attributes;
+    }
+
     /**
      * Retrieves the value for the specified attribute
      */
@@ -43,8 +55,8 @@ public class Tuple implements Speakable {
     public String toSpeechText() {
         String result = "";
         int count = 0;
-        for (String column : valueAssignments.keySet()) {
-            result += column + " : " + valueAssignments.get(column).toSpeechText();
+        for (String column : attributes) {
+            result += column + " " + valueAssignments.get(column).toSpeechText();
             count ++;
             if (count != valueAssignments.keySet().size()) {
                 result += ", ";

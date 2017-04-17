@@ -39,8 +39,15 @@ public class VoiceOutputPlan implements Speakable {
         StringBuilder builder = new StringBuilder("");
 
         for (Scope scope : scopes) {
-            builder.append(scope.toSpeechText());
-            builder.append("\n");
+            if (scope.getContext() == null) {
+                builder.append(scope.toSpeechText() + "\n");
+            }
+        }
+
+        for (Scope scope : scopes) {
+            if (scope.getContext() != null) {
+                builder.append(scope.toSpeechText() + "\n");
+            }
         }
 
         return builder.toString();

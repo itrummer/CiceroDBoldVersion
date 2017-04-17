@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Scope {
     static final String PRECONTEXT_PHRASE = "Entries for ";
-    static final String POSTCONTEXT_PHRASE = " are: ";
+    static final String POSTCONTEXT_PHRASE = ": ";
 
     Context context;
     ArrayList<Tuple> tuples;
@@ -81,26 +81,33 @@ public class Scope {
         }
 
         cachedResult = "";
-        if (context == null) {
-            for (int i = 0; i < tuples.size(); i++) {
-                Tuple t = tuples.get(i);
-                cachedResult += t.toSpeechText();
-                if (i != tuples.size()-1) {
-                    cachedResult += ", ";
-                }
+
+        cachedResult += context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText() + POSTCONTEXT_PHRASE;
+
+        for (int i = 0; i < tuples.size(); i++) {
+            Tuple t = tuples.get(i);
+            if (tuples.size() > 1 && i == tuples.size()-1) {
+                cachedResult += "and ";
             }
-        } else {
-            cachedResult += PRECONTEXT_PHRASE + context.toSpeechText() + POSTCONTEXT_PHRASE;
-            for (Tuple t : tuples) {
-                for (Map.Entry<String, Value> entry : t.getValueAssignments().entrySet()) {
-                    if (!context.isAttributeFixed(entry.getKey())) {
-                        cachedResult += entry.getKey() + ": " + entry.getValue().toSpeechText() + ", ";
+            boolean firstAttribute = true;
+            for (String attribute : t.getAttributes()) {
+                if (context == null || !context.isAttributeFixed(attribute)) {
+                    Value v = t.valueForAttribute(attribute);
+                    if (firstAttribute) {
+                        cachedResult += attribute + " " + v.toSpeechText();
+                    } else {
+                        cachedResult += ", " + v.toSpeechText() + " " + attribute;
                     }
+                    firstAttribute = false;
                 }
             }
-            cachedResult = cachedResult.substring(0, cachedResult.length() - 2);
+            cachedResult += i == tuples.size()-1 ? "." : ", ";
         }
 
         return cachedResult;
+    }
+
+    public int numberTuples() {
+        return tuples.size();
     }
 }
