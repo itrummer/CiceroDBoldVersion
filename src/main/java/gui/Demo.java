@@ -17,6 +17,8 @@ import planner.LinearProgrammingPlanner;
 import planner.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
+import voice.VoiceGenerator;
+import voice.WatsonVoiceGenerator;
 
 import java.sql.SQLException;
 
@@ -24,6 +26,7 @@ import java.sql.SQLException;
 public class Demo extends Application {
     VoicePlanner naivePlanner;
     VoicePlanner linearProgrammingPlanner;
+    VoiceGenerator voiceGenerator;
 
     public static void main(String[] args) {
         launch(args);
@@ -31,6 +34,10 @@ public class Demo extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        naivePlanner = new NaiveVoicePlanner();
+        linearProgrammingPlanner = new LinearProgrammingPlanner();
+        voiceGenerator = new WatsonVoiceGenerator();
+
         primaryStage.setTitle("CiceroDB Demo");
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -63,6 +70,22 @@ public class Demo extends Application {
         naiveOutput.setWrapText(true);
         grid.add(naiveOutput, 0, 5);
 
+        final Button playNaiveButton = new Button("Play");
+        grid.add(playNaiveButton, 1, 5);
+        playNaiveButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                voiceGenerator.generateSpeech(naiveOutput.getText());
+            }
+        });
+
+        final Button stopNaiveButton = new Button("Stop");
+        grid.add(stopNaiveButton, 2, 5);
+        stopNaiveButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                voiceGenerator.stopSpeech();
+            }
+        });
+
         final Label naiveCostLabel = new Label("Cost: ");
         grid.add(naiveCostLabel, 0, 6);
 
@@ -74,11 +97,24 @@ public class Demo extends Application {
         cplexOutput.setWrapText(true);
         grid.add(cplexOutput, 0, 8);
 
+        final Button playCplexButton = new Button("Play");
+        grid.add(playCplexButton, 1, 8);
+        playCplexButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                voiceGenerator.generateSpeech(cplexOutput.getText());
+            }
+        });
+
+        final Button stopCplexButton = new Button("Stop");
+        grid.add(stopCplexButton, 2, 8);
+        stopCplexButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                voiceGenerator.stopSpeech();
+            }
+        });
+
         final Label cplexCostLabel = new Label("Cost: ");
         grid.add(cplexCostLabel, 0, 9);
-
-        naivePlanner = new NaiveVoicePlanner();
-        linearProgrammingPlanner = new LinearProgrammingPlanner();
 
         button.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {

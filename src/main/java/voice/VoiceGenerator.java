@@ -10,4 +10,9 @@ public abstract class VoiceGenerator {
      * @param text The text to be converted to speech.
      */
     public abstract void generateSpeech(String text);
+
+    /**
+     * Stops any current speech audio.
+     */
+    public abstract void stopSpeech();
 }

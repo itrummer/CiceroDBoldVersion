@@ -11,11 +11,11 @@ import javax.sound.sampled.Clip;
 import java.io.InputStream;
 
 /**
- * A voice.VoiceGenerator that uses IBM's Watson service to generate and play audio representation of text.
+ * A VoiceGenerator implemented using IBM's Watson service to generate and play audio representation of text.
  */
 public class WatsonVoiceGenerator extends VoiceGenerator {
-
     TextToSpeech service;
+    Clip currentClip;
 
     public WatsonVoiceGenerator() {
         service = new TextToSpeech();
@@ -24,19 +24,27 @@ public class WatsonVoiceGenerator extends VoiceGenerator {
 
     @Override
     public void generateSpeech(String text) {
+        stopSpeech();
         try {
             InputStream stream = service.synthesize(text, Voice.EN_ALLISON, AudioFormat.WAV).execute();
             InputStream in = WaveUtils.reWriteWaveHeader(stream);
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(in);
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioStream);
-            clip.start();
+            currentClip = AudioSystem.getClip();
+            currentClip.open(audioStream);
+            currentClip.start();
             audioStream.close();
             in.close();
             stream.close();
         }
         catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void stopSpeech() {
+        if (currentClip != null) {
+            currentClip.stop();
         }
     }
 }
