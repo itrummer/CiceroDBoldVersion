@@ -1,7 +1,7 @@
 package db;
 
 import planner.Speakable;
-import values.Value;
+import planner.elements.Value;
 import java.util.HashMap;
 
 /**

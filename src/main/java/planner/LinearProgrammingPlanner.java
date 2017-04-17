@@ -5,7 +5,7 @@ import ilog.concert.*;
 import ilog.cplex.*;
 import planner.elements.Context;
 import planner.elements.Scope;
-import values.Value;
+import planner.elements.Value;
 
 import java.util.ArrayList;
 import java.util.HashMap;

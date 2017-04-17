@@ -1,4 +1,4 @@
-package values;
+package planner.elements;
 
 import planner.Speakable;
 
@@ -17,7 +17,7 @@ public class NumericalValueDomain implements Speakable {
 
     public String toSpeechText() {
         if (lowerBound.equals(upperBound)) {
-            return attribute + " " + lowerBound.toSpeechText();
+            return attribute + " " + lowerBound.toSpeechText() + " ";
         } else {
             return attribute + " between " + lowerBound.toSpeechText() + " and " + upperBound.toSpeechText();
         }

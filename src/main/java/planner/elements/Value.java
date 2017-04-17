@@ -1,6 +1,7 @@
-package values;
+package planner.elements;
 
 import planner.Speakable;
+import values.EnglishNumberToWords;
 
 /**
  *

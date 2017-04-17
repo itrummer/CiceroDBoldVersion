@@ -1,7 +1,7 @@
 package gui;
 
+import concurrent.PlanningTask;
 import db.DatabaseUtilities;
-import db.Tuple;
 import db.TupleCollection;
 import javafx.application.Application;
 import javafx.concurrent.Task;
@@ -16,10 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import planner.LinearProgrammingPlanner;
-import planner.NaiveVoicePlanner;
-import planner.VoiceOutputPlan;
-import planner.VoicePlanner;
+import planner.*;
 import voice.VoiceGenerator;
 import voice.WatsonVoiceGenerator;
 
@@ -27,8 +24,6 @@ import java.sql.SQLException;
 
 
 public class Demo extends Application {
-    VoicePlanner naivePlanner;
-    VoicePlanner linearProgrammingPlanner;
     VoiceGenerator voiceGenerator;
 
     Task<String> currentLinearProgrammingTask;
@@ -39,8 +34,6 @@ public class Demo extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        naivePlanner = new NaiveVoicePlanner();
-        linearProgrammingPlanner = new LinearProgrammingPlanner();
         voiceGenerator = new WatsonVoiceGenerator();
 
         primaryStage.setTitle("CiceroDB Demo");
@@ -132,21 +125,38 @@ public class Demo extends Application {
                 }
 
                 if (results == null) {
-                    naiveOutput.setText("Error: result was null");
+                    naiveOutput.setText("Error: null result");
                     return;
                 }
 
-                VoiceOutputPlan naivePlan = naivePlanner.plan(results);
-                if (naivePlan != null) {
-                    String speechText = naivePlan.toSpeechText();
-                    naiveOutput.setText(speechText);
-                    naiveCostLabel.setText("Cost: " + speechText.length());
-                } else {
-                    naiveOutput.setText("Error: output plan was null");
-                }
+                naiveOutput.setText("Evaluating...");
+                cplexOutput.setText("Evaluating...");
 
+                // run the naive planning in a background thread
 
-                final LinearPlanningTask linearTask = new LinearPlanningTask(results);
+                final PlanningTask naiveTask = new PlanningTask(results, new NaiveVoicePlanner());
+                naiveTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    public void handle(WorkerStateEvent event) {
+                        VoiceOutputPlan plan = naiveTask.getValue();
+                        String speechText = plan.toSpeechText();
+                        naiveOutput.setText(speechText);
+                        naiveCostLabel.setText("Cost: " + speechText.length());
+                    }
+                });
+
+                naiveTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+                    public void handle(WorkerStateEvent event) {
+                        cplexOutput.setText("Error while running Naive Planner");
+                    }
+                });
+
+                Thread naiveThread = new Thread(naiveTask);
+                naiveThread.setDaemon(true);
+                naiveThread.start();
+
+                // run the linear planning in a background thread
+
+                final PlanningTask linearTask = new PlanningTask(results, new LinearProgrammingPlanner());
                 linearTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
                         VoiceOutputPlan plan = linearTask.getValue();
@@ -155,14 +165,16 @@ public class Demo extends Application {
                         cplexCostLabel.setText("Cost: " + speechText.length());
                     }
                 });
+
                 linearTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
                         cplexOutput.setText("Error while running Linear Programming Planner");
                     }
                 });
-                Thread t = new Thread(linearTask);
-                t.setDaemon(true);
-                t.start();
+
+                Thread linearThread = new Thread(linearTask);
+                linearThread.setDaemon(true);
+                linearThread.start();
             }
         });
 
@@ -172,21 +184,6 @@ public class Demo extends Application {
         primaryStage.setScene(scene);
         primaryStage.sizeToScene();
         primaryStage.show();
-    }
-
-    class LinearPlanningTask extends Task<VoiceOutputPlan> {
-        final TupleCollection tupleCollection;
-
-        public LinearPlanningTask(TupleCollection tupleCollection) {
-            this.tupleCollection = tupleCollection;
-        }
-
-        @Override
-        protected VoiceOutputPlan call() throws Exception {
-            LinearProgrammingPlanner planner = new LinearProgrammingPlanner();
-            VoiceOutputPlan plan = planner.plan(tupleCollection);
-            return plan;
-        }
     }
 
 }

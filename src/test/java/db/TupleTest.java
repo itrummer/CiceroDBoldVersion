@@ -1,7 +1,7 @@
 package db;
 
 import junit.framework.TestCase;
-import values.Value;
+import planner.elements.Value;
 
 /**
  * Unit tests for a Tuple
