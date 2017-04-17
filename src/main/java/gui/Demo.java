@@ -1,8 +1,11 @@
 package gui;
 
 import db.DatabaseUtilities;
+import db.Tuple;
 import db.TupleCollection;
 import javafx.application.Application;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -27,6 +30,8 @@ public class Demo extends Application {
     VoicePlanner naivePlanner;
     VoicePlanner linearProgrammingPlanner;
     VoiceGenerator voiceGenerator;
+
+    Task<String> currentLinearProgrammingTask;
 
     public static void main(String[] args) {
         launch(args);
@@ -118,7 +123,7 @@ public class Demo extends Application {
 
         button.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                TupleCollection results;
+                final TupleCollection results;
                 try {
                     results = DatabaseUtilities.executeQuery(queryInput.getText());
                 } catch (SQLException e) {
@@ -140,15 +145,24 @@ public class Demo extends Application {
                     naiveOutput.setText("Error: output plan was null");
                 }
 
-                VoiceOutputPlan lpPlan = linearProgrammingPlanner.plan(results);
-                if (lpPlan != null) {
-                    String speechText = lpPlan.toSpeechText();
-                    cplexOutput.setText(speechText);
-                    cplexCostLabel.setText("Cost: " + speechText.length());
-                } else {
-                    cplexOutput.setText("Error");
-                }
 
+                final LinearPlanningTask linearTask = new LinearPlanningTask(results);
+                linearTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    public void handle(WorkerStateEvent event) {
+                        VoiceOutputPlan plan = linearTask.getValue();
+                        String speechText = plan.toSpeechText();
+                        cplexOutput.setText(speechText);
+                        cplexCostLabel.setText("Cost: " + speechText.length());
+                    }
+                });
+                linearTask.setOnFailed(new EventHandler<WorkerStateEvent>() {
+                    public void handle(WorkerStateEvent event) {
+                        cplexOutput.setText("Error while running Linear Programming Planner");
+                    }
+                });
+                Thread t = new Thread(linearTask);
+                t.setDaemon(true);
+                t.start();
             }
         });
 
@@ -159,4 +173,20 @@ public class Demo extends Application {
         primaryStage.sizeToScene();
         primaryStage.show();
     }
+
+    class LinearPlanningTask extends Task<VoiceOutputPlan> {
+        final TupleCollection tupleCollection;
+
+        public LinearPlanningTask(TupleCollection tupleCollection) {
+            this.tupleCollection = tupleCollection;
+        }
+
+        @Override
+        protected VoiceOutputPlan call() throws Exception {
+            LinearProgrammingPlanner planner = new LinearProgrammingPlanner();
+            VoiceOutputPlan plan = planner.plan(tupleCollection);
+            return plan;
+        }
+    }
+
 }
