@@ -1,6 +1,6 @@
 package planner;
 
-import db.TupleCollection;
+import planner.elements.TupleCollection;
 import ilog.concert.*;
 import ilog.cplex.*;
 import planner.elements.Context;

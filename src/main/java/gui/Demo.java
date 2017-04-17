@@ -1,8 +1,8 @@
 package gui;
 
 import concurrent.PlanningTask;
-import db.DatabaseUtilities;
-import db.TupleCollection;
+import util.DatabaseUtilities;
+import planner.elements.TupleCollection;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;

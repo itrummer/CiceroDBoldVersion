@@ -1,7 +1,5 @@
 package planner.elements;
 
-import db.Tuple;
-
 import java.util.ArrayList;
 import java.util.Map;
 

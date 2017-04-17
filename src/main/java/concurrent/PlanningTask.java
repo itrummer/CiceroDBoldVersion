@@ -1,6 +1,6 @@
 package concurrent;
 
-import db.TupleCollection;
+import planner.elements.TupleCollection;
 import javafx.concurrent.Task;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;

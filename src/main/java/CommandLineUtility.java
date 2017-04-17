@@ -1,5 +1,5 @@
-import db.DatabaseUtilities;
-import db.TupleCollection;
+import util.DatabaseUtilities;
+import planner.elements.TupleCollection;
 import planner.LinearProgrammingPlanner;
 import planner.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;

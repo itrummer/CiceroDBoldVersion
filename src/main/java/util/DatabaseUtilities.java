@@ -1,4 +1,6 @@
-package db;
+package util;
+
+import planner.elements.TupleCollection;
 
 import java.sql.*;
 

@@ -1,6 +1,4 @@
-package db;
-
-import planner.elements.Value;
+package planner.elements;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

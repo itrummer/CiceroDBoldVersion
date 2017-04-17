@@ -1,6 +1,6 @@
 package planner;
 
-import db.TupleCollection;
+import planner.elements.TupleCollection;
 import planner.elements.Scope;
 
 /**

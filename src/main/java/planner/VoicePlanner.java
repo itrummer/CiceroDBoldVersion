@@ -1,7 +1,6 @@
 package planner;
 
-import db.Tuple;
-import db.TupleCollection;
+import planner.elements.TupleCollection;
 
 /**
  * Abstract representation of VoicePlanners

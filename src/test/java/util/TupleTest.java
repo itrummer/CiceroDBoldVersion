@@ -1,6 +1,7 @@
-package db;
+package util;
 
 import junit.framework.TestCase;
+import planner.elements.Tuple;
 import planner.elements.Value;
 
 /**
