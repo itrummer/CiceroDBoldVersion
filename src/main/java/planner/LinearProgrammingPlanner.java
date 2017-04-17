@@ -13,11 +13,22 @@ import java.util.HashMap;
  */
 public class LinearProgrammingPlanner extends VoicePlanner {
     private int maximalContextSize;
-    private static int MAXIMAL_NUMERICAL_DOMAIN_WIDTH = 2;
-    private static int MAXIMAL_CATEGORICAL_DOMAIN_SIZE = 2;
+    private double maximalNumericalDomainWidth;
+    private int maximalCategoricalDomainSize;
 
-    public LinearProgrammingPlanner(int mC) {
-        this.maximalContextSize = mC;
+    public LinearProgrammingPlanner(int mS, double mW, int mC) {
+        this.maximalContextSize = mS;
+        this.maximalNumericalDomainWidth = mW;
+        this.maximalCategoricalDomainSize = mC;
+    }
+
+    /**
+     * Sets Default values for configuration parameters
+     */
+    public LinearProgrammingPlanner() {
+        this.maximalContextSize = 3;
+        this.maximalNumericalDomainWidth = 2.0;
+        this.maximalCategoricalDomainSize = 2;
     }
 
     /**
@@ -88,11 +99,11 @@ public class LinearProgrammingPlanner extends VoicePlanner {
                 }
             }
 
-            // each context can fix at most MAXIMAL_CATEGORICAL_DOMAIN_SIZE values for categorical attributes
+            // each context can fix at most maximalCategoricalDomainSize values for categorical attributes
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < attributeCount; a++) {
                     if (d[c][a].length > 0) {
-                        cplex.addLe(cplex.sum(d[c][a]), MAXIMAL_CATEGORICAL_DOMAIN_SIZE);
+                        cplex.addLe(cplex.sum(d[c][a]), maximalCategoricalDomainSize);
                     }
                 }
             }
@@ -109,7 +120,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
                             upperBounds.addTerm(coefficient, u[c][a][v]);
                         }
                         cplex.addLe(lowerBounds, upperBounds);
-                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, MAXIMAL_NUMERICAL_DOMAIN_WIDTH));
+                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, maximalNumericalDomainWidth));
                     }
                 }
             }

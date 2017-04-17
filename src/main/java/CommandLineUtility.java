@@ -43,7 +43,7 @@ public class CommandLineUtility
                 System.out.println("Set VoicePlanner to Naive");
                 continue;
             } else if (input.startsWith("lp")) {
-                planner = new LinearProgrammingPlanner(3);
+                planner = new LinearProgrammingPlanner();
                 System.out.println("Set VoicePlanner to LinearProgramming");
                 continue;
             }
