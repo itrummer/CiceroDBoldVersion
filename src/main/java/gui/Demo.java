@@ -24,11 +24,6 @@ import java.sql.SQLException;
 
 public class Demo extends Application {
     VoiceGenerator voiceGenerator;
-    String[] sampleQueries = {
-            "SELECT * FROM RESTAURANTS;",
-            "SELECT team, wins, touchdowns FROM football;",
-            "SELECT model, memory, storage, dollars FROM macbooks;"
-    };
     int nextRow = 0;
 
     public static void main(String[] args) {
