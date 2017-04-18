@@ -25,9 +25,7 @@ import java.sql.SQLException;
 
 public class Demo extends Application {
     VoiceGenerator voiceGenerator;
-
-    Task<String> currentLinearProgrammingTask;
-
+    
     public static void main(String[] args) {
         launch(args);
     }
