@@ -1,6 +1,7 @@
 package gui;
 
 import concurrent.PlanningTask;
+import javafx.scene.layout.ColumnConstraints;
 import util.DatabaseUtilities;
 import planner.elements.TupleCollection;
 import javafx.application.Application;
@@ -25,7 +26,7 @@ import java.sql.SQLException;
 
 public class Demo extends Application {
     VoiceGenerator voiceGenerator;
-    
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -39,7 +40,10 @@ public class Demo extends Application {
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setPadding(new Insets(40, 40, 40, 40));
+        grid.getColumnConstraints().add(new ColumnConstraints(750)); // column 0 is 100 wide
+        grid.getColumnConstraints().add(new ColumnConstraints(50)); // column 1 is 200 wide
+        grid.getColumnConstraints().add(new ColumnConstraints(50)); // column 2 is 30 wide
 
         Text scenetitle = new Text("CiceroDB Demo");
         scenetitle.setStyle("-fx-font-family: Roboto, sans-serif; -fx-font-size: 40");
@@ -56,6 +60,7 @@ public class Demo extends Application {
 
         final Label label1 = new Label("Maximum Allowable Upperbound: ");
         final TextField numericalDomainSizeField = new TextField();
+        numericalDomainSizeField.setText("2.0");
         grid.add(label1, 0, 2);
         grid.add(numericalDomainSizeField, 1, 2);
 
@@ -232,7 +237,7 @@ public class Demo extends Application {
             }
         });
 
-        Scene scene = new Scene(grid, 900, 800);
+        Scene scene = new Scene(grid);
         scene.getStylesheets().add("https://fonts.googleapis.com/css?family=Inconsolata\n");
         scene.getStylesheets().add("https://fonts.googleapis.com/css?family=Roboto\n");
         primaryStage.setScene(scene);
