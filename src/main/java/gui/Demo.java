@@ -5,7 +5,6 @@ import javafx.scene.layout.ColumnConstraints;
 import util.DatabaseUtilities;
 import planner.elements.TupleCollection;
 import javafx.application.Application;
-import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,12 +19,17 @@ import javafx.stage.Stage;
 import planner.*;
 import voice.VoiceGenerator;
 import voice.WatsonVoiceGenerator;
-
 import java.sql.SQLException;
 
 
 public class Demo extends Application {
     VoiceGenerator voiceGenerator;
+    String[] sampleQueries = {
+            "SELECT * FROM RESTAURANTS;",
+            "SELECT team, wins, touchdowns FROM football;",
+            "SELECT model, memory, storage, dollars FROM macbooks;"
+    };
+    int nextRow = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -34,114 +38,122 @@ public class Demo extends Application {
     @Override
     public void start(Stage primaryStage) {
         voiceGenerator = new WatsonVoiceGenerator();
-
         primaryStage.setTitle("CiceroDB Demo");
+
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(40, 40, 40, 40));
-        grid.getColumnConstraints().add(new ColumnConstraints(750)); // column 0 is 100 wide
-        grid.getColumnConstraints().add(new ColumnConstraints(50)); // column 1 is 200 wide
-        grid.getColumnConstraints().add(new ColumnConstraints(50)); // column 2 is 30 wide
+        grid.getColumnConstraints().add(new ColumnConstraints(750));
 
         Text scenetitle = new Text("CiceroDB Demo");
         scenetitle.setStyle("-fx-font-family: Roboto, sans-serif; -fx-font-size: 40");
-        grid.add(scenetitle, 0, 0);
+        grid.addRow(getNextRow(), scenetitle);
 
         // CONFIG OPTIONS
 
         final ChoiceBox contextSizeOptions = new ChoiceBox();
         contextSizeOptions.getItems().addAll(1, 2, 3, 4);
         contextSizeOptions.getSelectionModel().select(2);
-        Label contextSizeLabel = new Label("Maximum Context Size:");
-        grid.add(contextSizeLabel, 0, 1);
-        grid.add(contextSizeOptions, 1, 1);
+        HBox box1 = new HBox(8, new Label("Maximum Context Size:"), contextSizeOptions);
+        box1.alignmentProperty().set(Pos.CENTER_LEFT);
+        grid.addRow(getNextRow(), box1);
 
-        final Label label1 = new Label("Maximum Allowable Upperbound: ");
         final TextField numericalDomainSizeField = new TextField();
         numericalDomainSizeField.setText("2.0");
-        grid.add(label1, 0, 2);
-        grid.add(numericalDomainSizeField, 1, 2);
+        HBox box2 = new HBox(8, new Label("Maximum Allowable Upperbound:"), numericalDomainSizeField);
+        box2.setAlignment(Pos.CENTER_LEFT);
+        grid.addRow(getNextRow(), box2);
 
         final ChoiceBox categoricalDomainSizeOptions = new ChoiceBox();
         categoricalDomainSizeOptions.getItems().addAll(1, 2, 3);
         categoricalDomainSizeOptions.getSelectionModel().select(1);
-        Label categoricalDomainSizeLabel = new Label("Maximum Categorical Domain Size:");
-        grid.add(categoricalDomainSizeLabel, 0, 3);
-        grid.add(categoricalDomainSizeOptions, 1, 3);
+        HBox box3 = new HBox(8, new Label("Maximum Categorical Domain Size:"), categoricalDomainSizeOptions);
+        grid.addRow(getNextRow(), box3);
 
         // INPUT ELEMENTS
 
-        Label queryLabel = new Label("Query:");
-        grid.add(queryLabel, 0, 4);
+        grid.addRow(getNextRow(), new Label("Query:"));
 
         final TextField queryInput = new TextField();
         queryInput.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 24;");
-        grid.add(queryInput, 0, 5);
+        grid.addRow(getNextRow(), queryInput);
 
         Button button = new Button("Run Query");
-        HBox hbBtn = new HBox(10);
+        HBox hbBtn = new HBox(10, button);
         hbBtn.setAlignment(Pos.CENTER);
-        hbBtn.getChildren().add(button);
-        grid.add(hbBtn, 0, 6);
-
+        grid.addRow(getNextRow(),hbBtn);
 
         // OUTPUT ELEMENTS
 
-        Label naiveLabel = new Label("Naive Plan");
-        grid.add(naiveLabel, 0, 7);
+        grid.addRow(getNextRow(), new Label("Naive Plan"));
 
         final TextArea naiveOutput = new TextArea();
         naiveOutput.setEditable(false);
         naiveOutput.setWrapText(true);
-        grid.add(naiveOutput, 0, 8);
+        grid.addRow(getNextRow(), naiveOutput);
 
         final Button playNaiveButton = new Button("Play");
-        grid.add(playNaiveButton, 1, 8);
+        final Button stopNaiveButton = new Button("Stop");
+        HBox box4 = new HBox(8, playNaiveButton, stopNaiveButton);
+        box4.setAlignment(Pos.CENTER_LEFT);
+        grid.addRow(getNextRow(), box4);
+
+        final Label naiveCostLabel = new Label("Cost: ");
+        grid.addRow(getNextRow(), naiveCostLabel);
+
+        final Label linearOutputLabel = new Label("Linear Programming Plan");
+        grid.addRow(getNextRow(), linearOutputLabel);
+
+        final TextArea cplexOutput = new TextArea();
+        cplexOutput.setEditable(false);
+        cplexOutput.setWrapText(true);
+        grid.addRow(getNextRow(), cplexOutput);
+
+        final Button playCplexButton = new Button("Play");
+
+        final Button stopCplexButton = new Button("Stop");
+
+        HBox box5 = new HBox(8, playCplexButton, stopCplexButton);
+        box5.setAlignment(Pos.CENTER_LEFT);
+        grid.addRow(getNextRow(), box5);
+
+        final Label cplexCostLabel = new Label("Cost: ");
+        grid.addRow(getNextRow(), cplexCostLabel);
+
+        // Describe the schemas of the test tables for clarity
+
+        Label macbooksLabel = new Label("'macbooks' : (model, inches, memory, storage, dollars, gigahertz, processor, hours_battery_life, trackpad, pounds)");
+        Label restaurantsLabel = new Label("'restaurants' : (restaurant, rating, price, cuisine)");
+        Label footballLabel = new Label("'football' : (team, wins, losses, win_percentage, total_points_for, total_points_against, net_points_scored, touchdowns, conference)");
+        grid.addRow(getNextRow(),macbooksLabel);
+        grid.addRow(getNextRow(), restaurantsLabel);
+        grid.addRow(getNextRow(), footballLabel);
+
         playNaiveButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 voiceGenerator.generateSpeech(naiveOutput.getText());
             }
         });
 
-        final Button stopNaiveButton = new Button("Stop");
-        grid.add(stopNaiveButton, 2, 8);
         stopNaiveButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 voiceGenerator.stopSpeech();
             }
         });
 
-        final Label naiveCostLabel = new Label("Cost: ");
-        grid.add(naiveCostLabel, 0, 9);
-
-        final Label linearOutputLabel = new Label("Linear Programming Plan");
-        grid.add(linearOutputLabel, 0, 10);
-
-        final TextArea cplexOutput = new TextArea();
-        cplexOutput.setEditable(false);
-        cplexOutput.setWrapText(true);
-        grid.add(cplexOutput, 0, 11);
-
-        final Button playCplexButton = new Button("Play");
-        grid.add(playCplexButton, 1, 11);
         playCplexButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 voiceGenerator.generateSpeech(cplexOutput.getText());
             }
         });
 
-        final Button stopCplexButton = new Button("Stop");
-        grid.add(stopCplexButton, 2, 11);
         stopCplexButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 voiceGenerator.stopSpeech();
             }
         });
-
-        final Label cplexCostLabel = new Label("Cost: ");
-        grid.add(cplexCostLabel, 0, 12);
 
         button.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -245,4 +257,9 @@ public class Demo extends Application {
         primaryStage.show();
     }
 
+    public int getNextRow() {
+        int result = nextRow;
+        nextRow++;
+        return result;
+    }
 }
