@@ -78,6 +78,22 @@ public class Demo extends Application {
 
         final TextField queryInput = new TextField();
         queryInput.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 24;");
+
+        final ChoiceBox sampleQueryChoices = new ChoiceBox();
+        sampleQueryChoices.getItems().addAll(
+                "SELECT * FROM RESTAURANTS;",
+                "SELECT team, wins, touchdowns FROM football;",
+                "SELECT model, memory, storage, dollars FROM macbooks;"
+        );
+        sampleQueryChoices.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                if (sampleQueryChoices.getValue() != null) {
+                    queryInput.setText((String) sampleQueryChoices.getValue());
+                }
+            }
+        });
+
+        grid.addRow(getNextRow(), sampleQueryChoices);
         grid.addRow(getNextRow(), queryInput);
 
         Button button = new Button("Run Query");
