@@ -65,9 +65,12 @@ public class Demo extends Application {
 
         // Describe the schemas of the test tables for clarity
 
-        Label macbooksLabel = new Label("'macbooks' : (model, inches, memory, storage, dollars, gigahertz, processor, hours_battery_life, trackpad, pounds)");
-        Label restaurantsLabel = new Label("'restaurants' : (restaurant, rating, price, cuisine)");
-        Label footballLabel = new Label("'football' : (team, wins, losses, win_percentage, total_points_for, total_points_against, net_points_scored, touchdowns, conference)");
+        Label macbooksLabel = new Label("macbooks : (model, inches, memory, storage, dollars, gigahertz, processor, \n\t\thours_battery_life, trackpad, pounds)");
+        macbooksLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
+        Label restaurantsLabel = new Label("restaurants : (restaurant, rating, price, cuisine)");
+        restaurantsLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
+        Label footballLabel = new Label("football : (team, wins, losses, win_percentage, total_points_for, \n\t\ttotal_points_against, net_points_scored, touchdowns, conference)");
+        footballLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
         grid.addRow(getNextRow(),macbooksLabel);
         grid.addRow(getNextRow(), restaurantsLabel);
         grid.addRow(getNextRow(), footballLabel);
