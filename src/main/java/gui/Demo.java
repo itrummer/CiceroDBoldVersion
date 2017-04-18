@@ -26,6 +26,23 @@ public class Demo extends Application {
     VoiceGenerator voiceGenerator;
     int nextRow = 0;
 
+    // UI Elements
+    Text scenetitle;
+    ChoiceBox contextSizeOptions;
+    TextField numericalDomainSizeField;
+    ChoiceBox categoricalDomainSizeOptions;
+    TextField queryInput;
+    ChoiceBox sampleQueryChoices;
+    TextArea naiveOutput;
+    Button playNaiveButton;
+    Button stopNaiveButton;
+    Label naiveCostLabel;
+    Label cplexCostLabel;
+    Label linearOutputLabel;
+    TextArea cplexOutput;
+    Button playCplexButton;
+    Button stopCplexButton;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -42,26 +59,35 @@ public class Demo extends Application {
         grid.setPadding(new Insets(40, 40, 40, 40));
         grid.getColumnConstraints().add(new ColumnConstraints(750));
 
-        Text scenetitle = new Text("CiceroDB Demo");
+        scenetitle = new Text("CiceroDB Demo");
         scenetitle.setStyle("-fx-font-family: Roboto, sans-serif; -fx-font-size: 40");
         grid.addRow(getNextRow(), scenetitle);
 
+        // Describe the schemas of the test tables for clarity
+
+        Label macbooksLabel = new Label("'macbooks' : (model, inches, memory, storage, dollars, gigahertz, processor, hours_battery_life, trackpad, pounds)");
+        Label restaurantsLabel = new Label("'restaurants' : (restaurant, rating, price, cuisine)");
+        Label footballLabel = new Label("'football' : (team, wins, losses, win_percentage, total_points_for, total_points_against, net_points_scored, touchdowns, conference)");
+        grid.addRow(getNextRow(),macbooksLabel);
+        grid.addRow(getNextRow(), restaurantsLabel);
+        grid.addRow(getNextRow(), footballLabel);
+
         // CONFIG OPTIONS
 
-        final ChoiceBox contextSizeOptions = new ChoiceBox();
+        contextSizeOptions = new ChoiceBox();
         contextSizeOptions.getItems().addAll(1, 2, 3, 4);
         contextSizeOptions.getSelectionModel().select(2);
         HBox box1 = new HBox(8, new Label("Maximum Context Size:"), contextSizeOptions);
         box1.alignmentProperty().set(Pos.CENTER_LEFT);
         grid.addRow(getNextRow(), box1);
 
-        final TextField numericalDomainSizeField = new TextField();
+        numericalDomainSizeField = new TextField();
         numericalDomainSizeField.setText("2.0");
         HBox box2 = new HBox(8, new Label("Maximum Allowable Upperbound:"), numericalDomainSizeField);
         box2.setAlignment(Pos.CENTER_LEFT);
         grid.addRow(getNextRow(), box2);
 
-        final ChoiceBox categoricalDomainSizeOptions = new ChoiceBox();
+        categoricalDomainSizeOptions = new ChoiceBox();
         categoricalDomainSizeOptions.getItems().addAll(1, 2, 3);
         categoricalDomainSizeOptions.getSelectionModel().select(1);
         HBox box3 = new HBox(8, new Label("Maximum Categorical Domain Size:"), categoricalDomainSizeOptions);
@@ -71,10 +97,10 @@ public class Demo extends Application {
 
         grid.addRow(getNextRow(), new Label("Query:"));
 
-        final TextField queryInput = new TextField();
+        queryInput = new TextField();
         queryInput.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 24;");
 
-        final ChoiceBox sampleQueryChoices = new ChoiceBox();
+        sampleQueryChoices = new ChoiceBox();
         sampleQueryChoices.getItems().addAll(
                 "SELECT * FROM RESTAURANTS;",
                 "SELECT team, wins, touchdowns FROM football;",
@@ -100,47 +126,37 @@ public class Demo extends Application {
 
         grid.addRow(getNextRow(), new Label("Naive Plan"));
 
-        final TextArea naiveOutput = new TextArea();
+        naiveOutput = new TextArea();
         naiveOutput.setEditable(false);
         naiveOutput.setWrapText(true);
         grid.addRow(getNextRow(), naiveOutput);
 
-        final Button playNaiveButton = new Button("Play");
-        final Button stopNaiveButton = new Button("Stop");
+        playNaiveButton = new Button("Play");
+        stopNaiveButton = new Button("Stop");
         HBox box4 = new HBox(8, playNaiveButton, stopNaiveButton);
         box4.setAlignment(Pos.CENTER_LEFT);
         grid.addRow(getNextRow(), box4);
 
-        final Label naiveCostLabel = new Label("Cost: ");
+        naiveCostLabel = new Label("Cost: ");
         grid.addRow(getNextRow(), naiveCostLabel);
 
-        final Label linearOutputLabel = new Label("Linear Programming Plan");
+        linearOutputLabel = new Label("Linear Programming Plan");
         grid.addRow(getNextRow(), linearOutputLabel);
 
-        final TextArea cplexOutput = new TextArea();
+        cplexOutput = new TextArea();
         cplexOutput.setEditable(false);
         cplexOutput.setWrapText(true);
         grid.addRow(getNextRow(), cplexOutput);
 
-        final Button playCplexButton = new Button("Play");
-
-        final Button stopCplexButton = new Button("Stop");
+        playCplexButton = new Button("Play");
+        stopCplexButton = new Button("Stop");
 
         HBox box5 = new HBox(8, playCplexButton, stopCplexButton);
         box5.setAlignment(Pos.CENTER_LEFT);
         grid.addRow(getNextRow(), box5);
 
-        final Label cplexCostLabel = new Label("Cost: ");
+        cplexCostLabel = new Label("Cost: ");
         grid.addRow(getNextRow(), cplexCostLabel);
-
-        // Describe the schemas of the test tables for clarity
-
-        Label macbooksLabel = new Label("'macbooks' : (model, inches, memory, storage, dollars, gigahertz, processor, hours_battery_life, trackpad, pounds)");
-        Label restaurantsLabel = new Label("'restaurants' : (restaurant, rating, price, cuisine)");
-        Label footballLabel = new Label("'football' : (team, wins, losses, win_percentage, total_points_for, total_points_against, net_points_scored, touchdowns, conference)");
-        grid.addRow(getNextRow(),macbooksLabel);
-        grid.addRow(getNextRow(), restaurantsLabel);
-        grid.addRow(getNextRow(), footballLabel);
 
         playNaiveButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
