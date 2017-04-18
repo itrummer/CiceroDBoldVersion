@@ -1,7 +1,6 @@
 package planner.elements;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * A Scope represents an optional context with a set tuples that match the context
@@ -12,7 +11,8 @@ public class Scope {
 
     Context context;
     ArrayList<Tuple> tuples;
-    String cachedResult;
+    String cachedLongFormResult;
+    String cachedShortResult;
 
     /**
      * Constructor for a Scope with a context
@@ -75,14 +75,16 @@ public class Scope {
      * do not recalculate the result
      * @return The String representation of this Scope
      */
-    public String toSpeechText() {
-        if (cachedResult != null) {
-            return cachedResult;
+    public String toSpeechText(boolean inLongForm) {
+        if (cachedLongFormResult != null && inLongForm) {
+            return cachedLongFormResult;
+        } else if (cachedShortResult != null && !inLongForm) {
+            return cachedShortResult;
         }
 
-        cachedResult = "";
+        String cachedResult = "";
 
-        cachedResult += context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText() + POSTCONTEXT_PHRASE;
+        cachedResult += context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE;
 
         for (int i = 0; i < tuples.size(); i++) {
             Tuple t = tuples.get(i);
@@ -94,14 +96,20 @@ public class Scope {
                 if (context == null || !context.isAttributeFixed(attribute)) {
                     Value v = t.valueForAttribute(attribute);
                     if (firstAttribute) {
-                        cachedResult += attribute + " " + v.toSpeechText();
+                        cachedResult += v.toSpeechText(inLongForm);
                     } else {
-                        cachedResult += ", " + v.toSpeechText() + " " + attribute;
+                        cachedResult += ", " + v.toSpeechText(inLongForm) + " " + attribute;
                     }
                     firstAttribute = false;
                 }
             }
-            cachedResult += i == tuples.size()-1 ? "." : ", ";
+            cachedResult += i == tuples.size()-1 ? ".  " : ", ";
+        }
+
+        if (inLongForm) {
+            cachedLongFormResult = cachedResult;
+        } else {
+            cachedShortResult = cachedResult;
         }
 
         return cachedResult;

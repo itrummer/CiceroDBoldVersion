@@ -28,21 +28,21 @@ public class CategoricalValueDomain implements Speakable {
         domainValues.add(value);
     }
 
-    public String toSpeechText() {
+    public String toSpeechText(boolean inLongForm) {
         if (domainValues.size() == 1) {
             // example: "category Italian"
-            return domainValues.get(0).toSpeechText() + " " + attribute;
+            return domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
         }
 
         // example: "category Italian or American"
         if (domainValues.size() == 2) {
-            return domainValues.get(0).toSpeechText() + " or " + domainValues.get(1).toSpeechText() + " " + attribute;
+            return domainValues.get(0).toSpeechText(inLongForm) + " or " + domainValues.get(1).toSpeechText(inLongForm) + " " + attribute;
         }
 
         // example: "category Italian, American, or Pub Food"
-        String result = domainValues.get(0).toSpeechText() + " " + attribute;
+        String result = domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
         for (int i = 1; i < domainValues.size(); i++) {
-            result += ", " + domainValues.get(i).toSpeechText();
+            result += ", " + domainValues.get(i).toSpeechText(inLongForm);
         }
 
         return result;

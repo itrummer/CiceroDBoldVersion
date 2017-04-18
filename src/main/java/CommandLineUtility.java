@@ -53,7 +53,7 @@ public class CommandLineUtility
                 if (results != null) {
                     VoiceOutputPlan outputPlan = planner.plan(results);
                     if (outputPlan != null) {
-                        String speechText = outputPlan.toSpeechText();
+                        String speechText = outputPlan.toSpeechText(false);
                         System.out.println(speechText);
                         voiceGenerator.generateSpeech(speechText);
                     } else {

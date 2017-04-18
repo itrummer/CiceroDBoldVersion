@@ -2,6 +2,7 @@ package planner.elements;
 
 import planner.Speakable;
 import util.EnglishNumberToWords;
+import java.util.ArrayList;
 
 /**
  *
@@ -90,8 +91,27 @@ public class Value implements Speakable, Comparable<Value> {
         return null;
     }
 
-    public String toSpeechText() {
-        return value.toString();
+    public String toSpeechText(boolean inLongForm) {
+        if (inLongForm) {
+            String expandedValue = "";
+            switch (type) {
+                case INTEGER:
+                    expandedValue = EnglishNumberToWords.convert(((Integer) value).longValue());
+                    break;
+                case DOUBLE:
+                    expandedValue = EnglishNumberToWords.convert(((Double) value).longValue());
+                    break;
+                case FLOAT:
+                    expandedValue = EnglishNumberToWords.convert(((Float) value).longValue());
+                    break;
+                case STRING:
+                    expandedValue = (String) value;
+                    break;
+            }
+            return expandedValue;
+        } else {
+            return value.toString();
+        }
     }
 
     /**
@@ -100,22 +120,7 @@ public class Value implements Speakable, Comparable<Value> {
      * @return The speech cost for this Value
      */
     public int speechCost() {
-        String expandedValue = "";
-        switch (type) {
-            case INTEGER:
-                expandedValue = EnglishNumberToWords.convert(((Integer) value).longValue());
-                break;
-            case DOUBLE:
-                expandedValue = EnglishNumberToWords.convert(((Double) value).longValue());
-                break;
-            case FLOAT:
-                expandedValue = EnglishNumberToWords.convert(((Float) value).longValue());
-                break;
-            case STRING:
-                expandedValue = (String) value;
-                break;
-        }
-        return expandedValue.length();
+        return toSpeechText(true).length();
     }
 
     public String toString() {
@@ -135,6 +140,47 @@ public class Value implements Speakable, Comparable<Value> {
                 coefficient = ((Float) value).doubleValue();
         }
         return coefficient;
+    }
+
+    public ArrayList<Value> roundedValues() {
+        double coefficient = linearProgrammingCoefficient();
+        boolean negative = coefficient < 0;
+        int rawValue = (int) coefficient;
+
+        if (negative) {
+            rawValue = -rawValue;
+        }
+
+        int sigfigs = (int) Math.log10(rawValue);
+        int mostSignificantUnits = (int) Math.pow(10, sigfigs);
+        int lower = rawValue / mostSignificantUnits;
+        int upper = lower + 1;
+        Integer roundedDown = mostSignificantUnits * lower;
+        Integer roundedUp = mostSignificantUnits * upper;
+
+        // negate after calculating values
+        if (negative) {
+            roundedDown = -roundedDown;
+            roundedUp = -roundedUp;
+        }
+
+        ArrayList<Value> values = new ArrayList<Value>();
+        values.add(roundingHelper(roundedDown.doubleValue()));
+        values.add(roundingHelper(roundedUp.doubleValue()));
+
+        return values;
+    }
+
+    private Value roundingHelper(Double v) {
+        switch (type) {
+            case FLOAT:
+                return new Value(v.floatValue());
+            case DOUBLE:
+                return new Value(v);
+            case INTEGER:
+                return new Value(v.intValue());
+        }
+        return null;
     }
 
     /**

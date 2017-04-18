@@ -15,11 +15,11 @@ public class NumericalValueDomain implements Speakable {
         this.upperBound = upperBound;
     }
 
-    public String toSpeechText() {
+    public String toSpeechText(boolean inLongForm) {
         if (lowerBound.equals(upperBound)) {
-            return lowerBound.toSpeechText() + " " + attribute + " ";
+            return lowerBound.toSpeechText(inLongForm) + " " + attribute;
         } else {
-            return "between " + lowerBound.toSpeechText() + " and " + upperBound.toSpeechText() + " " + attribute;
+            return "between " + lowerBound.toSpeechText(inLongForm) + " and " + upperBound.toSpeechText(inLongForm) + " " + attribute;
         }
     }
 }

@@ -67,6 +67,7 @@ public class TupleCollection {
             String attributeName = attributes.get(a);
             Value tValue = tuple.valueForAttribute(attributeName);
 
+
             // add the value to the matrix
             ArrayList<Value> aValues = values.get(a);
             aValues.add(tValue);
@@ -75,6 +76,10 @@ public class TupleCollection {
             ArrayList<Value> aDistinctValues = distinctValues.get(a);
             if (!distinctValues.contains(tValue)) {
                 aDistinctValues.add(tValue);
+            }
+
+            if (tValue.isNumerical()) {
+                aDistinctValues.addAll(tValue.roundedValues());
             }
         }
     }

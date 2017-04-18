@@ -31,7 +31,7 @@ public class VoiceOutputPlan implements Speakable {
      * Formats this VoiceOutputPlan to speech text suitable for a VoiceGenerator
      * @return The String representation of the speech output for this plan
      */
-    public String toSpeechText() {
+    public String toSpeechText(boolean inLongForm) {
         if (cachedResult != null) {
             return cachedResult;
         }
@@ -40,13 +40,13 @@ public class VoiceOutputPlan implements Speakable {
 
         for (Scope scope : scopes) {
             if (scope.getContext() == null) {
-                builder.append(scope.toSpeechText() + "\n");
+                builder.append(scope.toSpeechText(inLongForm) + (inLongForm ? "\n":""));
             }
         }
 
         for (Scope scope : scopes) {
             if (scope.getContext() != null) {
-                builder.append(scope.toSpeechText() + "\n");
+                builder.append(scope.toSpeechText(inLongForm) + (inLongForm ? "\n":""));
             }
         }
 

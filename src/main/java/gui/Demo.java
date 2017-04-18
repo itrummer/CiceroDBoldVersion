@@ -43,6 +43,9 @@ public class Demo extends Application {
     Button playCplexButton;
     Button stopCplexButton;
 
+    VoiceOutputPlan naivePlan;
+    VoiceOutputPlan linearPlan;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -65,7 +68,7 @@ public class Demo extends Application {
 
         // Describe the schemas of the test tables for clarity
 
-        Label macbooksLabel = new Label("macbooks : (model, inches, memory, storage, dollars, gigahertz, processor, \n\t\thours_battery_life, trackpad, pounds)");
+        Label macbooksLabel = new Label("macbooks : (model, inch_display, gigabytes_of_memory, gigabytes_of_storage, dollars, gigahertz, processor, \n\t\thours_battery_life, trackpad, pounds)");
         macbooksLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
         Label restaurantsLabel = new Label("restaurants : (restaurant, rating, price, cuisine)");
         restaurantsLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
@@ -107,7 +110,7 @@ public class Demo extends Application {
         sampleQueryChoices.getItems().addAll(
                 "SELECT * FROM RESTAURANTS;",
                 "SELECT team, wins, touchdowns FROM football;",
-                "SELECT model, memory, storage, dollars FROM macbooks;"
+                "SELECT model, \"gigabytes_of_memory\", \"gigabytes_of_storage\", dollars FROM macbooks;"
         );
         sampleQueryChoices.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -163,7 +166,10 @@ public class Demo extends Application {
 
         playNaiveButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                voiceGenerator.generateSpeech(naiveOutput.getText());
+                if (naivePlan != null) {
+                    System.out.println(naivePlan.toSpeechText(false));
+                    voiceGenerator.generateSpeech(naivePlan.toSpeechText(false));
+                }
             }
         });
 
@@ -175,7 +181,10 @@ public class Demo extends Application {
 
         playCplexButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                voiceGenerator.generateSpeech(cplexOutput.getText());
+                if (linearPlan != null) {
+                    System.out.println(linearPlan.toSpeechText(false));
+                    voiceGenerator.generateSpeech(linearPlan.toSpeechText(false));
+                }
             }
         });
 
@@ -188,6 +197,9 @@ public class Demo extends Application {
         button.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 // CHECK CONFIG PARAMETERS
+
+                linearPlan = null;
+                naivePlan = null;
 
                 double mW;
                 try {
@@ -238,8 +250,8 @@ public class Demo extends Application {
                 final PlanningTask naiveTask = new PlanningTask(results, new NaiveVoicePlanner());
                 naiveTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
-                        VoiceOutputPlan plan = naiveTask.getValue();
-                        String speechText = plan.toSpeechText();
+                        naivePlan = naiveTask.getValue();
+                        String speechText = naivePlan.toSpeechText(true);
                         naiveOutput.setText(speechText);
                         naiveCostLabel.setText("Cost: " + speechText.length());
                     }
@@ -260,8 +272,8 @@ public class Demo extends Application {
                 final PlanningTask linearTask = new PlanningTask(results, new LinearProgrammingPlanner(mS, mW, mC));
                 linearTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
-                        VoiceOutputPlan plan = linearTask.getValue();
-                        String speechText = plan.toSpeechText();
+                        linearPlan = linearTask.getValue();
+                        String speechText = linearPlan.toSpeechText(true);
                         cplexOutput.setText(speechText);
                         cplexCostLabel.setText("Cost: " + speechText.length());
                     }

@@ -52,13 +52,12 @@ public class Tuple implements Speakable {
         return valueAssignments.get(attribute);
     }
 
-    public String toSpeechText() {
+    public String toSpeechText(boolean inLongForm) {
         String result = "";
-        int count = 0;
-        for (String column : attributes) {
-            result += column + " " + valueAssignments.get(column).toSpeechText();
-            count ++;
-            if (count != valueAssignments.keySet().size()) {
+        for (int i = 0; i < attributes.size(); i++) {
+            String attribute = attributes.get(i);
+            result += attribute + " " + valueAssignments.get(attribute).toSpeechText(inLongForm);
+            if (i < attributes.size()-1) {
                 result += ", ";
             }
         }

@@ -9,12 +9,14 @@ import java.util.HashMap;
 public class Context {
     HashMap<String, CategoricalValueDomain> categoricalValueAssignments;
     HashMap<String, NumericalValueDomain> numericalValueAssignments;
-    String cachedResult;
+    String cachedShortResult;
+    String cachedLongFormResult;
 
     public Context() {
         this.categoricalValueAssignments = new HashMap<String, CategoricalValueDomain>();
         this.numericalValueAssignments = new HashMap<String, NumericalValueDomain>();
-        this.cachedResult = null;
+        this.cachedShortResult = null;
+        this.cachedLongFormResult = null;
     }
 
     public void addCategoricalValueAssignment(String attribute, Value value) {
@@ -39,21 +41,23 @@ public class Context {
         return categoricalValueAssignments.containsKey(attribute) || numericalValueAssignments.containsKey(attribute);
     }
 
-    public String toSpeechText() {
-        if (cachedResult != null) {
-            return cachedResult;
+    public String toSpeechText(boolean inLongForm) {
+        if (cachedLongFormResult != null && inLongForm) {
+            return cachedLongFormResult;
+        } else if (cachedShortResult != null && !inLongForm) {
+            return cachedShortResult;
         }
 
-        cachedResult = "";
+        String cachedResult = "";
 
         ArrayList<String> parsed = new ArrayList<String>();
 
         for (CategoricalValueDomain categoricalValueDomain : categoricalValueAssignments.values()) {
-            parsed.add(categoricalValueDomain.toSpeechText());
+            parsed.add(categoricalValueDomain.toSpeechText(inLongForm));
         }
 
         for (NumericalValueDomain numericalValueDomain : numericalValueAssignments.values()) {
-            parsed.add(numericalValueDomain.toSpeechText());
+            parsed.add(numericalValueDomain.toSpeechText(inLongForm));
         }
 
         if (parsed.size() == 1) {
@@ -65,8 +69,15 @@ public class Context {
             for (int i = 1; i < parsed.size() - 1; i++) {
                 cachedResult += ", " + parsed.get(i);
             }
-            cachedResult += parsed.get(parsed.size()-1);
+            cachedResult += ", and " + parsed.get(parsed.size()-1);
         }
+
+        if (inLongForm) {
+            cachedLongFormResult = cachedResult;
+        } else {
+            cachedShortResult = cachedResult;
+        }
+
         return cachedResult;
     }
 
