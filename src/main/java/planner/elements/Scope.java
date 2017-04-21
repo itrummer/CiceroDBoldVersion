@@ -82,37 +82,37 @@ public class Scope {
             return cachedShortResult;
         }
 
-        String cachedResult = "";
+        String result = "";
 
-        cachedResult += context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE;
+        result += context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE;
 
         for (int i = 0; i < tuples.size(); i++) {
             Tuple t = tuples.get(i);
             if (tuples.size() > 1 && i == tuples.size()-1) {
-                cachedResult += "and ";
+                result += "and ";
             }
             boolean firstAttribute = true;
             for (String attribute : t.getAttributes()) {
                 if (context == null || !context.isAttributeFixed(attribute)) {
                     Value v = t.valueForAttribute(attribute);
                     if (firstAttribute) {
-                        cachedResult += v.toSpeechText(inLongForm);
+                        result += v.toSpeechText(inLongForm);
                     } else {
-                        cachedResult += ", " + v.toSpeechText(inLongForm) + " " + attribute;
+                        result += ", " + v.toSpeechText(inLongForm) + " " + attribute;
                     }
                     firstAttribute = false;
                 }
             }
-            cachedResult += i == tuples.size()-1 ? ".  " : ", ";
+            result += i == tuples.size()-1 ? ".  " : ", ";
         }
 
         if (inLongForm) {
-            cachedLongFormResult = cachedResult;
+            cachedLongFormResult = result;
         } else {
-            cachedShortResult = cachedResult;
+            cachedShortResult = result;
         }
 
-        return cachedResult;
+        return result;
     }
 
     public int numberTuples() {

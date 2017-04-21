@@ -68,7 +68,7 @@ public class Demo extends Application {
 
         // Describe the schemas of the test tables for clarity
 
-        Label macbooksLabel = new Label("macbooks : (model, inch_display, gigabytes_of_memory, gigabytes_of_storage, dollars, gigahertz, processor, \n\t\thours_battery_life, trackpad, pounds)");
+        Label macbooksLabel = new Label("macbooks : (model, inch_display, gigabytes_of_memory, gigabytes_of_storage, dollars, \n\t\tgigahertz, processor, thours_battery_life, trackpad, pounds)");
         macbooksLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
         Label restaurantsLabel = new Label("restaurants : (restaurant, rating, price, cuisine)");
         restaurantsLabel.setStyle("-fx-font-family: Inconsolata, monospace; -fx-font-size: 16;");
@@ -109,8 +109,12 @@ public class Demo extends Application {
         sampleQueryChoices = new ChoiceBox();
         sampleQueryChoices.getItems().addAll(
                 "SELECT * FROM RESTAURANTS;",
+                "SELECT restaurant, rating FROM RESTAURANTS;",
+                "SELECT restaurant, price, cuisine from restaurants;",
+                "SELECT model, gigabytes_of_memory as \"gigabytes of memory\", gigabytes_of_storage as \"gigabytes of storage\", dollars FROM macbooks;",
+                "SELECT model, gigabytes_of_memory as \"gigabytes of memory\", dollars FROM macbooks;",
                 "SELECT team, wins, touchdowns FROM football;",
-                "SELECT model, \"gigabytes_of_memory\", \"gigabytes_of_storage\", dollars FROM macbooks;"
+                "SELECT team, wins, total_points_for as \"total points\", conference from football;"
         );
         sampleQueryChoices.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
@@ -251,9 +255,8 @@ public class Demo extends Application {
                 naiveTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
                         naivePlan = naiveTask.getValue();
-                        String speechText = naivePlan.toSpeechText(true);
-                        naiveOutput.setText(speechText);
-                        naiveCostLabel.setText("Cost: " + speechText.length());
+                        naiveOutput.setText(naivePlan.toSpeechText(true));
+                        naiveCostLabel.setText("Cost: " + naivePlan.toSpeechText(true).length());
                     }
                 });
 
@@ -273,9 +276,8 @@ public class Demo extends Application {
                 linearTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                     public void handle(WorkerStateEvent event) {
                         linearPlan = linearTask.getValue();
-                        String speechText = linearPlan.toSpeechText(true);
-                        cplexOutput.setText(speechText);
-                        cplexCostLabel.setText("Cost: " + speechText.length());
+                        cplexOutput.setText(linearPlan.toSpeechText(true));
+                        cplexCostLabel.setText("Cost: " + linearPlan.toSpeechText(true).length());
                     }
                 });
 

@@ -99,7 +99,9 @@ public class Value implements Speakable, Comparable<Value> {
                     expandedValue = EnglishNumberToWords.convert(((Integer) value).longValue());
                     break;
                 case DOUBLE:
-                    expandedValue = EnglishNumberToWords.convert(((Double) value).longValue());
+                    Double v = (Double) value;
+                    long tenths = (long) ((v - v.intValue()) * 10);
+                    expandedValue = EnglishNumberToWords.convert(((Double) value).longValue()) + " point " + EnglishNumberToWords.convert(tenths);
                     break;
                 case FLOAT:
                     expandedValue = EnglishNumberToWords.convert(((Float) value).longValue());

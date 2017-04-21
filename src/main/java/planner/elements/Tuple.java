@@ -11,21 +11,13 @@ import java.util.HashMap;
 public class Tuple implements Speakable {
     ArrayList<String> attributes;
     HashMap<String, Value> valueAssignments;
-    String primaryKey;
 
     /**
-     * Constructor for a Tuple
+     * Constructor for a Tuple with a list of String attributes
      */
     public Tuple(ArrayList<String> attributes) {
         this.attributes = attributes;
         this.valueAssignments = new HashMap<String, Value>();
-    }
-
-    /**
-     * Returns this Tuples value assignments. A value assignment is a mapping from a String attribute to a Value
-     */
-    public HashMap<String, Value> getValueAssignments() {
-        return valueAssignments;
     }
 
     /**
@@ -35,10 +27,6 @@ public class Tuple implements Speakable {
      */
     public void addValueAssignment(String column, Value value) {
         valueAssignments.put(column, value);
-    }
-
-    public void setPrimaryKey(String s) {
-        primaryKey = s;
     }
 
     public ArrayList<String> getAttributes() {
