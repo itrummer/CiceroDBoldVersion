@@ -1,6 +1,7 @@
 package planner;
 
 import planner.elements.Context;
+import planner.elements.Tuple;
 import planner.elements.TupleCollection;
 
 import java.util.ArrayList;
@@ -62,7 +63,15 @@ public class GreedyPlanner extends VoicePlanner {
      * @return The time savings from outputting matching rows within Context c
      */
     private int timeSavingsFromContext(Context c, TupleCollection tupleCollection) {
-        return 0;
+        int totalSavings = 0;
+        for (Tuple t : tupleCollection.getTuples()) {
+            if (c.matches(t)) {
+                // if t can be output within c, then we save time equal to T(t) - T(t,c)
+                int tSavings = t.toSpeechText(true).length() - t.toSpeechText(c, true).length();
+                totalSavings += tSavings;
+            }
+        }
+        return totalSavings;
     }
 
     /**
