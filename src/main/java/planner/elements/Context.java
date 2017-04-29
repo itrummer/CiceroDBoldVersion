@@ -41,6 +41,33 @@ public class Context {
         return categoricalValueAssignments.containsKey(attribute) || numericalValueAssignments.containsKey(attribute);
     }
 
+    /**
+     * Determines if a Tuple matches this Context. A Tuple matches a Context if for all attributes in
+     * which the Context fixes a domain, the Tuple has a value for that attribute that is within
+     * the fixed domain.
+     * @param t The Tuple to consider
+     * @return whether the given Tuple matches this Context
+     */
+    public boolean matches(Tuple t) {
+        for (String attribute : categoricalValueAssignments.keySet()) {
+            ValueDomain domain = categoricalValueAssignments.get(attribute);
+            Value vT = t.valueForAttribute(attribute);
+            if (!domain.contains(vT)) {
+                return false;
+            }
+        }
+
+        for (String attribute : numericalValueAssignments.keySet()) {
+            ValueDomain domain = categoricalValueAssignments.get(attribute);
+            Value vT = t.valueForAttribute(attribute);
+            if (!domain.contains(vT)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public String toSpeechText(boolean inLongForm) {
         if (cachedLongFormResult != null && inLongForm) {
             return cachedLongFormResult;

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 /**
  */
-public class CategoricalValueDomain implements Speakable {
+public class CategoricalValueDomain extends ValueDomain implements Speakable {
     String attribute;
     ArrayList<Value> domainValues;
 
@@ -26,6 +26,22 @@ public class CategoricalValueDomain implements Speakable {
 
     public void addValueToDomain(Value value) {
         domainValues.add(value);
+    }
+
+    /**
+     * Determines if a Value is within this CategoricalValueDomain. A Value is within
+     * this domain if it is equal to one of the categorical Values that this domain fixes.
+     * @param v The Value to check.
+     * @return A boolean Value indicating if v is within this CategoricalValueDomain
+     */
+    @Override
+    public boolean contains(Value v) {
+        for (Value vInDomain : domainValues) {
+            if (vInDomain.equals(v)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String toSpeechText(boolean inLongForm) {

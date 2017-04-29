@@ -4,6 +4,7 @@ import planner.elements.Context;
 import planner.elements.TupleCollection;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * The GreedyPlanner constructs VoiceOutputPlans according to the greedy algorithm. The greedy algorithm proceeds in
@@ -14,7 +15,29 @@ public class GreedyPlanner extends VoicePlanner {
 
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
-        return null;
+        ArrayList<Context> candidateContexts = new ArrayList<Context>();
+        ArrayList<VoiceOutputPlan> plans = new ArrayList<VoiceOutputPlan>();
+
+        // add the naive plan
+        plans.add(minTimePlan(candidateContexts, tupleCollection));
+
+        // up to maximal number of useful contexts
+        for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
+            // TODO: generate the most promising context
+        }
+
+        int minCost = Integer.MAX_VALUE;
+        VoiceOutputPlan minPlan = null;
+
+        for (VoiceOutputPlan plan : plans) {
+            int planCost = plan.toSpeechText(true).length();
+            if (planCost < minCost) {
+                minCost = planCost;
+                minPlan = plan;
+            }
+        }
+
+        return minPlan;
     }
 
     /**
