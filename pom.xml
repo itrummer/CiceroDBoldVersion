@@ -24,6 +24,15 @@
     <thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
   </properties>
 
+  <repositories>
+    <!--other repositories if any-->
+    <repository>
+      <id>project.local</id>
+      <name>project</name>
+      <url>file:${project.basedir}/repo</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
