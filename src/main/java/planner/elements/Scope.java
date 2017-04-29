@@ -82,27 +82,14 @@ public class Scope {
             return cachedShortResult;
         }
 
-        String result = "";
-
-        result += context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE;
+        String result = context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE;
 
         for (int i = 0; i < tuples.size(); i++) {
             Tuple t = tuples.get(i);
             if (tuples.size() > 1 && i == tuples.size()-1) {
                 result += "and ";
             }
-            boolean firstAttribute = true;
-            for (String attribute : t.getAttributes()) {
-                if (context == null || !context.isAttributeFixed(attribute)) {
-                    Value v = t.valueForAttribute(attribute);
-                    if (firstAttribute) {
-                        result += v.toSpeechText(inLongForm);
-                    } else {
-                        result += ", " + v.toSpeechText(inLongForm) + " " + attribute;
-                    }
-                    firstAttribute = false;
-                }
-            }
+            result += t.toSpeechText(context, inLongForm);
             result += i == tuples.size()-1 ? ".  " : ", ";
         }
 

@@ -41,12 +41,27 @@ public class Tuple implements Speakable {
     }
 
     public String toSpeechText(boolean inLongForm) {
+        return toSpeechText(null, inLongForm);
+    }
+
+    /**
+     * Calculates the speech text for speaking this Tuple in a given Context. When given a nonnull
+     * Context, we eliminate outputting attribute-value pairs for which the Context fixes a domain.
+     * @param c The Context in which to output this Tuple
+     * @return The speech representation of this Tuple within the given Context
+     */
+    public String toSpeechText(Context c, boolean inLongForm) {
         String result = "";
-        for (int i = 0; i < attributes.size(); i++) {
-            String attribute = attributes.get(i);
-            result += attribute + " " + valueAssignments.get(attribute).toSpeechText(inLongForm);
-            if (i < attributes.size()-1) {
-                result += ", ";
+        boolean firstAttribute = true;
+        for (String attribute : attributes) {
+            if (c == null || !c.isAttributeFixed(attribute)) {
+                Value v = valueForAttribute(attribute);
+                if (firstAttribute) {
+                    result += v.toSpeechText(inLongForm);
+                } else {
+                    result += ", " + v.toSpeechText(inLongForm) + " " + attribute;
+                }
+                firstAttribute = false;
             }
         }
         return result;
