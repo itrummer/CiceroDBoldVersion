@@ -1,4 +1,4 @@
-package util;
+package planner.elements;
 
 import junit.framework.TestCase;
 import planner.elements.Tuple;
