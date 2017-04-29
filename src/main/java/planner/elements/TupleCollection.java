@@ -48,6 +48,10 @@ public class TupleCollection {
         return tuples;
     }
 
+    public ArrayList<String> getAttributes() {
+        return attributes;
+    }
+
     public int tupleCount() {
         return tuples.size();
     }
