@@ -1,3 +1,5 @@
+package gui;
+
 import util.DatabaseUtilities;
 import planner.elements.TupleCollection;
 import planner.LinearProgrammingPlanner;
