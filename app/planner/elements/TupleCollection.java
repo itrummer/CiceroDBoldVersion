@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Class representation of a collection of Tuples returned from a SQL query
@@ -233,6 +234,20 @@ public class TupleCollection {
      */
     public int costForAttribute(int a) {
         return attributes.get(a).length();
+    }
+
+    /**
+     * Computes the set of candidate domain assignments for all attributes. Used in
+     * the GreedyPlanner and HybridPlanner algorithms.
+     */
+    public void candidateAssignments() {
+        for (int a = 0; a < attributeCount(); a++) {
+            HashSet<Value> d = new HashSet<>();
+            for (int v = 0; v < distinctValueCountForAttribute(a); a++) {
+                d.add(getDistinctValue(a,v));
+            }
+        }
+        // TODO: finish implementation
     }
 
     @Override

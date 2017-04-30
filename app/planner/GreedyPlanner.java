@@ -16,16 +16,24 @@ import java.util.HashSet;
  */
 public class GreedyPlanner extends VoicePlanner {
 
+    /**
+     * Constructs
+     * @param tupleCollection
+     * @return
+     */
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
         ArrayList<Context> candidateContexts = new ArrayList<>();
         ArrayList<VoiceOutputPlan> plans = new ArrayList<>();
 
-        // add the naive plan
+        // add the naive plan, i.e. the best plan when the candidateContexts is empty
         plans.add(minTimePlan(candidateContexts, tupleCollection));
 
         // up to maximal number of useful contexts
         for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
+            // generate the next best context, add it to candidateContexts,
+            // then generate the best minimum time plan from the bigger
+            // context set and add this to the plan set
             Context newContext = bestContext(candidateContexts, tupleCollection);
             candidateContexts.add(newContext);
             VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
@@ -117,7 +125,27 @@ public class GreedyPlanner extends VoicePlanner {
      * @return The best Context
      */
     private Context bestContext(ArrayList<Context> contextSet, TupleCollection tupleCollection) {
-        return null;
+        TupleCollection unmatchedTuples = new TupleCollection(tupleCollection.getAttributes());
+        for (Tuple t : tupleCollection.getTuples()) {
+            boolean unmatched = true;
+            for (Context c : contextSet) {
+                if (c.matches(t)) {
+                    unmatched = false;
+                    break;
+                }
+            }
+            if (unmatched) {
+                unmatchedTuples.addTuple(t);
+            }
+        }
+
+        Context bestContext = null;
+        int bestSavings;
+
+        // consider each Context that takes a maximum mS number of domain assignments and
+        // at most one domain assignment for a given attribute; compare with bestContext;
+
+        return bestContext;
     }
 
     public static void main(String[] args) {
