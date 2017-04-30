@@ -1,7 +1,6 @@
 *.jar
 *.class
 target/
-.idea/workspace.xml
-.idea/vcs.xml
-.idea/*
+.idea/
 audiolization.iml
+logs
