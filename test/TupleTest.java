@@ -1,5 +1,3 @@
-package java.planner.elements;
-
 import junit.framework.TestCase;
 import planner.elements.Tuple;
 import planner.elements.Value;
