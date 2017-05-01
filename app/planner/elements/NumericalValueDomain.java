@@ -16,6 +16,10 @@ public class NumericalValueDomain extends ValueDomain implements Speakable {
         this.upperBound = upperBound;
     }
 
+    public NumericalValueDomain(String attribute, Value singularValue) {
+        this(attribute, singularValue, singularValue);
+    }
+
     /**
      * Determines if a Value is within this NumericalValueDomain. This is equivalent to whether
      * a Value is both greater than or equal to the lower bound and less than or equal to the
