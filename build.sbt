@@ -11,3 +11,5 @@ libraryDependencies += cache
 libraryDependencies += javaWs
 libraryDependencies += "com.ibm.watson.developer_cloud" % "java-sdk" % "3.6.0"
 libraryDependencies += "org.postgresql" % "postgresql" % "42.0.0.jre7"
+
+herokuAppName in Compile := "cicero-db"
