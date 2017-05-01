@@ -1,5 +1,37 @@
-@(message: String)
-
 @main("CiceroDB") {
-    @welcome(message, style = "java")
+
+    <div>
+        <h1>Welcome to CiceroDB</h1>
+
+        <p class="text-justify">
+            Recent research on data visualization aims at automatically identifying the best way
+            to represent data on visual interfaces. Supported by a Google faculty Award, the Cornell
+            Database Group is currently studying the complementary problem of "data audiolization".
+            The goal here is to optimize the way in which structured data is represented via audio
+            interfaces. This problem setting is motivated by emerging devices such as Google Home
+            or Amazon Echo that interact with users primarily over voice based interfaces.
+            </p>
+        <p class="text-justify">
+            CiceroDB is an experimental database system that will offer different modules to
+            translate data into voice output. In the current prototype, we model voice output
+            optimization as an NP-hard optimization problem with the goal to reduce speaking
+            time for outputting a given data set (subject to user-defined output precision constraints).
+            The current prototype applies either exhaustive or polynomial time algorithms with
+            approximation guarantees to solve the voice output optimization problem and reads
+            out the optimized results. We currently reduce speaking time by removing redundancies
+            which is appropriate for outputting relatively small data sets. In future work,
+            we will explore methods to transmit information that allow users to get insights about
+            the distributions underlying larger data sets.
+        </p>
+    </div>
+
+    <div>
+
+        <h2>Contributors</h2>
+
+        <p>Immanuel Trummer</p>
+        <p>Jiancheng Zhu</p>
+        <p>Mark Bryan</p>
+
+    </div>
 }

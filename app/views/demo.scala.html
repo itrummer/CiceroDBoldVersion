@@ -1,7 +1,17 @@
 @(query: Form[TestQuery])
 
 @main("CiceroDB") {
+
+    <h1>Enter your query below</h1>
+
+    <p class="lead">
+        Enter a SQL query below to try out CiceroDB.
+    </p>
+
     @helper.form(action = routes.DemoController.execute(), 'class -> "form-group") {
-        @helper.inputText(query("query"), 'class -> "form-control")
+
+        @helper.inputText(query("query"), 'class -> "form-control", '_label -> "Query:")
+
+        <button type="submit" class="btn btn-default">Submit</button>
     }
 }
