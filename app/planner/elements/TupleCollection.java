@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -241,10 +242,17 @@ public class TupleCollection {
      * the GreedyPlanner and HybridPlanner algorithms.
      */
     public void candidateAssignments() {
+        HashMap<String, ArrayList<ValueDomain>> domains = new HashMap<>();
         for (int a = 0; a < attributeCount(); a++) {
-            HashSet<Value> d = new HashSet<>();
+            ArrayList<ValueDomain> valueDomains = new ArrayList<>();
+            domains.put(attributeForIndex(a), valueDomains);
             for (int v = 0; v < distinctValueCountForAttribute(a); a++) {
-                d.add(getDistinctValue(a,v));
+//                d.add(getDistinctValue(a,v));
+                if (attributeIsCategorical(a)) {
+                    valueDomains.add(new CategoricalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
+                } else if (attributeIsNumerical(a)) {
+                    valueDomains.add(new NumericalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
+                }
             }
         }
         // TODO: finish implementation
