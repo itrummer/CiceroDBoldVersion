@@ -18,10 +18,16 @@ allow users to get insights about the distributions underlying larger data sets.
 
 ## Environment Setup
 
-The project is built with [Maven](https://maven.apache.org/), so ensure Maven is installed before continuing.
+The project uses the [sbt](http://www.scala-sbt.org/download.html) build tool, so ensure this is installed before continuing.
 
-Clone the repository and then import the project into Eclipse or IntelliJ as a Maven project. You will now be able
-to install the required dependencies using Maven, or within your IDE.
+Clone the repository and then import the project into IntelliJ as an sbt project. You will now be able
+to install the required dependencies using sbt, or you can allow IntelliJ to auto-import dependencies.
+
+To run the project, navigate to the `audiolization` directory and enter the following command in the command line 
+
+`sbt run`
+
+Open a web browser and navigate to `localhost:9000` to view the app.
 
 ### CPLEX Setup
 
