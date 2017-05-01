@@ -1,0 +1,7 @@
+@(query: Form[TestQuery])
+
+@main("CiceroDB") {
+    @helper.form(action = routes.DemoController.execute(), 'class -> "form-group") {
+        @helper.inputText(query("query"), 'class -> "form-control")
+    }
+}
