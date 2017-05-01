@@ -36,15 +36,17 @@ public class DemoController extends Controller {
 
         String query = testQueryForm.data().get("query");
 
-        String result = "";
+        String naive = "";
+        String linear = "";
+        String greedy = "";
         try {
             TupleCollection tupleCollection = DatabaseUtilities.executeQuery(query);
-            result = new NaiveVoicePlanner().plan(tupleCollection).toSpeechText(false);
+            naive = new NaiveVoicePlanner().plan(tupleCollection).toSpeechText(false);
         } catch (Exception e) {
-            result = "error while executing query";
+            naive = "error while executing query";
         }
 
-        return ok(results.render(query, result));
+        return ok(results.render(query, naive, linear, greedy));
     }
 
 }
