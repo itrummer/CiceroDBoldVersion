@@ -3,14 +3,12 @@ package util;
 import planner.elements.TupleCollection;
 
 import java.sql.*;
+import java.util.Map;
 
 /**
  * Convenience methods for setting up connections to the PostgreSQL database and extracting result sets
  */
 public class DatabaseUtilities {
-    static String url = "jdbc:postgresql://localhost/audiolization_db";
-    static String user = "postgres";
-    static String password = "admin";
     static int MAX_ROWS = 100;
 
     /**
@@ -28,6 +26,24 @@ public class DatabaseUtilities {
         SQLException sqlException = null;
 
         try {
+            Map<String, String> env = System.getenv();
+
+            // default for local environment
+            String url = "jdbc:postgresql://localhost/audiolization_db";
+            String user = "postgres";
+            String password = "admin";
+
+            // override for Heroku
+            if (env.containsKey("JDBC_DATABASE_URL")) {
+                url = env.get("JDBC_DATABASE_URL");
+            }
+            if (env.containsKey("JDBC_DATABASE_USERNAME")) {
+                user = env.get("JDBC_DATABASE_USERNAME");
+            }
+            if (env.containsKey("JDBC_DATABASE_PASSWORD")) {
+                password = env.get("JDBC_DATABASE_PASSWORD");
+            }
+
             connection = DriverManager.getConnection(url, user, password);
             statement = connection.createStatement();
             statement.setMaxRows(MAX_ROWS);
