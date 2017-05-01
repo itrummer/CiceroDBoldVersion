@@ -241,21 +241,31 @@ public class TupleCollection {
      * Computes the set of candidate domain assignments for all attributes. Used in
      * the GreedyPlanner and HybridPlanner algorithms.
      */
-    public void candidateAssignments() {
-        HashMap<String, ArrayList<ValueDomain>> domains = new HashMap<>();
+    public HashMap<Integer, HashSet<ValueDomain>> candidateAssignments() {
+        HashMap<Integer, HashSet<ValueDomain>> attributeDomains = new HashMap<>();
         for (int a = 0; a < attributeCount(); a++) {
-            ArrayList<ValueDomain> valueDomains = new ArrayList<>();
-            domains.put(attributeForIndex(a), valueDomains);
-            for (int v = 0; v < distinctValueCountForAttribute(a); a++) {
-//                d.add(getDistinctValue(a,v));
-                if (attributeIsCategorical(a)) {
-                    valueDomains.add(new CategoricalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
-                } else if (attributeIsNumerical(a)) {
-                    valueDomains.add(new NumericalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
+            HashSet<ValueDomain> domains = new HashSet<>();
+            if (attributeIsCategorical(a)) {
+                for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
+                    // add singular value domain
+                    domains.add(new CategoricalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
+
+                    // add subsets of bounded cardinality
+                    // TODO
+                }
+            } else if (attributeIsNumerical(a)) {
+                for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
+                    // add singular value domain
+                    domains.add(new NumericalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
+
+                    // add intervals of bounded width
+                    // TODO
                 }
             }
+            attributeDomains.put(a, domains);
         }
-        // TODO: finish implementation
+
+        return attributeDomains;
     }
 
     @Override

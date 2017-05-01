@@ -1,12 +1,10 @@
 package planner;
 
-import planner.elements.Context;
-import planner.elements.Scope;
-import planner.elements.Tuple;
-import planner.elements.TupleCollection;
+import planner.elements.*;
 import util.DatabaseUtilities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -141,6 +139,8 @@ public class GreedyPlanner extends VoicePlanner {
 
         Context bestContext = null;
         int bestSavings;
+
+        HashMap<Integer, HashSet<ValueDomain>> domains = tupleCollection.candidateAssignments();
 
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
