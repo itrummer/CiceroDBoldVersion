@@ -6,14 +6,18 @@ import planner.Speakable;
  * A representation of a domain of numerical Values. The lower and upper bounds are inclusive bounds.
  */
 public class NumericalValueDomain extends ValueDomain implements Speakable {
-    String attribute;
     Value lowerBound;
     Value upperBound;
 
-    public NumericalValueDomain(String attribute, Value lowerBound, Value upperBound) {
+    public NumericalValueDomain(String attribute, Value v1, Value v2) {
         this.attribute = attribute;
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
+        if (v1.compareTo(v2) <= 0) {
+            this.lowerBound = v1;
+            this.upperBound = v2;
+        } else {
+            this.lowerBound = v2;
+            this.upperBound = v1;
+        }
     }
 
     public NumericalValueDomain(String attribute, Value singularValue) {
@@ -33,6 +37,26 @@ public class NumericalValueDomain extends ValueDomain implements Speakable {
         boolean geqLowerBound = v.compareTo(lowerBound) >= 0;
         boolean leqUpperBound = v.compareTo(upperBound) <= 0;
         return geqLowerBound && leqUpperBound;
+    }
+
+    @Override
+    public boolean isCategorical() {
+        return false;
+    }
+
+    @Override
+    public boolean isNumerical() {
+        return true;
+    }
+
+    /**
+     * Computes the width of this numerical value domain, which we define as
+     * how much bigger the upper bound is than the lower bound. That is,
+     * lowerBound * getWidth() = upperBound
+     * @return
+     */
+    public double getWidth() {
+        return upperBound.linearProgrammingCoefficient() / lowerBound.linearProgrammingCoefficient();
     }
 
     public String toSpeechText(boolean inLongForm) {

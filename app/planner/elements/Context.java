@@ -41,6 +41,15 @@ public class Context {
         return categoricalValueAssignments.containsKey(attribute) || numericalValueAssignments.containsKey(attribute);
     }
 
+    public void addDomainAssignment(ValueDomain valueDomain) {
+        String attribute = valueDomain.getAttribute();
+        if (valueDomain.isCategorical()) {
+            categoricalValueAssignments.put(attribute, (CategoricalValueDomain) valueDomain);
+        } else if (valueDomain.isNumerical()) {
+            numericalValueAssignments.put(attribute, (NumericalValueDomain) valueDomain);
+        }
+    }
+
     /**
      * Determines if a Tuple matches this Context. A Tuple matches a Context if for all attributes in
      * which the Context fixes a domain, the Tuple has a value for that attribute that is within

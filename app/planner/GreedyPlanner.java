@@ -13,6 +13,19 @@ import java.util.HashSet;
  * Second, it returns the plan with minimal run time among all generated plans
  */
 public class GreedyPlanner extends VoicePlanner {
+    private int maximalContextSize;
+    private double maximalNumericalDomainWidth;
+    private int maximalCategoricalDomainSize;
+
+    public GreedyPlanner(int mS, double mW, int mC) {
+        this.maximalContextSize = mS;
+        this.maximalNumericalDomainWidth = mW;
+        this.maximalCategoricalDomainSize = mC;
+    }
+
+    public GreedyPlanner() {
+        this(2, 2.0, 2);
+    }
 
     /**
      * Constructs
@@ -91,7 +104,6 @@ public class GreedyPlanner extends VoicePlanner {
                 }
             }
 
-
         }
 
         return null;
@@ -138,14 +150,43 @@ public class GreedyPlanner extends VoicePlanner {
         }
 
         Context bestContext = null;
-        int bestSavings;
+        int bestSavings = Integer.MIN_VALUE;
 
         HashMap<Integer, HashSet<ValueDomain>> domains = tupleCollection.candidateAssignments();
-
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
+        ArrayList<Context> contexts = new ArrayList<>();
+        candidateContextsForDomains(contexts, domains, new HashSet<>(), 0, maximalContextSize);
+        for (Context c : contexts) {
+            int savings = timeSavingsFromContext(c, tupleCollection);
+            if (savings > bestSavings) {
+                bestContext = c;
+                bestSavings = savings;
+            }
+        }
 
         return bestContext;
+    }
+
+    public void candidateContextsForDomains(ArrayList<Context> result, HashMap<Integer, HashSet<ValueDomain>> domains, HashSet<ValueDomain> current, int index, int s) {
+        if (!domains.containsKey(index) || current.size() >= s) {
+            // last index
+            return;
+        }
+
+        // include one of the domains for the currentIndex
+        for (ValueDomain d : domains.get(index)) {
+            HashSet<ValueDomain> newSet = new HashSet<>(current);
+            newSet.add(d);
+            Context newContext = new Context();
+            for (ValueDomain v : current) {
+                newContext.addDomainAssignment(v);
+            }
+            result.add(newContext);
+        }
+
+        // don't include the domain at the current index
+        candidateContextsForDomains(result, domains, current, index+1, s);
     }
 
     public static void main(String[] args) {

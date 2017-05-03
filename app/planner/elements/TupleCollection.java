@@ -3,9 +3,7 @@ package planner.elements;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Class representation of a collection of Tuples returned from a SQL query
@@ -247,25 +245,76 @@ public class TupleCollection {
             HashSet<ValueDomain> domains = new HashSet<>();
             if (attributeIsCategorical(a)) {
                 for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
-                    // add singular value domain
-                    domains.add(new CategoricalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
+                    HashSet<Value> valueSet = new HashSet<>();
+                    valueSet.addAll(distinctValues.get(a));
 
                     // add subsets of bounded cardinality
-                    // TODO
+                    // TODO: replace k with config value
+                    HashSet<HashSet<Value>> valueSubsets = subsetsOfSize(valueSet, 2);
+                    for (HashSet<Value> subset : valueSubsets) {
+                        domains.add(new CategoricalValueDomain(attributeForIndex(a), new ArrayList<>(subset)));
+                    }
                 }
             } else if (attributeIsNumerical(a)) {
-                for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
-                    // add singular value domain
-                    domains.add(new NumericalValueDomain(attributeForIndex(a), getDistinctValue(a,v)));
-
-                    // add intervals of bounded width
-                    // TODO
+                // add intervals of bounded width
+                for (int b1 = 0; b1 < distinctValueCountForAttribute(a); b1++) {
+                    Value v1 = getDistinctValue(a, b1);
+                    for (int b2 = b1; b2 < distinctValueCountForAttribute(a); b2++) {
+                        Value v2 = getDistinctValue(a, b2);
+                        NumericalValueDomain candidateDomain = new NumericalValueDomain(attributeForIndex(a), v1, v2);
+                        // TODO: replace with config width
+                        if (candidateDomain.getWidth() <= 2.0) {
+                            domains.add(candidateDomain);
+                        }
+                    }
                 }
             }
             attributeDomains.put(a, domains);
         }
 
         return attributeDomains;
+    }
+
+    /**
+     * Computes the power set of a set of items
+     * @param originalSet The original set of items
+     * @param <T> The type of the items
+     * @return The power set of the original set
+     */
+    public static <T> HashSet<HashSet<T>> powerSet(HashSet<T> originalSet) {
+        HashSet<HashSet<T>> sets = new HashSet<HashSet<T>>();
+        if (originalSet.isEmpty()) {
+            sets.add(new HashSet<T>());
+            return sets;
+        }
+        List<T> list = new ArrayList<T>(originalSet);
+        T head = list.get(0);
+        HashSet<T> rest = new HashSet<T>(list.subList(1, list.size()));
+        for (HashSet<T> set : powerSet(rest)) {
+            HashSet<T> newSet = new HashSet<T>();
+            newSet.add(head);
+            newSet.addAll(set);
+            sets.add(newSet);
+            sets.add(set);
+        }
+        return sets;
+    }
+
+    /**
+     * Computes all subsets of originalSet that have at most k elements. Excludes the empty set for convenience.
+     * @param originalSet The set of objects from which to create subsets
+     * @param k The maximum allowed size of a subset
+     * @param <T> The type of the objects in the HashSet
+     * @return All subsets of the original set that contain at most k elements, excluding the empty set
+     */
+    public static <T> HashSet<HashSet<T>> subsetsOfSize(HashSet<T> originalSet, int k) {
+        HashSet<HashSet<T>> filteredSets = new HashSet<>();
+        for (HashSet<T> set : powerSet(originalSet)) {
+            if (set.size() <= k && set.size() > 0) {
+                filteredSets.add(set);
+            }
+        }
+        return filteredSets;
     }
 
     @Override
@@ -279,5 +328,15 @@ public class TupleCollection {
             result += tuple.toString() + ", ";
         }
         return result.substring(result.length()-2);
+    }
+
+    public static void main(String[] args) {
+        HashSet<Integer> testSet = new HashSet<>();
+        testSet.add(1);
+        testSet.add(2);
+        testSet.add(3);
+        testSet.add(4);
+        System.out.println(TupleCollection.powerSet(testSet));
+        System.out.println(TupleCollection.subsetsOfSize(testSet, 2));
     }
 }

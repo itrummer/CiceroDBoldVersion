@@ -7,7 +7,6 @@ import java.util.ArrayList;
 /**
  */
 public class CategoricalValueDomain extends ValueDomain implements Speakable {
-    String attribute;
     ArrayList<Value> domainValues;
 
     public CategoricalValueDomain(String attribute, ArrayList<Value> domainValues) {
@@ -41,6 +40,16 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
                 return true;
             }
         }
+        return false;
+    }
+
+    @Override
+    public boolean isCategorical() {
+        return true;
+    }
+
+    @Override
+    public boolean isNumerical() {
         return false;
     }
 

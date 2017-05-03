@@ -201,6 +201,9 @@ public class Value implements Speakable, Comparable<Value> {
         return !isCategorical();
     }
 
+    public boolean isWithinDomainSize(double domainWidth, Value v) {
+        return true;
+    }
 
 
 }
