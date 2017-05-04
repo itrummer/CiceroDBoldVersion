@@ -119,6 +119,6 @@ public class Context {
 
     @Override
     public String toString() {
-        return "Context[" + categoricalValueAssignments.values() + ", " + numericalValueAssignments.values() + "]";
+        return "Context: " + categoricalValueAssignments.values() + ", " + numericalValueAssignments.values();
     }
 }

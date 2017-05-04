@@ -170,7 +170,7 @@ public class GreedyPlanner extends VoicePlanner {
         Context bestContext = null;
         int bestSavings = Integer.MIN_VALUE;
 
-        HashMap<Integer, HashSet<ValueDomain>> domains = tupleCollection.candidateAssignments();
+        HashMap<Integer, HashSet<ValueDomain>> domains = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
         ArrayList<Context> contexts = new ArrayList<>();
@@ -188,8 +188,6 @@ public class GreedyPlanner extends VoicePlanner {
 
     public void candidateContextsForDomains(ArrayList<Context> result, HashMap<Integer, HashSet<ValueDomain>> domains, HashSet<ValueDomain> subset, int index, int s) {
         if (!domains.containsKey(index) || subset.size() >= s) {
-            // CHECK HERE
-            // last index
             return;
         }
 
@@ -211,7 +209,7 @@ public class GreedyPlanner extends VoicePlanner {
     public static void main(String[] args) {
         try {
             TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from restaurants;");
-            GreedyPlanner planner = new GreedyPlanner();
+            GreedyPlanner planner = new GreedyPlanner(2, 1.5, 2);
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));

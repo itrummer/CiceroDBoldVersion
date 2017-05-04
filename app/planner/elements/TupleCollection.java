@@ -13,7 +13,7 @@ public class TupleCollection {
     ArrayList<Tuple> tuples;
 
     // attributeCount x tupleCount matrix
-    ArrayList<ArrayList<Value>> values;
+    HashMap<Integer, HashMap<Integer, Value>> values;
 
     // distinctValues contains only the distinct values for each attribute
     // each 'column' in this matrix is of variable length, but must be <= tupleCount
@@ -34,11 +34,11 @@ public class TupleCollection {
     public TupleCollection(ArrayList<String> attributes) {
         this.attributes = attributes;
         this.tuples = new ArrayList<Tuple>();
-        this.values = new ArrayList<ArrayList<Value>>();
+        this.values = new HashMap<>();
         this.distinctValues = new ArrayList<ArrayList<Value>>();
         this.indexMap = new ArrayList<ArrayList<Integer>>();
         for (int a = 0; a < attributeCount(); a++) {
-            values.add(new ArrayList<Value>());
+            values.put(a, new HashMap<>());
             distinctValues.add(new ArrayList<Value>());
             indexMap.add(new ArrayList<Integer>());
         }
@@ -66,15 +66,15 @@ public class TupleCollection {
 
     public void addTuple(Tuple tuple) {
         tuples.add(tuple);
+        int tupleIndex = tuples.size()-1;
 
         for (int a = 0; a < attributeCount(); a++) {
             String attributeName = attributes.get(a);
             Value tValue = tuple.valueForAttribute(attributeName);
 
-
             // add the value to the matrix
-            ArrayList<Value> aValues = values.get(a);
-            aValues.add(tValue);
+            HashMap<Integer, Value> aValues = values.get(a);
+            aValues.put(tupleIndex, tValue);
 
             // add any new values to the distinctValues matrix
             ArrayList<Value> aDistinctValues = distinctValues.get(a);
@@ -239,7 +239,7 @@ public class TupleCollection {
      * Computes the set of candidate domain assignments for all attributes. Used in
      * the GreedyPlanner and HybridPlanner algorithms.
      */
-    public HashMap<Integer, HashSet<ValueDomain>> candidateAssignments() {
+    public HashMap<Integer, HashSet<ValueDomain>> candidateAssignments(int mC, double mW) {
         HashMap<Integer, HashSet<ValueDomain>> attributeDomains = new HashMap<>();
         for (int a = 0; a < attributeCount(); a++) {
             HashSet<ValueDomain> domains = new HashSet<>();
@@ -250,7 +250,7 @@ public class TupleCollection {
 
                     // add subsets of bounded cardinality
                     // TODO: replace k with config value
-                    HashSet<HashSet<Value>> valueSubsets = subsetsOfSize(valueSet, 2);
+                    HashSet<HashSet<Value>> valueSubsets = subsetsOfSize(valueSet, mC);
                     for (HashSet<Value> subset : valueSubsets) {
                         domains.add(new CategoricalValueDomain(attributeForIndex(a), new ArrayList<>(subset)));
                     }
@@ -263,7 +263,7 @@ public class TupleCollection {
                         Value v2 = getDistinctValue(a, b2);
                         NumericalValueDomain candidateDomain = new NumericalValueDomain(attributeForIndex(a), v1, v2);
                         // TODO: replace with config width
-                        if (candidateDomain.getWidth() <= 2.0) {
+                        if (candidateDomain.getWidth() <= mW) {
                             domains.add(candidateDomain);
                         }
                     }
