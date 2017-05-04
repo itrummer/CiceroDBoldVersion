@@ -126,7 +126,7 @@ public class Value implements Speakable, Comparable<Value> {
     }
 
     public String toString() {
-        return "<" + type.name() + ": " + value.toString() + ">";
+        return value.toString();
     }
 
     public double linearProgrammingCoefficient() {
@@ -200,10 +200,5 @@ public class Value implements Speakable, Comparable<Value> {
     public boolean isNumerical() {
         return !isCategorical();
     }
-
-    public boolean isWithinDomainSize(double domainWidth, Value v) {
-        return true;
-    }
-
 
 }

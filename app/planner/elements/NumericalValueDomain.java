@@ -66,4 +66,9 @@ public class NumericalValueDomain extends ValueDomain implements Speakable {
             return "between " + lowerBound.toSpeechText(inLongForm) + " and " + upperBound.toSpeechText(inLongForm) + " " + attribute;
         }
     }
+
+    @Override
+    public String toString() {
+        return attribute + "NumericalValueDomain: " + lowerBound + " to " + upperBound;
+    }
 }

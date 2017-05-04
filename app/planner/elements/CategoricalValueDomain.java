@@ -72,4 +72,9 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
 
         return result;
     }
+
+    @Override
+    public String toString() {
+        return attribute + " : " + domainValues;
+    }
 }

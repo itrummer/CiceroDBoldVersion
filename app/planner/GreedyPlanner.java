@@ -42,9 +42,7 @@ public class GreedyPlanner extends VoicePlanner {
 
         // up to maximal number of useful contexts
         for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
-            // generate the next best context, add it to candidateContexts,
-            // then generate the best minimum time plan from the bigger
-            // context set and add this to the plan set
+
             Context newContext = bestContext(candidateContexts, tupleCollection);
             candidateContexts.add(newContext);
             VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
@@ -95,18 +93,35 @@ public class GreedyPlanner extends VoicePlanner {
         }
 
         Scope emptyScope = new Scope(unmatchedTuples);
-
+        HashMap<Context, Scope> scopes = new HashMap<>();
         for (Context c : contextCandidates) {
-            ArrayList<Tuple> matchingTuples = new ArrayList<>();
-            for (Tuple t : matchedTuples) {
-                if (c.matches(t)) {
-                    matchingTuples.add(t);
-                }
-            }
-
+            scopes.put(c, new Scope(c));
         }
 
-        return null;
+        // for each tuple, find the Context it most favors, i.e. the best
+        // savings, and add it to the Scope that contains that Context
+        for (Tuple t : tupleCollection.getTuples()) {
+            Context favoredContext = null;
+            int bestSavings = Integer.MAX_VALUE;
+            for (Context c : contextCandidates) {
+                int newSavings = t.toSpeechText(c, true).length();
+                if (newSavings < bestSavings) {
+                    favoredContext = c;
+                    bestSavings = newSavings;
+                }
+            }
+            scopes.get(favoredContext).addMatchingTuple(t);
+        }
+
+        VoiceOutputPlan plan = new VoiceOutputPlan();
+        plan.addScope(emptyScope);
+        for (Scope s : scopes.values()) {
+            if (s.numberTuples() > 0) {
+                plan.addScope(s);
+            }
+        }
+
+        return plan;
     }
 
     /**
@@ -116,6 +131,9 @@ public class GreedyPlanner extends VoicePlanner {
      * @return The time savings from outputting matching rows within Context c
      */
     private int timeSavingsFromContext(Context c, TupleCollection tupleCollection) {
+        if (c == null) {
+            return Integer.MIN_VALUE;
+        }
         int totalSavings = 0;
         for (Tuple t : tupleCollection.getTuples()) {
             if (c.matches(t)) {
@@ -168,25 +186,26 @@ public class GreedyPlanner extends VoicePlanner {
         return bestContext;
     }
 
-    public void candidateContextsForDomains(ArrayList<Context> result, HashMap<Integer, HashSet<ValueDomain>> domains, HashSet<ValueDomain> current, int index, int s) {
-        if (!domains.containsKey(index) || current.size() >= s) {
+    public void candidateContextsForDomains(ArrayList<Context> result, HashMap<Integer, HashSet<ValueDomain>> domains, HashSet<ValueDomain> subset, int index, int s) {
+        if (!domains.containsKey(index) || subset.size() >= s) {
+            // CHECK HERE
             // last index
             return;
         }
 
         // include one of the domains for the currentIndex
         for (ValueDomain d : domains.get(index)) {
-            HashSet<ValueDomain> newSet = new HashSet<>(current);
+            HashSet<ValueDomain> newSet = new HashSet<>(subset);
             newSet.add(d);
             Context newContext = new Context();
-            for (ValueDomain v : current) {
+            for (ValueDomain v : newSet) {
                 newContext.addDomainAssignment(v);
             }
             result.add(newContext);
         }
 
-        // don't include the domain at the current index
-        candidateContextsForDomains(result, domains, current, index+1, s);
+        // skip the domain at the current index
+        candidateContextsForDomains(result, domains, subset, index + 1, s);
     }
 
     public static void main(String[] args) {

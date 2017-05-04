@@ -67,7 +67,7 @@ public class Context {
         }
 
         for (String attribute : numericalValueAssignments.keySet()) {
-            ValueDomain domain = categoricalValueAssignments.get(attribute);
+            ValueDomain domain = numericalValueAssignments.get(attribute);
             Value vT = t.valueForAttribute(attribute);
             if (!domain.contains(vT)) {
                 return false;
@@ -86,7 +86,7 @@ public class Context {
 
         String cachedResult = "";
 
-        ArrayList<String> parsed = new ArrayList<String>();
+        ArrayList<String> parsed = new ArrayList<>();
 
         for (CategoricalValueDomain categoricalValueDomain : categoricalValueAssignments.values()) {
             parsed.add(categoricalValueDomain.toSpeechText(inLongForm));
@@ -119,7 +119,6 @@ public class Context {
 
     @Override
     public String toString() {
-        // TODO: summarize data structure
-        return super.toString();
+        return "Context[" + categoricalValueAssignments.values() + ", " + numericalValueAssignments.values() + "]";
     }
 }
