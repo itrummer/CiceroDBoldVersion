@@ -2,9 +2,8 @@ package planner;
 
 import org.junit.Test;
 import planner.elements.TupleCollection;
+import planner.greedy.GreedyPlanner;
 import util.DatabaseUtilities;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by mabryan on 4/30/17.

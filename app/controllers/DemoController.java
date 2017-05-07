@@ -1,7 +1,7 @@
 package controllers;
 
 import models.TestQuery;
-import planner.NaiveVoicePlanner;
+import planner.naive.NaiveVoicePlanner;
 import planner.elements.TupleCollection;
 import play.data.Form;
 import play.data.FormFactory;

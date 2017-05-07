@@ -2,8 +2,8 @@ package gui;
 
 import util.DatabaseUtilities;
 import planner.elements.TupleCollection;
-import planner.LinearProgrammingPlanner;
-import planner.NaiveVoicePlanner;
+import planner.linear.LinearProgrammingPlanner;
+import planner.naive.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
 import voice.VoiceGenerator;

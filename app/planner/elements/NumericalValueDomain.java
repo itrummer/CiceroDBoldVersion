@@ -69,6 +69,6 @@ public class NumericalValueDomain extends ValueDomain implements Speakable {
 
     @Override
     public String toString() {
-        return attribute + "NumericalValueDomain: " + lowerBound + " to " + upperBound;
+        return attribute + ": " + lowerBound + " to " + upperBound;
     }
 }

@@ -1,5 +1,8 @@
-package planner;
+package planner.greedy;
 
+import planner.naive.NaiveVoicePlanner;
+import planner.VoiceOutputPlan;
+import planner.VoicePlanner;
 import planner.elements.*;
 import util.DatabaseUtilities;
 
@@ -174,7 +177,8 @@ public class GreedyPlanner extends VoicePlanner {
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
         ArrayList<Context> contexts = new ArrayList<>();
-        candidateContextsForDomains(contexts, domains, new HashSet<>(), 0, maximalContextSize);
+
+        candidateContextsForDomains(contexts, domains, new HashSet<>(), 1, maximalContextSize);
         for (Context c : contexts) {
             int savings = timeSavingsFromContext(c, tupleCollection);
             if (savings > bestSavings) {
@@ -200,6 +204,7 @@ public class GreedyPlanner extends VoicePlanner {
                 newContext.addDomainAssignment(v);
             }
             result.add(newContext);
+            candidateContextsForDomains(result, domains, newSet, index + 1, s);
         }
 
         // skip the domain at the current index
@@ -208,7 +213,7 @@ public class GreedyPlanner extends VoicePlanner {
 
     public static void main(String[] args) {
         try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from restaurants;");
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, inch_display, hours_battery_life from macbooks;");
             GreedyPlanner planner = new GreedyPlanner(2, 1.5, 2);
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {

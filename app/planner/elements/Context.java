@@ -19,6 +19,12 @@ public class Context {
         this.cachedLongFormResult = null;
     }
 
+    public Context(Context otherContext) {
+        this();
+        this.categoricalValueAssignments.putAll(otherContext.categoricalValueAssignments);
+        this.numericalValueAssignments.putAll(otherContext.numericalValueAssignments);
+    }
+
     public void addCategoricalValueAssignment(String attribute, Value value) {
         if (categoricalValueAssignments.containsKey(attribute)) {
             categoricalValueAssignments.get(attribute).addValueToDomain(value);
@@ -119,6 +125,6 @@ public class Context {
 
     @Override
     public String toString() {
-        return "Context: " + categoricalValueAssignments.values() + ", " + numericalValueAssignments.values();
+        return "Context: " + (categoricalValueAssignments.isEmpty() ? "" : categoricalValueAssignments.values() + " and ") + (numericalValueAssignments.isEmpty() ? "" : numericalValueAssignments.values());
     }
 }

@@ -1,5 +1,7 @@
-package planner;
+package planner.linear;
 
+import planner.VoiceOutputPlan;
+import planner.VoicePlanner;
 import planner.elements.*;
 import ilog.concert.*;
 import ilog.cplex.*;

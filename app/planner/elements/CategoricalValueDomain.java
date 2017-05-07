@@ -77,4 +77,5 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
     public String toString() {
         return attribute + " : " + domainValues;
     }
+
 }

@@ -23,6 +23,8 @@ public class TupleCollection {
     // "v2"         4    ...
     ArrayList<ArrayList<Value>> distinctValues;
 
+    HashMap<Integer, HashSet<Value>> valueSets;
+
     // attributeCount x tupleCount
     // let index = indexMap.get(a).get(t)
     // distinctValues.get(a).get(t) == t's value for a
@@ -32,14 +34,18 @@ public class TupleCollection {
      * Constructs a TupleCollection with 0 rows.
      */
     public TupleCollection(ArrayList<String> attributes) {
+        // TODO: eliminate distinctValues and just use valueSets, using the size to determine the index
+
         this.attributes = attributes;
         this.tuples = new ArrayList<Tuple>();
         this.values = new HashMap<>();
         this.distinctValues = new ArrayList<ArrayList<Value>>();
+        this.valueSets = new HashMap<>();
         this.indexMap = new ArrayList<ArrayList<Integer>>();
         for (int a = 0; a < attributeCount(); a++) {
             values.put(a, new HashMap<>());
             distinctValues.add(new ArrayList<Value>());
+            valueSets.put(a, new HashSet<>());
             indexMap.add(new ArrayList<Integer>());
         }
     }
@@ -78,12 +84,18 @@ public class TupleCollection {
 
             // add any new values to the distinctValues matrix
             ArrayList<Value> aDistinctValues = distinctValues.get(a);
-            if (!distinctValues.contains(tValue)) {
+            if (!valueSets.get(a).contains(tValue)) {
                 aDistinctValues.add(tValue);
+                valueSets.get(a).add(tValue);
             }
 
             if (tValue.isNumerical()) {
-                aDistinctValues.addAll(tValue.roundedValues());
+                for (Value v : tValue.roundedValues()) {
+                    if (!valueSets.get(a).contains(v)) {
+                        aDistinctValues.add(v);
+                        valueSets.get(a).add(v);
+                    }
+                }
             }
         }
     }
@@ -242,27 +254,28 @@ public class TupleCollection {
     public HashMap<Integer, HashSet<ValueDomain>> candidateAssignments(int mC, double mW) {
         HashMap<Integer, HashSet<ValueDomain>> attributeDomains = new HashMap<>();
         for (int a = 0; a < attributeCount(); a++) {
+            if (a == getPrimaryKeyIndex()) {
+                continue;
+            }
             HashSet<ValueDomain> domains = new HashSet<>();
             if (attributeIsCategorical(a)) {
-                for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
-                    HashSet<Value> valueSet = new HashSet<>();
-                    valueSet.addAll(distinctValues.get(a));
+                distinctValues.get(a).toArray();
+                HashSet<Value> valueSet = new HashSet<>();
+                valueSet.addAll(distinctValues.get(a));
 
-                    // add subsets of bounded cardinality
-                    // TODO: replace k with config value
-                    HashSet<HashSet<Value>> valueSubsets = subsetsOfSize(valueSet, mC);
-                    for (HashSet<Value> subset : valueSubsets) {
-                        domains.add(new CategoricalValueDomain(attributeForIndex(a), new ArrayList<>(subset)));
-                    }
+                // add subsets of bounded cardinality
+                HashSet<HashSet<Value>> valueSubsets = subsetsOfSize(valueSet, mC);
+                for (HashSet<Value> subset : valueSubsets) {
+                    domains.add(new CategoricalValueDomain(attributeForIndex(a), new ArrayList<>(subset)));
                 }
             } else if (attributeIsNumerical(a)) {
                 // add intervals of bounded width
                 for (int b1 = 0; b1 < distinctValueCountForAttribute(a); b1++) {
                     Value v1 = getDistinctValue(a, b1);
+
                     for (int b2 = b1; b2 < distinctValueCountForAttribute(a); b2++) {
                         Value v2 = getDistinctValue(a, b2);
                         NumericalValueDomain candidateDomain = new NumericalValueDomain(attributeForIndex(a), v1, v2);
-                        // TODO: replace with config width
                         if (candidateDomain.getWidth() <= mW) {
                             domains.add(candidateDomain);
                         }
@@ -273,6 +286,13 @@ public class TupleCollection {
         }
 
         return attributeDomains;
+    }
+
+    /**
+     * For now, we assume that the first attribute is the primary key of this tuple collection
+     */
+    public int getPrimaryKeyIndex() {
+        return 0;
     }
 
     /**

@@ -1,5 +1,7 @@
-package planner;
+package planner.naive;
 
+import planner.VoiceOutputPlan;
+import planner.VoicePlanner;
 import planner.elements.TupleCollection;
 import planner.elements.Scope;
 

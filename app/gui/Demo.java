@@ -2,6 +2,8 @@ package gui;
 
 import concurrent.PlanningTask;
 import javafx.scene.layout.ColumnConstraints;
+import planner.linear.LinearProgrammingPlanner;
+import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 import planner.elements.TupleCollection;
 import javafx.application.Application;
