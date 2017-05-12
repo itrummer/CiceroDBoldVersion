@@ -81,7 +81,7 @@ public class GreedyPlanner extends VoicePlanner {
 
         ArrayList<Tuple> unmatchedTuples = new ArrayList<>();
         ArrayList<Tuple> matchedTuples = new ArrayList<>();
-        for (Tuple t : tupleCollection.getTuples()) {
+        for (Tuple t : tupleCollection) {
             boolean matched = false;
             for (Context c : contextCandidates) {
                 if (c.matches(t)) {
@@ -103,7 +103,7 @@ public class GreedyPlanner extends VoicePlanner {
 
         // for each tuple, find the Context it most favors, i.e. the best
         // savings, and add it to the Scope that contains that Context
-        for (Tuple t : tupleCollection.getTuples()) {
+        for (Tuple t : tupleCollection) {
             Context favoredContext = null;
             int bestSavings = Integer.MAX_VALUE;
             for (Context c : contextCandidates) {
@@ -138,7 +138,7 @@ public class GreedyPlanner extends VoicePlanner {
             return Integer.MIN_VALUE;
         }
         int totalSavings = 0;
-        for (Tuple t : tupleCollection.getTuples()) {
+        for (Tuple t : tupleCollection) {
             if (c.matches(t)) {
                 // if t can be output within c, then we save time equal to T(t) - T(t,c)
                 int tSavings = t.toSpeechText(true).length() - t.toSpeechText(c, true).length();
@@ -157,7 +157,7 @@ public class GreedyPlanner extends VoicePlanner {
      */
     private Context bestContext(ArrayList<Context> contextSet, TupleCollection tupleCollection) {
         TupleCollection unmatchedTuples = new TupleCollection(tupleCollection.getAttributes());
-        for (Tuple t : tupleCollection.getTuples()) {
+        for (Tuple t : tupleCollection) {
             boolean unmatched = true;
             for (Context c : contextSet) {
                 if (c.matches(t)) {
@@ -213,8 +213,9 @@ public class GreedyPlanner extends VoicePlanner {
 
     public static void main(String[] args) {
         try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, dollars, pounds, inch_display from macbooks;");
             GreedyPlanner planner = new GreedyPlanner(2, 2.0, 2);
+
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));

@@ -8,9 +8,9 @@ import java.util.*;
 /**
  * Class representation of a collection of Tuples returned from a SQL query
  */
-public class TupleCollection {
+public class TupleCollection implements Iterable<Tuple> {
     ArrayList<String> attributes;
-    ArrayList<Tuple> tuples;
+    HashMap<Integer, Tuple> tuples;
 
     // attributeCount x tupleCount matrix
     HashMap<Integer, HashMap<Integer, Value>> values;
@@ -37,7 +37,7 @@ public class TupleCollection {
         // TODO: eliminate distinctValues and just use valueSets, using the size to determine the index
 
         this.attributes = attributes;
-        this.tuples = new ArrayList<Tuple>();
+        this.tuples = new HashMap<>();
         this.values = new HashMap<>();
         this.distinctValues = new ArrayList<ArrayList<Value>>();
         this.valueSets = new HashMap<>();
@@ -51,7 +51,15 @@ public class TupleCollection {
     }
 
     public ArrayList<Tuple> getTuples() {
-        return tuples;
+        ArrayList<Tuple> list = new ArrayList<>();
+        for (Tuple t : this) {
+            list.add(t);
+        }
+        return list;
+    }
+
+    public Tuple getTuple(int t) {
+        return tuples.get(t);
     }
 
     public ArrayList<String> getAttributes() {
@@ -71,8 +79,8 @@ public class TupleCollection {
     }
 
     public void addTuple(Tuple tuple) {
-        tuples.add(tuple);
-        int tupleIndex = tuples.size()-1;
+        int tupleIndex = tuples.size();
+        tuples.put(tupleIndex, tuple);
 
         for (int a = 0; a < attributeCount(); a++) {
             String attributeName = attributes.get(a);
@@ -344,10 +352,35 @@ public class TupleCollection {
         }
 
         String result = "";
-        for (Tuple tuple : tuples) {
-            result += tuple.toString() + ", ";
+        for (int i = 0; i < tupleCount(); i++) {
+            result += getTuple(i).toString() + ", ";
         }
         return result.substring(result.length()-2);
+    }
+
+    @Override
+    public Iterator<Tuple> iterator() {
+        return new TupleCollectionIterator();
+    }
+
+    class TupleCollectionIterator implements Iterator<Tuple> {
+        int currentTuple = 0;
+
+        @Override
+        public boolean hasNext() {
+            return currentTuple < TupleCollection.this.tupleCount();
+        }
+
+        @Override
+        public Tuple next() {
+            if (this.hasNext()) {
+                int toReturn = currentTuple;
+                currentTuple++;
+                return TupleCollection.this.getTuple(toReturn);
+            }
+            throw new NoSuchElementException();
+        }
+
     }
 
     public static void main(String[] args) {
@@ -359,4 +392,5 @@ public class TupleCollection {
         System.out.println(TupleCollection.powerSet(testSet));
         System.out.println(TupleCollection.subsetsOfSize(testSet, 2));
     }
+
 }
