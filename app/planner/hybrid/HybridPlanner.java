@@ -137,7 +137,7 @@ public class HybridPlanner extends VoicePlanner {
 
     public boolean useless(Context c, TupleCollection tupleCollection) {
         int totalSavings = 0;
-        for (Tuple t : tupleCollection.getTuples()) {
+        for (Tuple t : tupleCollection) {
             if (c.matches(t)) {
                 int tWithContext = t.toSpeechText(c, true).length();
                 int tWithoutContext = t.toSpeechText(true).length();
@@ -170,7 +170,6 @@ public class HybridPlanner extends VoicePlanner {
                             newContext.addDomainAssignment(d);
                             if (!useless(newContext, tupleCollection)) {
                                 kPlusOneAssignmentContexts.add(newContext);
-                            } else {
                             }
                         }
                     }
