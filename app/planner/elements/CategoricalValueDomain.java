@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  */
-public class CategoricalValueDomain extends ValueDomain implements Speakable {
+public class CategoricalValueDomain extends ValueDomain {
     List<Value> domainValues;
 
     public CategoricalValueDomain(String attribute, List<Value> domainValues) {
@@ -54,6 +54,7 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
         return false;
     }
 
+    @Override
     public String toSpeechText(boolean inLongForm) {
         if (domainValues.size() == 1) {
             // example: "category Italian"

@@ -1,35 +1,37 @@
 package planner.elements;
 
+import planner.Speakable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A set of value assignments
  */
-public class Context {
-    HashMap<String, CategoricalValueDomain> categoricalValueAssignments;
-    HashMap<String, NumericalValueDomain> numericalValueAssignments;
+public class Context implements Speakable {
+    Map<String, ValueDomain> valueDomains;
     String cachedShortResult;
     String cachedLongFormResult;
 
     public Context() {
-        this.categoricalValueAssignments = new HashMap<String, CategoricalValueDomain>();
-        this.numericalValueAssignments = new HashMap<String, NumericalValueDomain>();
+        this.valueDomains = new HashMap<>();
         this.cachedShortResult = null;
         this.cachedLongFormResult = null;
     }
 
     public Context(Context otherContext) {
         this();
-        this.categoricalValueAssignments.putAll(otherContext.categoricalValueAssignments);
-        this.numericalValueAssignments.putAll(otherContext.numericalValueAssignments);
+        this.valueDomains.putAll(otherContext.valueDomains);
     }
 
     public void addCategoricalValueAssignment(String attribute, Value value) {
-        if (categoricalValueAssignments.containsKey(attribute)) {
-            categoricalValueAssignments.get(attribute).addValueToDomain(value);
+        if (valueDomains.containsKey(attribute)) {
+            CategoricalValueDomain valueDomain = (CategoricalValueDomain) valueDomains.get(attribute);
+            valueDomain.addValueToDomain(value);
         } else {
-            categoricalValueAssignments.put(attribute, new CategoricalValueDomain(attribute, value));
+            valueDomains.put(attribute, new CategoricalValueDomain(attribute, value));
         }
     }
 
@@ -40,20 +42,16 @@ public class Context {
     }
 
     public void addNumericalValueAssignment(String attribute, Value lowerBound, Value upperBound) {
-        numericalValueAssignments.put(attribute, new NumericalValueDomain(attribute, lowerBound, upperBound));
+        valueDomains.put(attribute, new NumericalValueDomain(attribute, lowerBound, upperBound));
     }
 
     public boolean isAttributeFixed(String attribute) {
-        return categoricalValueAssignments.containsKey(attribute) || numericalValueAssignments.containsKey(attribute);
+        return valueDomains.containsKey(attribute);
     }
 
     public void addDomainAssignment(ValueDomain valueDomain) {
         String attribute = valueDomain.getAttribute();
-        if (valueDomain.isCategorical()) {
-            categoricalValueAssignments.put(attribute, (CategoricalValueDomain) valueDomain);
-        } else if (valueDomain.isNumerical()) {
-            numericalValueAssignments.put(attribute, (NumericalValueDomain) valueDomain);
-        }
+        valueDomains.put(attribute, valueDomain);
     }
 
     /**
@@ -64,25 +62,17 @@ public class Context {
      * @return whether the given Tuple matches this Context
      */
     public boolean matches(Tuple t) {
-        for (String attribute : categoricalValueAssignments.keySet()) {
-            ValueDomain domain = categoricalValueAssignments.get(attribute);
+        for (String attribute : valueDomains.keySet()) {
+            ValueDomain domain = valueDomains.get(attribute);
             Value vT = t.valueForAttribute(attribute);
             if (!domain.contains(vT)) {
                 return false;
             }
         }
-
-        for (String attribute : numericalValueAssignments.keySet()) {
-            ValueDomain domain = numericalValueAssignments.get(attribute);
-            Value vT = t.valueForAttribute(attribute);
-            if (!domain.contains(vT)) {
-                return false;
-            }
-        }
-
         return true;
     }
 
+    @Override
     public String toSpeechText(boolean inLongForm) {
         if (cachedLongFormResult != null && inLongForm) {
             return cachedLongFormResult;
@@ -92,14 +82,10 @@ public class Context {
 
         String cachedResult = "";
 
-        ArrayList<String> parsed = new ArrayList<>();
+        List<String> parsed = new ArrayList<>();
 
-        for (CategoricalValueDomain categoricalValueDomain : categoricalValueAssignments.values()) {
-            parsed.add(categoricalValueDomain.toSpeechText(inLongForm));
-        }
-
-        for (NumericalValueDomain numericalValueDomain : numericalValueAssignments.values()) {
-            parsed.add(numericalValueDomain.toSpeechText(inLongForm));
+        for (ValueDomain domain : valueDomains.values()) {
+            parsed.add(domain.toSpeechText(inLongForm));
         }
 
         if (parsed.size() == 1) {
@@ -125,6 +111,6 @@ public class Context {
 
     @Override
     public String toString() {
-        return "Context: " + (categoricalValueAssignments.isEmpty() ? "" : categoricalValueAssignments.values() + " and ") + (numericalValueAssignments.isEmpty() ? "" : numericalValueAssignments.values());
+        return "Context: " + valueDomains;
     }
 }

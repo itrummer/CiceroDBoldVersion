@@ -1,9 +1,11 @@
 package planner.elements;
 
+import planner.Speakable;
+
 /**
  * Abstract representation of a domain of values.
  */
-public abstract class ValueDomain {
+public abstract class ValueDomain implements Speakable {
     String attribute;
 
     public String getAttribute() {

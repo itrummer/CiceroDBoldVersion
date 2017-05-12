@@ -5,7 +5,7 @@ import planner.Speakable;
 /**
  * A representation of a domain of numerical Values. The lower and upper bounds are inclusive bounds.
  */
-public class NumericalValueDomain extends ValueDomain implements Speakable {
+public class NumericalValueDomain extends ValueDomain {
     Value lowerBound;
     Value upperBound;
 

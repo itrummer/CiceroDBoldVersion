@@ -51,8 +51,8 @@ public class Value implements Speakable, Comparable<Value> {
      */
     public int compareTo(Value anotherValue) {
         if (type != anotherValue.type) {
-            Integer thisValue = new Integer(type.ordinal());
-            Integer thatValue = new Integer(anotherValue.type.ordinal());
+            Integer thisValue = type.ordinal();
+            Integer thatValue = anotherValue.type.ordinal();
             return thisValue.compareTo(thatValue);
         }
         return value.compareTo(anotherValue.value);
@@ -60,10 +60,7 @@ public class Value implements Speakable, Comparable<Value> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Value) {
-            return compareTo((Value) obj) == 0;
-        }
-        return false;
+        return obj instanceof Value && compareTo((Value) obj) == 0;
     }
 
     @Override

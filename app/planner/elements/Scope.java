@@ -1,12 +1,14 @@
 package planner.elements;
 
+import planner.Speakable;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A Scope represents an optional context with a set tuples that match the context
  */
-public class Scope {
+public class Scope implements Speakable {
     static final String PRECONTEXT_PHRASE = "Entries for ";
     static final String POSTCONTEXT_PHRASE = ": ";
 
