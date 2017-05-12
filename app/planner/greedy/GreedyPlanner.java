@@ -213,8 +213,8 @@ public class GreedyPlanner extends VoicePlanner {
 
     public static void main(String[] args) {
         try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, inch_display, hours_battery_life from macbooks;");
-            GreedyPlanner planner = new GreedyPlanner(2, 1.5, 2);
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
+            GreedyPlanner planner = new GreedyPlanner(2, 2.0, 2);
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));

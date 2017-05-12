@@ -3,16 +3,14 @@ package planner.hybrid;
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
 import ilog.concert.IloLinearIntExpr;
+import ilog.concert.IloLinearNumExpr;
 import ilog.cplex.IloCplex;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
 import planner.elements.*;
 import util.DatabaseUtilities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  */
@@ -40,35 +38,67 @@ public class HybridPlanner extends VoicePlanner {
         try {
             IloCplex cplex = new IloCplex();
 
-            // TODO: CPLEX variables
+            int contextCount = contextCandidates.size();
 
-            IloIntVar[][] w = new IloIntVar[1+contextCandidates.size()][];
-            for (int c = 0; c < w.length; c++) {
+            IloLinearNumExpr totalCost = cplex.linearNumExpr();
+            IloIntVar[][] w = new IloIntVar[contextCount][];
+            IloIntVar[] g = cplex.intVarArray(contextCount, 0, 1);
+
+            for (int c = 0; c < contextCount; c++) {
                 w[c] = cplex.intVarArray(tupleCollection.tupleCount(), 0, 1);
             }
+
+            for (int c = 0; c < contextCount; c++) {
+                Context context = contextCandidates.get(c);
+                double contextCost = Scope.contextOverheadCost() + context.toSpeechText(true).length();
+                totalCost.addTerm(contextCost, g[c]);
+            }
+
+            for (int t = 0; t < tupleCollection.tupleCount(); t++) {
+                Tuple tuple = tupleCollection.getTuples().get(t);
+                int tWithoutContext = tuple.toSpeechText(true).length();
+                for (int c = 0; c < contextCount; c++) {
+                    Context context = contextCandidates.get(c);
+                    if (context.matches(tuple)) {
+                        int tWithContext = tuple.toSpeechText(context, true).length();
+                        int savings = tWithoutContext - tWithContext;
+                        totalCost.addTerm(-savings, w[c][t]);
+                    } else {
+                        cplex.addEq(w[c][t], 0);
+                    }
+                }
+            }
+
+
+            for (int c = 0; c < contextCount; c++) {
+                // a context is used only if at least one tuple is output in it
+                for (int t = 0; t < tupleCollection.tupleCount(); t++) {
+                    cplex.addGe(g[c], w[c][t]);
+                }
+            }
+
 
             // constraint: each tuple mapped to one context
             for (int t = 0; t < tupleCollection.tupleCount(); t++) {
                 IloLinearIntExpr sumForT = cplex.linearIntExpr();
-                for (int c = 0; c < w.length; c++) {
+                for (int c = 0; c < contextCount; c++) {
                     sumForT.addTerm(1, w[c][t]);
                 }
-                cplex.addEq(sumForT, 1);
+                cplex.addLe(sumForT, 1);
             }
 
-            IloIntVar[] g = cplex.intVarArray(1 + contextCandidates.size(), 0, 1);
-            for (int c = 0; c < w.length; c++) {
-                // a context is used only if at least one tuple is output in it
-                cplex.addGe(g[c], cplex.sum(w[c]));
-            }
+            /*
 
             IloLinearIntExpr costExpr = cplex.linearIntExpr();
-            for (int c = 0; c < g.length-1; c++) {
+            for (int c = 0; c < contextCount-1; c++) {
                 Context context = contextCandidates.get(c);
-                costExpr.addTerm(context.toSpeechText(true).length(), g[c]);
+                int contextCost = context.toSpeechText(true).length() + Scope.contextOverheadCost();
+                costExpr.addTerm(contextCost, g[c]);
 
                 for (int t = 0; t < tupleCollection.tupleCount(); t++) {
-                    costExpr.addTerm(tupleCollection.getTuples().get(t).toSpeechText(context, true).length(), w[c][t]);
+                    Tuple tuple = tupleCollection.getTuples().get(t);
+                    int tupleContextCost = context.matches(tuple) ? tuple.toSpeechText(context, true).length() : tuple.toSpeechText(true).length();
+                    costExpr.addTerm(tupleContextCost, w[c][t]);
                 }
             }
 
@@ -76,41 +106,54 @@ public class HybridPlanner extends VoicePlanner {
             for (int t = 0; t < tupleCollection.tupleCount(); t++) {
                 costExpr.addTerm(tupleCollection.getTuples().get(t).toSpeechText(true).length(), w[w.length-1][t]);
             }
+            */
 
-            cplex.addMinimize(costExpr);
+            cplex.addMinimize(totalCost);
 
             cplex.solve();
 
+            System.out.println("Here0");
             // parse CPLEX output
-
             HashMap<Integer, ArrayList<Tuple>> tupleBins = new HashMap<>();
-
-            // create bins for tuples
-            for (int c = 0; c < g.length; c++) {
-                if (cplex.getValue(g[g.length-1]) > 0.5) {
+            for (int c = 0; c < contextCount; c++) {
+                if (cplex.getValue(g[c]) > 0.5) {
                     tupleBins.put(c, new ArrayList<>());
                 }
             }
+            System.out.println("Here1");
 
-            for (int c = 0; c < w.length; c++) {
-                for (int t = 0; t < w[c].length; t++) {
+            ArrayList<Tuple> emptyContextTuples = new ArrayList<Tuple>();
+
+            for (int t = 0; t < tupleCollection.tupleCount(); t++) {
+                boolean isMatched = false;
+                for (int c = 0; c < contextCount; c++) {
                     if (cplex.getValue(w[c][t]) > 0.5) {
+                        System.out.println("Tuple " + t + " matched to context " + c);
                         tupleBins.get(c).add(tupleCollection.getTuples().get(t));
+                        isMatched = true;
                     }
+                }
+                if (!isMatched) {
+                    System.out.println("Tuple " + t + " matched to empty context");
+                    emptyContextTuples.add(tupleCollection.getTuples().get(t));
                 }
             }
 
+            System.out.println("Here2");
+
             ArrayList<Scope> scopes = new ArrayList<>();
-            if (tupleBins.containsKey(contextCandidates.size())) {
-                // add empty scope if tuples were mapped to it
-                scopes.add(new Scope(tupleBins.get(contextCandidates.size())));
+            if (!emptyContextTuples.isEmpty()) {
+                scopes.add(new Scope(emptyContextTuples));
             }
-            Scope emptyScope;
+
             for (int c = 0; c < contextCandidates.size(); c++) {
                 if (tupleBins.containsKey(c)) {
                     scopes.add(new Scope(contextCandidates.get(c), tupleBins.get(c)));
                 }
             }
+            System.out.println(scopes);
+
+            System.out.println("Here3");
 
             plan = new VoiceOutputPlan(scopes);
 
@@ -130,8 +173,10 @@ public class HybridPlanner extends VoicePlanner {
                 totalSavings += tWithoutContext - tWithContext;
             }
         }
+//        System.out.println("Context: " + c.toSpeechText(true));
+//        System.out.println("totalSavings: " + totalSavings);
 
-        return c.toSpeechText(true).length() >= totalSavings;
+        return c.toSpeechText(true).length() + Scope.contextOverheadCost() >= totalSavings;
     }
 
     public ArrayList<Context> generateContextCandidates(TupleCollection tupleCollection) {
@@ -157,6 +202,7 @@ public class HybridPlanner extends VoicePlanner {
                             newContext.addDomainAssignment(d);
                             if (!useless(newContext, tupleCollection)) {
                                 kPlusOneAssignmentContexts.add(newContext);
+                            } else {
                             }
                         }
                     }
@@ -172,8 +218,8 @@ public class HybridPlanner extends VoicePlanner {
 
     public static void main(String[] args) {
         try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, inch_display, hours_battery_life from macbooks;");
-            HybridPlanner planner = new HybridPlanner(3, 1.25, 2);
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
+            HybridPlanner planner = new HybridPlanner(2, 2.0, 1);
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));
