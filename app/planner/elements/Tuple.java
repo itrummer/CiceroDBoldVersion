@@ -11,6 +11,7 @@ import java.util.HashMap;
 public class Tuple implements Speakable {
     ArrayList<String> attributes;
     HashMap<String, Value> valueAssignments;
+    String cachedLongFormResultWithoutContext;
 
     /**
      * Constructor for a Tuple with a list of String attributes
@@ -18,6 +19,7 @@ public class Tuple implements Speakable {
     public Tuple(ArrayList<String> attributes) {
         this.attributes = attributes;
         this.valueAssignments = new HashMap<String, Value>();
+        this.cachedLongFormResultWithoutContext = null;
     }
 
     /**
@@ -51,6 +53,9 @@ public class Tuple implements Speakable {
      * @return The speech representation of this Tuple within the given Context
      */
     public String toSpeechText(Context c, boolean inLongForm) {
+        if (c == null && inLongForm && cachedLongFormResultWithoutContext != null) {
+            return cachedLongFormResultWithoutContext;
+        }
         String result = "";
         boolean firstAttribute = true;
         for (String attribute : attributes) {
@@ -63,6 +68,9 @@ public class Tuple implements Speakable {
                 }
                 firstAttribute = false;
             }
+        }
+        if (c == null && inLongForm) {
+            cachedLongFormResultWithoutContext = result;
         }
         return result;
     }
