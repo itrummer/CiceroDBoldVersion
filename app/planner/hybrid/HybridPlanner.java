@@ -180,7 +180,7 @@ public class HybridPlanner extends VoicePlanner {
     }
 
     public ArrayList<Context> generateContextCandidates(TupleCollection tupleCollection) {
-        HashMap<Integer, HashSet<ValueDomain>> candidateAssignments = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
+        Map<Integer, Set<ValueDomain>> candidateAssignments = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
 
         ArrayList<Context> result = new ArrayList<>();
 

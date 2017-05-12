@@ -10,10 +10,10 @@ import java.util.*;
  */
 public class TupleCollection implements Iterable<Tuple> {
     ArrayList<String> attributes;
-    HashMap<Integer, Tuple> tuples;
+    Map<Integer, Tuple> tuples;
 
     // attributeCount x tupleCount matrix
-    HashMap<Integer, HashMap<Integer, Value>> values;
+    Map<Integer, Map<Integer, Value>> values;
 
     // distinctValues contains only the distinct values for each attribute
     // each 'column' in this matrix is of variable length, but must be <= tupleCount
@@ -39,14 +39,14 @@ public class TupleCollection implements Iterable<Tuple> {
         this.attributes = attributes;
         this.tuples = new HashMap<>();
         this.values = new HashMap<>();
-        this.distinctValues = new ArrayList<ArrayList<Value>>();
+        this.distinctValues = new ArrayList<>();
         this.valueSets = new HashMap<>();
-        this.indexMap = new ArrayList<ArrayList<Integer>>();
+        this.indexMap = new ArrayList<>();
         for (int a = 0; a < attributeCount(); a++) {
             values.put(a, new HashMap<>());
-            distinctValues.add(new ArrayList<Value>());
+            distinctValues.add(new ArrayList<>());
             valueSets.put(a, new HashSet<>());
-            indexMap.add(new ArrayList<Integer>());
+            indexMap.add(new ArrayList<>());
         }
     }
 
@@ -87,7 +87,7 @@ public class TupleCollection implements Iterable<Tuple> {
             Value tValue = tuple.valueForAttribute(attributeName);
 
             // add the value to the matrix
-            HashMap<Integer, Value> aValues = values.get(a);
+            Map<Integer, Value> aValues = values.get(a);
             aValues.put(tupleIndex, tValue);
 
             // add any new values to the distinctValues matrix
@@ -259,21 +259,21 @@ public class TupleCollection implements Iterable<Tuple> {
      * Computes the set of candidate domain assignments for all attributes. Used in
      * the GreedyPlanner and HybridPlanner algorithms.
      */
-    public HashMap<Integer, HashSet<ValueDomain>> candidateAssignments(int mC, double mW) {
-        HashMap<Integer, HashSet<ValueDomain>> attributeDomains = new HashMap<>();
+    public Map<Integer, Set<ValueDomain>> candidateAssignments(int mC, double mW) {
+        Map<Integer, Set<ValueDomain>> attributeDomains = new HashMap<>();
         for (int a = 0; a < attributeCount(); a++) {
             if (a == getPrimaryKeyIndex()) {
                 continue;
             }
-            HashSet<ValueDomain> domains = new HashSet<>();
+            Set<ValueDomain> domains = new HashSet<>();
             if (attributeIsCategorical(a)) {
                 distinctValues.get(a).toArray();
-                HashSet<Value> valueSet = new HashSet<>();
+                Set<Value> valueSet = new HashSet<>();
                 valueSet.addAll(distinctValues.get(a));
 
                 // add subsets of bounded cardinality
-                HashSet<HashSet<Value>> valueSubsets = subsetsOfSize(valueSet, mC);
-                for (HashSet<Value> subset : valueSubsets) {
+                Set<Set<Value>> valueSubsets = subsetsOfSize(valueSet, mC);
+                for (Set<Value> subset : valueSubsets) {
                     domains.add(new CategoricalValueDomain(attributeForIndex(a), new ArrayList<>(subset)));
                 }
             } else if (attributeIsNumerical(a)) {
@@ -309,8 +309,8 @@ public class TupleCollection implements Iterable<Tuple> {
      * @param <T> The type of the items
      * @return The power set of the original set
      */
-    public static <T> HashSet<HashSet<T>> powerSet(HashSet<T> originalSet) {
-        HashSet<HashSet<T>> sets = new HashSet<HashSet<T>>();
+    public static <T> Set<Set<T>> powerSet(Set<T> originalSet) {
+        Set<Set<T>> sets = new HashSet<>();
         if (originalSet.isEmpty()) {
             sets.add(new HashSet<T>());
             return sets;
@@ -318,7 +318,7 @@ public class TupleCollection implements Iterable<Tuple> {
         List<T> list = new ArrayList<T>(originalSet);
         T head = list.get(0);
         HashSet<T> rest = new HashSet<T>(list.subList(1, list.size()));
-        for (HashSet<T> set : powerSet(rest)) {
+        for (Set<T> set : powerSet(rest)) {
             HashSet<T> newSet = new HashSet<T>();
             newSet.add(head);
             newSet.addAll(set);
@@ -335,9 +335,9 @@ public class TupleCollection implements Iterable<Tuple> {
      * @param <T> The type of the objects in the HashSet
      * @return All subsets of the original set that contain at most k elements, excluding the empty set
      */
-    public static <T> HashSet<HashSet<T>> subsetsOfSize(HashSet<T> originalSet, int k) {
-        HashSet<HashSet<T>> filteredSets = new HashSet<>();
-        for (HashSet<T> set : powerSet(originalSet)) {
+    public static <T> Set<Set<T>> subsetsOfSize(Set<T> originalSet, int k) {
+        Set<Set<T>> filteredSets = new HashSet<>();
+        for (Set<T> set : powerSet(originalSet)) {
             if (set.size() <= k && set.size() > 0) {
                 filteredSets.add(set);
             }
@@ -384,7 +384,7 @@ public class TupleCollection implements Iterable<Tuple> {
     }
 
     public static void main(String[] args) {
-        HashSet<Integer> testSet = new HashSet<>();
+        Set<Integer> testSet = new HashSet<>();
         testSet.add(1);
         testSet.add(2);
         testSet.add(3);

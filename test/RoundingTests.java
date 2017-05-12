@@ -2,6 +2,7 @@ import junit.framework.TestCase;
 import planner.elements.Value;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  */
@@ -9,7 +10,7 @@ public class RoundingTests extends TestCase {
 
     public void testRoundingIntegerValues() {
         Value v1 = new Value(123);
-        ArrayList<Value> values = v1.roundedValues();
+        List<Value> values = v1.roundedValues();
         assertTrue(values.get(0).equals(new Value(100)));
         assertTrue(values.get(1).equals(new Value(200)));
 
@@ -26,7 +27,7 @@ public class RoundingTests extends TestCase {
 
     public void testRoundingDoubleValues() {
         Value v1 = new Value(123.0);
-        ArrayList<Value> values = v1.roundedValues();
+        List<Value> values = v1.roundedValues();
         assertTrue(values.get(0).equals(new Value(100.0)));
         assertTrue(values.get(1).equals(new Value(200.0)));
 
@@ -43,7 +44,7 @@ public class RoundingTests extends TestCase {
 
     public void testRoundingFloatValues() {
         Value v1 = new Value(new Float(123.0));
-        ArrayList<Value> values = v1.roundedValues();
+        List<Value> values = v1.roundedValues();
         assertTrue(values.get(0).equals(new Value(new Float(100.0))));
         assertTrue(values.get(1).equals(new Value(new Float(200.0))));
 

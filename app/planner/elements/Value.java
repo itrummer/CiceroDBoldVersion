@@ -2,7 +2,9 @@ package planner.elements;
 
 import planner.Speakable;
 import util.EnglishNumberToWords;
+
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -144,7 +146,7 @@ public class Value implements Speakable, Comparable<Value> {
         return coefficient;
     }
 
-    public ArrayList<Value> roundedValues() {
+    public List<Value> roundedValues() {
         double coefficient = linearProgrammingCoefficient();
         boolean negative = coefficient < 0;
         int rawValue = (int) coefficient;
@@ -166,7 +168,7 @@ public class Value implements Speakable, Comparable<Value> {
             roundedUp = -roundedUp;
         }
 
-        ArrayList<Value> values = new ArrayList<Value>();
+        List<Value> values = new ArrayList<>();
         values.add(roundingHelper(roundedDown.doubleValue()));
         values.add(roundingHelper(roundedUp.doubleValue()));
 

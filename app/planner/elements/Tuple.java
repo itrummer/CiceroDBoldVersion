@@ -2,15 +2,14 @@ package planner.elements;
 
 import planner.Speakable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Represents a tuple in a database table
  */
 public class Tuple implements Speakable {
-    ArrayList<String> attributes;
-    HashMap<String, Value> valueAssignments;
+    List<String> attributes;
+    Map<String, Value> valueAssignments;
     String cachedLongFormResultWithoutContext;
 
     /**
@@ -18,7 +17,7 @@ public class Tuple implements Speakable {
      */
     public Tuple(ArrayList<String> attributes) {
         this.attributes = attributes;
-        this.valueAssignments = new HashMap<String, Value>();
+        this.valueAssignments = new HashMap<>();
         this.cachedLongFormResultWithoutContext = null;
     }
 
@@ -31,7 +30,7 @@ public class Tuple implements Speakable {
         valueAssignments.put(column, value);
     }
 
-    public ArrayList<String> getAttributes() {
+    public List<String> getAttributes() {
         return attributes;
     }
 

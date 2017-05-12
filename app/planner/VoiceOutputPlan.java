@@ -3,12 +3,13 @@ package planner;
 import planner.elements.Scope;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Representation of a VoiceOutputPlan
  */
 public class VoiceOutputPlan implements Speakable {
-    ArrayList<Scope> scopes;
+    List<Scope> scopes;
     String cachedResult;
 
     public VoiceOutputPlan(ArrayList<Scope> scopes) {
@@ -16,15 +17,11 @@ public class VoiceOutputPlan implements Speakable {
     }
 
     public VoiceOutputPlan() {
-        this(new ArrayList<Scope>());
+        this(new ArrayList<>());
     }
 
     public void addScope(Scope scope) {
         scopes.add(scope);
-    }
-
-    public ArrayList<Scope> getScopes() {
-        return scopes;
     }
 
     /**

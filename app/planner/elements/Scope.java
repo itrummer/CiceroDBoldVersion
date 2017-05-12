@@ -1,6 +1,7 @@
 package planner.elements;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A Scope represents an optional context with a set tuples that match the context
@@ -10,7 +11,7 @@ public class Scope {
     static final String POSTCONTEXT_PHRASE = ": ";
 
     Context context;
-    ArrayList<Tuple> tuples;
+    List<Tuple> tuples;
     String cachedLongFormResult;
     String cachedShortResult;
 
@@ -19,7 +20,7 @@ public class Scope {
      * @param context The context that the tuples match
      * @param tuples The tuples in this scope
      */
-    public Scope(Context context, ArrayList<Tuple> tuples) {
+    public Scope(Context context, List<Tuple> tuples) {
         this.context = context;
         this.tuples = tuples;
     }
@@ -28,7 +29,7 @@ public class Scope {
      * Constructor for a Scope without a context
      * @param tuples The tuples in this scope
      */
-    public Scope(ArrayList<Tuple> tuples) {
+    public Scope(List<Tuple> tuples) {
         this(null, tuples);
     }
 
@@ -37,14 +38,14 @@ public class Scope {
      * @param context
      */
     public Scope(Context context) {
-        this(context, new ArrayList<Tuple>());
+        this(context, new ArrayList<>());
     }
 
     /**
      * Constructor for a scope with an empty context
      */
     public Scope() {
-        this(new ArrayList<Tuple>());
+        this(new ArrayList<>());
     }
 
     /**

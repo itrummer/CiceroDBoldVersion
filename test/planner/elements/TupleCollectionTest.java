@@ -2,16 +2,10 @@ package planner.elements;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by mabryan on 5/7/17.
- */
 public class TupleCollectionTest {
 
     @Test
@@ -41,7 +35,7 @@ public class TupleCollectionTest {
         tC.addTuple(t2);
         tC.addTuple(t3);
 
-        HashMap<Integer, HashSet<ValueDomain>> result = tC.candidateAssignments(2, 2.0);
+        Map<Integer, Set<ValueDomain>> result = tC.candidateAssignments(2, 2.0);
         for (Integer i : result.keySet()) {
             System.out.println("Value domains for attribute " + i + ":");
             for (ValueDomain d : result.get(i)) {

@@ -3,19 +3,20 @@ package planner.elements;
 import planner.Speakable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  */
 public class CategoricalValueDomain extends ValueDomain implements Speakable {
-    ArrayList<Value> domainValues;
+    List<Value> domainValues;
 
-    public CategoricalValueDomain(String attribute, ArrayList<Value> domainValues) {
+    public CategoricalValueDomain(String attribute, List<Value> domainValues) {
         this.attribute = attribute;
         this.domainValues = domainValues;
     }
 
     public CategoricalValueDomain(String attribute) {
-        this(attribute, new ArrayList<Value>());
+        this(attribute, new ArrayList<>());
     }
 
     public CategoricalValueDomain(String attribute, Value firstValue) {

@@ -6,9 +6,7 @@ import planner.VoicePlanner;
 import planner.elements.*;
 import util.DatabaseUtilities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * The GreedyPlanner constructs VoiceOutputPlans according to the greedy algorithm. The greedy algorithm proceeds in
@@ -173,10 +171,10 @@ public class GreedyPlanner extends VoicePlanner {
         Context bestContext = null;
         int bestSavings = Integer.MIN_VALUE;
 
-        HashMap<Integer, HashSet<ValueDomain>> domains = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
+        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
-        ArrayList<Context> contexts = new ArrayList<>();
+        List<Context> contexts = new ArrayList<>();
 
         candidateContextsForDomains(contexts, domains, new HashSet<>(), 1, maximalContextSize);
         for (Context c : contexts) {
@@ -190,7 +188,7 @@ public class GreedyPlanner extends VoicePlanner {
         return bestContext;
     }
 
-    public void candidateContextsForDomains(ArrayList<Context> result, HashMap<Integer, HashSet<ValueDomain>> domains, HashSet<ValueDomain> subset, int index, int s) {
+    public void candidateContextsForDomains(List<Context> result, Map<Integer, Set<ValueDomain>> domains, Set<ValueDomain> subset, int index, int s) {
         if (!domains.containsKey(index) || subset.size() >= s) {
             return;
         }
