@@ -15,11 +15,13 @@ import java.util.*;
 /**
  */
 public class HybridPlanner extends VoicePlanner {
+    private ContextPruner contextPruner;
     private int maximalContextSize;
     private double maximalNumericalDomainWidth;
     private int maximalCategoricalDomainSize;
 
-    public HybridPlanner(int mS, double mW, int mC) {
+    public HybridPlanner(ContextPruner contextPruner, int mS, double mW, int mC) {
+        this.contextPruner = contextPruner;
         this.maximalContextSize = mS;
         this.maximalNumericalDomainWidth = mW;
         this.maximalCategoricalDomainSize = mC;
@@ -28,11 +30,6 @@ public class HybridPlanner extends VoicePlanner {
     @Override
     public VoiceOutputPlan plan(TupleCollection tupleCollection) {
         ArrayList<Context> contextCandidates = generateContextCandidates(tupleCollection);
-
-        for (Context c : contextCandidates) {
-            System.out.println(c);
-        }
-
         VoiceOutputPlan plan = null;
 
         try {
@@ -100,17 +97,15 @@ public class HybridPlanner extends VoicePlanner {
             ArrayList<Tuple> emptyContextTuples = new ArrayList<>();
 
             for (int t = 0; t < tupleCollection.tupleCount(); t++) {
-                boolean isMatched = false;
+                boolean matched = false;
                 for (int c = 0; c < contextCount; c++) {
                     if (cplex.getValue(w[c][t]) > 0.5) {
-                        System.out.println("Tuple " + t + " matched to context " + c);
-                        tupleBins.get(c).add(tupleCollection.getTuples().get(t));
-                        isMatched = true;
+                        tupleBins.get(c).add(tupleCollection.getTuple(t));
+                        matched = true;
                     }
                 }
-                if (!isMatched) {
-                    System.out.println("Tuple " + t + " matched to empty context");
-                    emptyContextTuples.add(tupleCollection.getTuples().get(t));
+                if (!matched) {
+                    emptyContextTuples.add(tupleCollection.getTuple(t));
                 }
             }
 
@@ -124,27 +119,13 @@ public class HybridPlanner extends VoicePlanner {
                     scopes.add(new Scope(contextCandidates.get(c), tupleBins.get(c)));
                 }
             }
-            System.out.println(scopes);
 
             plan = new VoiceOutputPlan(scopes);
-
         } catch (IloException e) {
             e.printStackTrace();
         }
 
         return plan;
-    }
-
-    public boolean useless(Context c, TupleCollection tupleCollection) {
-        int totalSavings = 0;
-        for (Tuple t : tupleCollection) {
-            if (c.matches(t)) {
-                int tWithContext = t.toSpeechText(c, true).length();
-                int tWithoutContext = t.toSpeechText(true).length();
-                totalSavings += tWithoutContext - tWithContext;
-            }
-        }
-        return c.toSpeechText(true).length() + Scope.contextOverheadCost() >= totalSavings;
     }
 
     public ArrayList<Context> generateContextCandidates(TupleCollection tupleCollection) {
@@ -153,27 +134,23 @@ public class HybridPlanner extends VoicePlanner {
         ArrayList<Context> result = new ArrayList<>();
 
         int k = 0;
-        ArrayList<Context> kAssignmentContexts = new ArrayList<>();
+        Collection<Context> kAssignmentContexts = new ArrayList<>();
         kAssignmentContexts.add(new Context());
 
         while (k < maximalContextSize) {
-            ArrayList<Context> kPlusOneAssignmentContexts = new ArrayList<>();
+            Collection<Context> kPlusOneAssignmentContexts = new ArrayList<>();
             for (Context c : kAssignmentContexts) {
-                // for each Context with k domain assignments, construct a Context
-                // with k+1 domain assignments by considering adding a single value
-                // from the candidateAssignments such that the k-assignment Context
-                // hasn't yet fixed a domain in the candidateAssignment's attribute
+                ArrayList<Context> unfiltered = new ArrayList<>();
                 for (int a = 1; a < tupleCollection.attributeCount(); a++) {
                     if (!c.isAttributeFixed(tupleCollection.attributeForIndex(a))) {
                         for (ValueDomain d : candidateAssignments.get(a)) {
                             Context newContext = new Context(c);
                             newContext.addDomainAssignment(d);
-                            if (!useless(newContext, tupleCollection)) {
-                                kPlusOneAssignmentContexts.add(newContext);
-                            }
+                            unfiltered.add(newContext);
                         }
                     }
                 }
+                kPlusOneAssignmentContexts = contextPruner.prune(unfiltered, tupleCollection);
             }
             result.addAll(kPlusOneAssignmentContexts);
             kAssignmentContexts = kPlusOneAssignmentContexts;
@@ -186,7 +163,7 @@ public class HybridPlanner extends VoicePlanner {
     public static void main(String[] args) {
         try {
             TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, dollars, pounds, inch_display from macbooks;");
-            HybridPlanner planner = new HybridPlanner(2, 2.0, 1);
+            HybridPlanner planner = new HybridPlanner(new UsefulPruner(),3, 2.0, 1);
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));
