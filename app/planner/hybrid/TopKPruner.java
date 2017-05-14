@@ -28,7 +28,7 @@ public class TopKPruner extends ContextPruner {
      */
     @Override
     public Collection<Context> prune(Collection<Context> candidateContexts, TupleCollection tupleCollection) {
-        ContextNode[] sortedNodeList = contextListSortedByMatchingTupleCount(candidateContexts, tupleCollection);
+        ContextNode[] sortedNodeList = contextListSortedByMatchingTupleCount(candidateContexts, tupleCollection.getTuples());
 
         Collection<Context> result = new ArrayList<>();
         for (int c = 0; c < candidateContexts.size() && c < k; c++) {
@@ -38,7 +38,7 @@ public class TopKPruner extends ContextPruner {
         return result;
     }
 
-    public ContextNode[] calculateMatchingCounts(Collection<Context> candidateContexts, TupleCollection tupleCollection) {
+    public ContextNode[] calculateMatchingCounts(Collection<Context> candidateContexts, Collection<Tuple> tupleCollection) {
         int i = 0;
         ContextNode[] nodeList = new ContextNode[candidateContexts.size()];
         for (Context c : candidateContexts) {
@@ -54,12 +54,12 @@ public class TopKPruner extends ContextPruner {
         return nodeList;
     }
 
-    public ContextNode[] contextListSortedByMatchingTupleCount(Collection<Context> candidateContext, TupleCollection tupleCollection) {
+    public ContextNode[] contextListSortedByMatchingTupleCount(Collection<Context> candidateContext, Collection<Tuple> tupleCollection) {
         ContextNode[] nodeList = calculateMatchingCounts(candidateContext, tupleCollection);
         Arrays.sort(nodeList, new Comparator<ContextNode>() {
             @Override
             public int compare(ContextNode o1, ContextNode o2) {
-                return o1.getMatchCount().compareTo(o2.getMatchCount());
+                return -o1.getMatchCount().compareTo(o2.getMatchCount());
             }
         });
         return nodeList;
