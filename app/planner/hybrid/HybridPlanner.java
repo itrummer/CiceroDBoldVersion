@@ -162,8 +162,8 @@ public class HybridPlanner extends VoicePlanner {
 
     public static void main(String[] args) {
         try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, dollars, pounds, inch_display from macbooks;");
-            HybridPlanner planner = new HybridPlanner(new TupleCoveringPruner(10),3, 2.0, 1);
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
+            HybridPlanner planner = new HybridPlanner(new TupleCoveringPruner(10),3, 2.0, 2);
             VoiceOutputPlan plan = planner.plan(tupleCollection);
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));

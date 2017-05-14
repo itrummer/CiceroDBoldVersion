@@ -5,6 +5,7 @@ import planner.VoicePlanner;
 import planner.elements.*;
 import ilog.concert.*;
 import ilog.cplex.*;
+import util.DatabaseUtilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -322,5 +323,20 @@ public class LinearProgrammingPlanner extends VoicePlanner {
             }
         }
         return m;
+    }
+
+    public static void main(String[] args) {
+        try {
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
+            LinearProgrammingPlanner planner = new LinearProgrammingPlanner(3, 2.0, 1);
+            VoiceOutputPlan plan = planner.plan(tupleCollection);
+            if (plan != null) {
+                System.out.println(plan.toSpeechText(false));
+            } else {
+                System.out.println("Plan was null");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
