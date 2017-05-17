@@ -9,13 +9,9 @@ import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class TestRunner {
     static String csvFileName = "csv_output.csv";
@@ -78,7 +74,7 @@ public class TestRunner {
 
         // TODO: also generate actual audio file
 
-        return "'" + query + "'," + tupleCollection.csvDescription() + "," + planner.getPlannerName() + "," + planningTime + "," +
+        return "\"" + query + "\"," + tupleCollection.csvDescription() + "," + planner.getPlannerName() + "," + planningTime + "," +
                 speechLength + "," + planner.getConfig().getCSV();
     }
 
