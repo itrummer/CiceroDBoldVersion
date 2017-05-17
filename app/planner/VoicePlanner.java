@@ -14,4 +14,10 @@ public abstract class VoicePlanner {
      */
     public abstract VoiceOutputPlan plan(TupleCollection tupleCollection);
 
+    public ToleranceConfig getConfig() {
+        return new ToleranceConfig();
+    }
+
+    public abstract String getPlannerName();
+
 }

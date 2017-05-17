@@ -1,5 +1,6 @@
 package planner.greedy;
 
+import planner.ToleranceConfig;
 import planner.naive.NaiveVoicePlanner;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
@@ -212,9 +213,14 @@ public class GreedyPlanner extends VoicePlanner {
     public static void main(String[] args) {
         try {
             TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, dollars, pounds, inch_display from macbooks;");
-            GreedyPlanner planner = new GreedyPlanner(2, 2.0, 2);
+            GreedyPlanner planner = new GreedyPlanner(2, 1.5, 2);
 
+            long startTime = System.currentTimeMillis();
             VoiceOutputPlan plan = planner.plan(tupleCollection);
+            long endTime = System.currentTimeMillis();
+            double seconds = (endTime - startTime) / 1000.0;
+            System.out.println("Time: " + seconds + " seconds");
+
             if (plan != null) {
                 System.out.println(plan.toSpeechText(false));
             } else {
@@ -223,6 +229,16 @@ public class GreedyPlanner extends VoicePlanner {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getPlannerName() {
+        return "greedy";
+    }
+
+    @Override
+    public ToleranceConfig getConfig() {
+        return new ToleranceConfig(maximalContextSize, maximalNumericalDomainWidth, maximalCategoricalDomainSize);
     }
 
 }

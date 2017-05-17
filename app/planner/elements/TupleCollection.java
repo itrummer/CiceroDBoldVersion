@@ -9,6 +9,12 @@ import java.util.*;
  * Class representation of a collection of Tuples returned from a SQL query
  */
 public class TupleCollection implements Iterable<Tuple> {
+    public enum TupleCollectionCSVKeys {
+        CATEGORICAL_COLUMN_COUNT,
+        NUMERICAL_COLUMN_COUNT,
+        RESULT_SIZE,
+    }
+
     ArrayList<String> attributes;
     Map<Integer, Tuple> tuples;
 
@@ -383,14 +389,18 @@ public class TupleCollection implements Iterable<Tuple> {
 
     }
 
-    public static void main(String[] args) {
-        Set<Integer> testSet = new HashSet<>();
-        testSet.add(1);
-        testSet.add(2);
-        testSet.add(3);
-        testSet.add(4);
-        System.out.println(TupleCollection.powerSet(testSet));
-        System.out.println(TupleCollection.subsetsOfSize(testSet, 2));
+    public String csvDescription() {
+        int categoricalCount = 0;
+        int numericalCount = 0;
+        for (int i = 0; i < attributeCount(); i++) {
+            categoricalCount += attributeIsCategorical(i) ? 1 : 0;
+            numericalCount += attributeIsNumerical(i) ? 1 : 0;
+        }
+        return tupleCount() + "," + categoricalCount + "," + numericalCount;
+    }
+
+    public String getCSVHeader() {
+        return "tuple_count,categorical_cols,numerical_cols";
     }
 
 }

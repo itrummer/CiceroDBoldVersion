@@ -1,5 +1,6 @@
 package planner.linear;
 
+import planner.ToleranceConfig;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
 import planner.elements.*;
@@ -9,6 +10,7 @@ import util.DatabaseUtilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class constructs VoiceOutputPlans according to the integer programming model. It specifically uses the CPLEX
@@ -338,5 +340,15 @@ public class LinearProgrammingPlanner extends VoicePlanner {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public ToleranceConfig getConfig() {
+        return new ToleranceConfig(maximalContextSize, maximalNumericalDomainWidth, maximalCategoricalDomainSize);
+    }
+
+    @Override
+    public String getPlannerName() {
+        return "linear";
     }
 }

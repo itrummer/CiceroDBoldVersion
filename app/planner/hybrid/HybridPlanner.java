@@ -5,6 +5,7 @@ import ilog.concert.IloIntVar;
 import ilog.concert.IloLinearIntExpr;
 import ilog.concert.IloLinearNumExpr;
 import ilog.cplex.IloCplex;
+import planner.ToleranceConfig;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
 import planner.elements.*;
@@ -175,4 +176,13 @@ public class HybridPlanner extends VoicePlanner {
         }
     }
 
+    @Override
+    public String getPlannerName() {
+        return "hybrid";
+    }
+
+    @Override
+    public ToleranceConfig getConfig() {
+        return new ToleranceConfig(maximalContextSize, maximalNumericalDomainWidth, maximalCategoricalDomainSize);
+    }
 }

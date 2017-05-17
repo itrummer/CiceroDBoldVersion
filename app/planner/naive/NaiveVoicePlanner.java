@@ -6,6 +6,9 @@ import planner.elements.TupleCollection;
 import planner.elements.Scope;
 import util.DatabaseUtilities;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A naive implementation of a voice plan. Lists all results in a query as individual tuples.
  */
@@ -31,6 +34,11 @@ public class NaiveVoicePlanner extends VoicePlanner {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getPlannerName() {
+        return "naive";
     }
 
 }

@@ -8,27 +8,40 @@ import planner.linear.LinearProgrammingPlanner;
 import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class TestRunner {
-    List<VoicePlanner> planners;
+    static String csvFileName = "csv_output.csv";
     static String[] testQueries = {
             "select model, dollars, pounds, inch_display from macbooks;",
             "select * from restaurants;"
     };
 
+    public static void main(String[] args) {
+        String query = "select model, dollars, pounds, inch_display from macbooks;";
+        TupleCollection tupleCollection = null;
+        try {
+            tupleCollection = DatabaseUtilities.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
-    public TestRunner() {
-        planners = new ArrayList<>();
+        String csvResult = tupleCollection.getCSVHeader() + ",type,planning_time,speech_cost_in_chars," + ToleranceConfig.getCSVHeader() + "\n";
 
-        // Naive planners
-        planners.add(new NaiveVoicePlanner());
+        VoicePlanner planner = new NaiveVoicePlanner();
+        csvResult += computeCSV(planner, tupleCollection) + "\n";
 
-        int[] mSValues = { 1, 2, 3 };
+        int[] mSValues = { 1, 2 };
         int[] mCValues = { 1, 2 };
-        double[] mWValues = { 1.0, 1.5, 2.0 };
+        double[] mWValues = { 1.0, 2.0 };
 
         for (int i = 0; i < mSValues.length; i++) {
             int mS = mSValues[i];
@@ -36,42 +49,57 @@ public class TestRunner {
                 int mC = mCValues[j];
                 for (int k = 0; k < mWValues.length; k++) {
                     double mW = mWValues[k];
-                    planners.add(new GreedyPlanner(mS, mW, mC));
-//                    planners.add(new LinearProgrammingPlanner(mS, mW, mC));
-                    planners.add(new HybridPlanner(new TupleCoveringPruner(10), mS, mW, mC));
+
+                    // Compute CSV for all planner types
+
+                    planner = new GreedyPlanner(mS, mW, mC);
+                    csvResult += computeCSV(planner, tupleCollection) + "\n";
+
+                    planner = new LinearProgrammingPlanner(mS, mW, mC);
+                    csvResult += computeCSV(planner, tupleCollection) + "\n";
+
+                    planner = new HybridPlanner(new TupleCoveringPruner(10), mS, mW, mC);
+                    csvResult += computeCSV(planner, tupleCollection) + "\n";
                 }
             }
         }
+
+        writeCSVToFile(csvResult);
     }
 
-    public String runTests() {
-        String result = "";
+    public static String computeCSV(VoicePlanner planner, TupleCollection tupleCollection) {
+        long startTime = System.currentTimeMillis();
+        VoiceOutputPlan outputPlan = planner.plan(tupleCollection);
+        long endTime = System.currentTimeMillis();
+        double planningTime = (endTime - startTime) / 1000.0;
 
-        for (int i = 0; i < testQueries.length; i++) {
-            String query = testQueries[i];
-            TupleCollection tupleCollection;
+        int speechLength = outputPlan.toSpeechText(true).length();
+
+        // TODO: also generate actual audio file
+
+        return tupleCollection.csvDescription() + "," + planner.getPlannerName() + "," + planningTime + "," +
+                speechLength + "," + planner.getConfig().getCSV();
+    }
+
+    public static void writeCSVToFile(String csv) {
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+
+        try {
+            fw = new FileWriter(csvFileName);
+            bw = new BufferedWriter(fw);
+            bw.write(csv);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
             try {
-                tupleCollection = DatabaseUtilities.executeQuery(query);
-            } catch (Exception e) {
-                e.printStackTrace();
-                continue;
-            }
-
-            for (VoicePlanner planner : planners) {
-                long startTime = System.nanoTime();
-                planner.plan(tupleCollection);
-                long endTime = System.nanoTime();
-                String thisResult = planner.getClass().getSimpleName() + " test: " + (endTime - startTime);
-                result += thisResult + "\n";
+                if (bw != null)
+                    bw.close();
+                if (fw != null)
+                    fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
-
-        return result;
     }
-
-    public static void main(String[] args) {
-        TestRunner runner = new TestRunner();
-        System.out.println(runner.runTests());
-    }
-
 }
