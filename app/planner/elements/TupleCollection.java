@@ -399,7 +399,7 @@ public class TupleCollection implements Iterable<Tuple> {
         return tupleCount() + "," + categoricalCount + "," + numericalCount;
     }
 
-    public String getCSVHeader() {
+    public static String getCSVHeader() {
         return "tuple_count,categorical_cols,numerical_cols";
     }
 
