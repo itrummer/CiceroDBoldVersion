@@ -10,7 +10,10 @@ import com.ibm.watson.developer_cloud.text_to_speech.v1.util.WaveUtils;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * A VoiceGenerator implemented using IBM's Watson service to generate and play audio representation of text.
@@ -23,17 +26,6 @@ public class WatsonVoiceGenerator extends VoiceGenerator {
     public WatsonVoiceGenerator() {
         service = new TextToSpeech();
         service.setUsernameAndPassword("896e2e12-6a72-4ad9-908b-13d0ea6adc67", "ofpV28BqPARy");
-    }
-
-    /**
-     *
-     */
-    public void synthesizeSpeech(String text) {
-
-    }
-
-    public void startSpeech() {
-
     }
 
     @Override
@@ -60,6 +52,25 @@ public class WatsonVoiceGenerator extends VoiceGenerator {
                     e.printStackTrace();
                 }
             });
+    }
+
+    public void generateAndWriteToFile(String text, String fileOutput) {
+        try {
+            InputStream stream = service.synthesize(text, Voice.EN_ALLISON, AudioFormat.WAV).execute();
+            InputStream in = WaveUtils.reWriteWaveHeader(stream);
+            OutputStream out = new FileOutputStream(fileOutput);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+            out.close();
+            in.close();
+            stream.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

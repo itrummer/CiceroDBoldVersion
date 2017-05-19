@@ -1,0 +1,51 @@
+query_id,config_id,query,tuple_count,categorical_cols,numerical_cols,type,planning_time,speech_cost_in_chars,speech_cost_in_seconds,mS,mW,mC
+1,0,"select model, dollars, pounds, inch_display from macbooks",11,1,3,naive,0.001,1380,83,null,null,null
+1,1,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.07,1380,83,1,1.0,1
+1,1,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,25.835,1209,71,1,1.0,1
+1,1,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.008,1277,75,1,1.0,1
+1,2,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.063,1355,89,1,2.0,1
+1,2,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,5.676,1042,73,1,2.0,1
+1,2,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.002,1179,68,1,2.0,1
+1,3,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.005,1380,83,1,1.0,2
+1,3,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,23.997,1209,71,1,1.0,2
+1,3,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.003,1277,75,1,1.0,2
+1,4,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.026,1355,89,1,2.0,2
+1,4,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,6.591,1042,73,1,2.0,2
+1,4,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.003,1179,68,1,2.0,2
+1,5,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.005,1380,83,2,1.0,1
+1,5,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,20.45,1052,59,2,1.0,1
+1,5,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.007,1248,73,2,1.0,1
+1,6,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.214,1047,70,2,2.0,1
+1,6,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,5.62,806,56,2,2.0,1
+1,6,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.006,874,47,2,2.0,1
+1,7,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.007,1380,83,2,1.0,2
+1,7,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,17.777,1052,59,2,1.0,2
+1,7,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.007,1246,73,2,1.0,2
+1,8,"select model, dollars, pounds, inch_display from macbooks",11,1,3,greedy,0.215,1049,70,2,2.0,2
+1,8,"select model, dollars, pounds, inch_display from macbooks",11,1,3,linear,4.776,806,53,2,2.0,2
+1,8,"select model, dollars, pounds, inch_display from macbooks",11,1,3,hybrid,0.005,873,47,2,2.0,2
+2,0,"select * from restaurants",10,3,1,naive,0.001,744,56,null,null,null
+2,1,"select * from restaurants",10,3,1,greedy,0.007,744,56,1,1.0,1
+2,1,"select * from restaurants",10,3,1,linear,6.349,674,51,1,1.0,1
+2,1,"select * from restaurants",10,3,1,hybrid,0.003,678,50,1,1.0,1
+2,2,"select * from restaurants",10,3,1,greedy,0.002,574,43,1,2.0,1
+2,2,"select * from restaurants",10,3,1,linear,3.018,572,43,1,2.0,1
+2,2,"select * from restaurants",10,3,1,hybrid,0.001,572,43,1,2.0,1
+2,3,"select * from restaurants",10,3,1,greedy,0.006,726,53,1,1.0,2
+2,3,"select * from restaurants",10,3,1,linear,6.352,656,48,1,1.0,2
+2,3,"select * from restaurants",10,3,1,hybrid,0.002,656,48,1,1.0,2
+2,4,"select * from restaurants",10,3,1,greedy,0.004,573,43,1,2.0,2
+2,4,"select * from restaurants",10,3,1,linear,3.44,572,43,1,2.0,2
+2,4,"select * from restaurants",10,3,1,hybrid,0.002,573,43,1,2.0,2
+2,5,"select * from restaurants",10,3,1,greedy,0.007,744,56,2,1.0,1
+2,5,"select * from restaurants",10,3,1,linear,16.514,670,49,2,1.0,1
+2,5,"select * from restaurants",10,3,1,hybrid,0.004,678,50,2,1.0,1
+2,6,"select * from restaurants",10,3,1,greedy,0.006,574,43,2,2.0,1
+2,6,"select * from restaurants",10,3,1,linear,3.021,574,42,2,2.0,1
+2,6,"select * from restaurants",10,3,1,hybrid,0.004,576,42,2,2.0,1
+2,7,"select * from restaurants",10,3,1,greedy,0.01,744,56,2,1.0,2
+2,7,"select * from restaurants",10,3,1,linear,19.432,634,44,2,1.0,2
+2,7,"select * from restaurants",10,3,1,hybrid,0.008,656,48,2,1.0,2
+2,8,"select * from restaurants",10,3,1,greedy,0.016,546,41,2,2.0,2
+2,8,"select * from restaurants",10,3,1,linear,2.275,502,37,2,2.0,2
+2,8,"select * from restaurants",10,3,1,hybrid,0.005,503,37,2,2.0,2
