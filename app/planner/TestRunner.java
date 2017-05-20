@@ -26,14 +26,7 @@ public class TestRunner {
     static final String CSV_COLUMN_PLANNING_TIME = "planning_time";
     static final String CSV_COLUMN_SPEECH_COST_CHARACTERS = "speech_cost_chars";
     static final String CSV_COLUMN_SPEECH_COST_SECONDS = "speech_cost_seconds";
-
-    static final String ANALYTICS_BASE_DIR = "analytics/";
-    static String csvFileName = "analytics/csv_output.csv";
-    static String[] testQueries = {
-            "select model, dollars, pounds, inch_display from macbooks",
-            "select * from restaurants"
-    };
-    static WatsonVoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
+    static final String CSV_COLUMN_SPEAKING_TIME_RELATIVE_TO_NAIVE = "speaking_time_relative_to_naive";
     static List<String> columnNames = new ArrayList<>();
     static {
         columnNames.add(CSV_COLUMN_QUERY_ID);
@@ -42,9 +35,18 @@ public class TestRunner {
         columnNames.add(CSV_COLUMN_PLANNING_TIME);
         columnNames.add(CSV_COLUMN_SPEECH_COST_CHARACTERS);
         columnNames.add(CSV_COLUMN_SPEECH_COST_SECONDS);
+        columnNames.add(CSV_COLUMN_SPEAKING_TIME_RELATIVE_TO_NAIVE);
         columnNames.addAll(TupleCollection.csvColumnNames());
         columnNames.addAll(ToleranceConfig.csvColumnNames());
     }
+
+    static final String ANALYTICS_BASE_DIR = "analytics/";
+    static String csvFileName = "analytics/csv_output.csv";
+
+    static String[] testQueries = {
+            "select model, dollars, pounds, inch_display from macbooks",
+            "select restaurant, rating, price, cuisine from restaurants"
+    };
 
     public static void main(String[] args) {
         List<Map<String, String>> testResults = new ArrayList<>();
@@ -60,11 +62,14 @@ public class TestRunner {
                 System.exit(1);
             }
 
-            testResults.add(testAndBuildCSV(queryId, 0, new NaiveVoicePlanner(), tupleCollection));
+            Map<String, String> naiveMap = (testAndBuildCSV(queryId, 0, new NaiveVoicePlanner(), tupleCollection, 0));
+            int naiveSpeechCostSeconds = Integer.parseInt(naiveMap.get(CSV_COLUMN_SPEECH_COST_SECONDS));
+            testResults.add(naiveMap);
 
-            int[] mSValues = { 1, 2 };
+
+            int[] mSValues = { 1, 2, 3 };
             int[] mCValues = { 1, 2 };
-            double[] mWValues = { 1.0, 2.0 };
+            double[] mWValues = { 1.0, 1.5, 2.0 };
 
             int configId = 1;
 
@@ -75,9 +80,9 @@ public class TestRunner {
                     for (int k = 0; k < mWValues.length; k++) {
                         double mW = mWValues[k];
 
-                        testResults.add(testAndBuildCSV(queryId, configId, new GreedyPlanner(mS, mW, mC), tupleCollection));
-                        testResults.add(testAndBuildCSV(queryId, configId, new LinearProgrammingPlanner(mS, mW, mC), tupleCollection));
-                        testResults.add(testAndBuildCSV(queryId, configId, new HybridPlanner(new TupleCoveringPruner(10), mS, mW, mC), tupleCollection));
+                        testResults.add(testAndBuildCSV(queryId, configId, new GreedyPlanner(mS, mW, mC), tupleCollection, naiveSpeechCostSeconds));
+                        testResults.add(testAndBuildCSV(queryId, configId, new LinearProgrammingPlanner(mS, mW, mC), tupleCollection, naiveSpeechCostSeconds));
+                        testResults.add(testAndBuildCSV(queryId, configId, new HybridPlanner(new TupleCoveringPruner(10), mS, mW, mC), tupleCollection, naiveSpeechCostSeconds));
 
                         configId++;
                     }
@@ -91,7 +96,7 @@ public class TestRunner {
         writeTextToFile(csvFileName, csvResult);
     }
 
-    public static Map<String, String> testAndBuildCSV(int queryId, int configId, VoicePlanner planner, TupleCollection tupleCollection) {
+    public static Map<String, String> testAndBuildCSV(int queryId, int configId, VoicePlanner planner, TupleCollection tupleCollection, int naiveSpeechCostSeconds) {
         Map<String, String> csv = new HashMap<>();
         csv.putAll(tupleCollection.csvMap());
         csv.putAll(planner.getConfig().csvMap());
@@ -113,7 +118,7 @@ public class TestRunner {
         String fileNameBase = subdirectoryForQueryAndConfig(queryId, configId) + planner.getPlannerName();
         writeTextToFile(fileNameBase + ".txt", outputPlan.toSpeechText(true));
         String audioFileName = fileNameBase + ".wav";
-        voiceGenerator.generateAndWriteToFile(outputPlan.toSpeechText(false), audioFileName);
+        new WatsonVoiceGenerator().generateAndWriteToFile(outputPlan.toSpeechText(false), audioFileName);
 
         try {
             File file = new File(audioFileName);
@@ -124,6 +129,11 @@ public class TestRunner {
             float frameRate = format.getFrameRate();
             int speechCostSeconds = (int) (audioFileLength / (frameSize * frameRate));
             csv.put(CSV_COLUMN_SPEECH_COST_SECONDS, speechCostSeconds + "");
+            if (planner instanceof NaiveVoicePlanner) {
+                csv.put(CSV_COLUMN_SPEAKING_TIME_RELATIVE_TO_NAIVE, "1.0");
+            } else {
+                csv.put(CSV_COLUMN_SPEAKING_TIME_RELATIVE_TO_NAIVE, (((double) speechCostSeconds) / naiveSpeechCostSeconds) + "");
+            }
             audioInputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
