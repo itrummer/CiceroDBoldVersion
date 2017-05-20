@@ -17,8 +17,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.*;
 
 public class TestRunner {
+    static final String CSV_COLUMN_QUERY_ID = "query_id";
+    static final String CSV_COLUMN_CONFIG_ID = "config_id";
+    static final String CSV_COLUMN_PLANNER_TYPE = "planner";
+    static final String CSV_COLUMN_PLANNING_TIME = "planning_time";
+    static final String CSV_COLUMN_SPEECH_COST_CHARACTERS = "speech_cost_chars";
+    static final String CSV_COLUMN_SPEECH_COST_SECONDS = "speech_cost_seconds";
+
     static final String ANALYTICS_BASE_DIR = "analytics/";
     static String csvFileName = "analytics/csv_output.csv";
     static String[] testQueries = {
@@ -26,9 +34,20 @@ public class TestRunner {
             "select * from restaurants"
     };
     static WatsonVoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
+    static List<String> columnNames = new ArrayList<>();
+    static {
+        columnNames.add(CSV_COLUMN_QUERY_ID);
+        columnNames.add(CSV_COLUMN_CONFIG_ID);
+        columnNames.add(CSV_COLUMN_PLANNER_TYPE);
+        columnNames.add(CSV_COLUMN_PLANNING_TIME);
+        columnNames.add(CSV_COLUMN_SPEECH_COST_CHARACTERS);
+        columnNames.add(CSV_COLUMN_SPEECH_COST_SECONDS);
+        columnNames.addAll(TupleCollection.csvColumnNames());
+        columnNames.addAll(ToleranceConfig.csvColumnNames());
+    }
 
     public static void main(String[] args) {
-        String csvResult = "query_id,config_id,query," + TupleCollection.getCSVHeader() + ",type,planning_time,speech_cost_in_chars,speech_cost_in_seconds," + ToleranceConfig.getCSVHeader() + "\n";
+        List<Map<String, String>> testResults = new ArrayList<>();
 
         int queryId = 1;
 
@@ -41,7 +60,7 @@ public class TestRunner {
                 System.exit(1);
             }
 
-            csvResult += computeCSV(queryId, 0, query, new NaiveVoicePlanner(), tupleCollection) + "\n";
+            testResults.add(testAndBuildCSV(queryId, 0, new NaiveVoicePlanner(), tupleCollection));
 
             int[] mSValues = { 1, 2 };
             int[] mCValues = { 1, 2 };
@@ -56,9 +75,9 @@ public class TestRunner {
                     for (int k = 0; k < mWValues.length; k++) {
                         double mW = mWValues[k];
 
-                        csvResult += computeCSV(queryId, configId, query, new GreedyPlanner(mS, mW, mC), tupleCollection) + "\n";
-                        csvResult += computeCSV(queryId, configId, query, new LinearProgrammingPlanner(mS, mW, mC), tupleCollection) + "\n";
-                        csvResult += computeCSV(queryId, configId, query, new HybridPlanner(new TupleCoveringPruner(10), mS, mW, mC), tupleCollection) + "\n";
+                        testResults.add(testAndBuildCSV(queryId, configId, new GreedyPlanner(mS, mW, mC), tupleCollection));
+                        testResults.add(testAndBuildCSV(queryId, configId, new LinearProgrammingPlanner(mS, mW, mC), tupleCollection));
+                        testResults.add(testAndBuildCSV(queryId, configId, new HybridPlanner(new TupleCoveringPruner(10), mS, mW, mC), tupleCollection));
 
                         configId++;
                     }
@@ -67,17 +86,28 @@ public class TestRunner {
             queryId++;
         }
 
+        String csvResult = csvMapToString(testResults);
+        System.out.println(csvResult);
         writeTextToFile(csvFileName, csvResult);
     }
 
-    public static String computeCSV(int queryId, int configId, String query, VoicePlanner planner, TupleCollection tupleCollection) {
-        // measure planning time
+    public static Map<String, String> testAndBuildCSV(int queryId, int configId, VoicePlanner planner, TupleCollection tupleCollection) {
+        Map<String, String> csv = new HashMap<>();
+        csv.putAll(tupleCollection.csvMap());
+        csv.putAll(planner.getConfig().csvMap());
+        csv.put(CSV_COLUMN_QUERY_ID, queryId + "");
+        csv.put(CSV_COLUMN_CONFIG_ID, configId + "");
+        csv.put(CSV_COLUMN_PLANNER_TYPE, planner.getPlannerName());
+
+        // calculate planning time
         long startTime = System.currentTimeMillis();
         VoiceOutputPlan outputPlan = planner.plan(tupleCollection);
         long endTime = System.currentTimeMillis();
         double planningTime = (endTime - startTime) / 1000.0;
+        csv.put(CSV_COLUMN_PLANNING_TIME, planningTime + "");
 
-        int speechLength = outputPlan.toSpeechText(true).length();
+        int speechCostChars = outputPlan.toSpeechText(true).length();
+        csv.put(CSV_COLUMN_SPEECH_COST_CHARACTERS, speechCostChars + "");
 
         // write the output to a txt file and to a wav file
         String fileNameBase = subdirectoryForQueryAndConfig(queryId, configId) + planner.getPlannerName();
@@ -85,7 +115,6 @@ public class TestRunner {
         String audioFileName = fileNameBase + ".wav";
         voiceGenerator.generateAndWriteToFile(outputPlan.toSpeechText(false), audioFileName);
 
-        int durationInSeconds = -1;
         try {
             File file = new File(audioFileName);
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
@@ -93,15 +122,35 @@ public class TestRunner {
             long audioFileLength = file.length();
             int frameSize = format.getFrameSize();
             float frameRate = format.getFrameRate();
-            durationInSeconds = (int) (audioFileLength / (frameSize * frameRate));
+            int speechCostSeconds = (int) (audioFileLength / (frameSize * frameRate));
+            csv.put(CSV_COLUMN_SPEECH_COST_SECONDS, speechCostSeconds + "");
             audioInputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        return csv;
+    }
 
-        return queryId + "," + configId + ",\"" + query + "\"," + tupleCollection.csvDescription() + "," + planner.getPlannerName() + "," + planningTime + "," +
-                speechLength + "," + durationInSeconds + "," + planner.getConfig().getCSV();
+    public static String csvMapToString(List<Map<String, String>> csvList) {
+        String header = "";
+        Iterator<String> columns = columnNames.iterator();
+        while (columns.hasNext()) {
+            header += columns.next();
+            header += columns.hasNext() ? "," : "\n";
+        }
+
+        String body = "";
+        for (Map<String, String> csv : csvList) {
+            columns = columnNames.iterator();
+            while (columns.hasNext()) {
+                String column = columns.next();
+                body += csv.containsKey(column) ? csv.get(column) : "null";
+                body += columns.hasNext() ? "," : "\n";
+            }
+        }
+
+        return header + body;
     }
 
     public static String subdirectoryForQueryAndConfig(int queryId, int configId) {

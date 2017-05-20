@@ -9,11 +9,9 @@ import java.util.*;
  * Class representation of a collection of Tuples returned from a SQL query
  */
 public class TupleCollection implements Iterable<Tuple> {
-    public enum TupleCollectionCSVKeys {
-        CATEGORICAL_COLUMN_COUNT,
-        NUMERICAL_COLUMN_COUNT,
-        RESULT_SIZE,
-    }
+    static final String CSV_COLUMN_TUPLE_COUNT = "tuple_count";
+    static final String CSV_COLUMN_CATEGORICAL_COLUMN_COUNT = "categorical_cols";
+    static final String CSV_COLUMN_NUMERICAL_COLUMN_COUNT = "numerical_cols";
 
     ArrayList<String> attributes;
     Map<Integer, Tuple> tuples;
@@ -389,18 +387,29 @@ public class TupleCollection implements Iterable<Tuple> {
 
     }
 
-    public String csvDescription() {
+    public Map<String, String> csvMap() {
+        Map<String, String> csv = new HashMap<>();
+
+        csv.put(CSV_COLUMN_TUPLE_COUNT, tupleCount() + "");
+
         int categoricalCount = 0;
         int numericalCount = 0;
         for (int i = 0; i < attributeCount(); i++) {
             categoricalCount += attributeIsCategorical(i) ? 1 : 0;
             numericalCount += attributeIsNumerical(i) ? 1 : 0;
         }
-        return tupleCount() + "," + categoricalCount + "," + numericalCount;
+
+        csv.put(CSV_COLUMN_CATEGORICAL_COLUMN_COUNT, categoricalCount + "");
+        csv.put(CSV_COLUMN_NUMERICAL_COLUMN_COUNT, numericalCount + "");
+        return csv;
     }
 
-    public static String getCSVHeader() {
-        return "tuple_count,categorical_cols,numerical_cols";
+    public static List<String> csvColumnNames() {
+        List<String> columnNames = new ArrayList<>();
+        columnNames.add(CSV_COLUMN_TUPLE_COUNT);
+        columnNames.add(CSV_COLUMN_CATEGORICAL_COLUMN_COUNT);
+        columnNames.add(CSV_COLUMN_NUMERICAL_COLUMN_COUNT);
+        return columnNames;
     }
 
 }
