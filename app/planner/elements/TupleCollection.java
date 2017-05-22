@@ -16,7 +16,7 @@ public class TupleCollection implements Iterable<Tuple> {
     List<String> attributes;
     Map<Integer, Tuple> tuples;
     Map<Integer, Map<Integer, Value>> values;
-    List<List<Value>> distinctValues;
+    Map<Integer, Map<Integer, Value>> distinctValues;
     HashMap<Integer, HashSet<Value>> valueSets;
     ArrayList<ArrayList<Integer>> indexMap;
 
@@ -24,17 +24,15 @@ public class TupleCollection implements Iterable<Tuple> {
      * Constructs a TupleCollection with 0 rows.
      */
     public TupleCollection(List<String> attributes) {
-        // TODO: eliminate distinctValues and just use valueSets, using the size to determine the index
-
         this.attributes = attributes;
         this.tuples = new HashMap<>();
         this.values = new HashMap<>();
-        this.distinctValues = new ArrayList<>();
+        this.distinctValues = new HashMap<>();
         this.valueSets = new HashMap<>();
         this.indexMap = new ArrayList<>();
         for (int a = 0; a < attributeCount(); a++) {
             values.put(a, new HashMap<>());
-            distinctValues.add(new ArrayList<>());
+            distinctValues.put(a, new HashMap<>());
             valueSets.put(a, new HashSet<>());
             indexMap.add(new ArrayList<>());
         }
@@ -68,34 +66,46 @@ public class TupleCollection implements Iterable<Tuple> {
         return attributes.size();
     }
 
+    /**
+     * Inserts a Tuple into this TupleCollection. Also adds any new distinct values that appear in
+     * the Tuple to this TupleCollection's set of distinct values for each attribute.
+     * @param tuple The Tuple to be added to this TupleCollection
+     */
     public void addTuple(Tuple tuple) {
         int tupleIndex = tuples.size();
         tuples.put(tupleIndex, tuple);
 
         for (int a = 0; a < attributeCount(); a++) {
-            String attributeName = attributes.get(a);
-            Value tValue = tuple.valueForAttribute(attributeName);
-
-            // add the value to the matrix
-            Map<Integer, Value> aValues = values.get(a);
-            aValues.put(tupleIndex, tValue);
-
-            // add any new values to the distinctValues matrix
-            List<Value> aDistinctValues = distinctValues.get(a);
-            if (!valueSets.get(a).contains(tValue)) {
-                aDistinctValues.add(tValue);
-                valueSets.get(a).add(tValue);
-            }
-
+            Value tValue = tuple.valueForAttribute(attributes.get(a));
+            addValueForTuple(a, tupleIndex, tValue);
+            addDistinctValue(a, tValue);
             if (tValue.isNumerical()) {
                 for (Value v : tValue.roundedValues()) {
-                    if (!valueSets.get(a).contains(v)) {
-                        aDistinctValues.add(v);
-                        valueSets.get(a).add(v);
-                    }
+                    addDistinctValue(a, v);
                 }
             }
         }
+    }
+
+    /**
+     * Adds a Value to the set of distinct Values that appear for attribute a in this TupleCollection. There is
+     * no change if Value v already appears as a distinct Value for attribute a. We also store the index
+     * at which this distinct Value is seen during the insertion of this Value.
+     * @param a The index of the attribute
+     * @param v The distinct Value to add to attribute a
+     */
+    private void addDistinctValue(int a, Value v) {
+        if (!valueSets.get(a).contains(v)) {
+            int index = distinctValues.get(a).size();
+            distinctValues.get(a).put(index, v);
+        }
+    }
+
+    /**
+     * Stores Value v as the value for attribute a for the Tuple inserted at index t
+     */
+    private void addValueForTuple(int a, int t, Value v) {
+        values.get(a).put(t, v);
     }
 
     /**
@@ -127,7 +137,7 @@ public class TupleCollection implements Iterable<Tuple> {
      */
     public int getIndexOfDistinctValue(int a, int t) {
         Value v = getValueForAttributeAndTuple(a, t);
-        List<Value> values = distinctValues.get(a);
+        Map<Integer, Value> values = distinctValues.get(a);
         for (int i = 0; i < values.size(); i++) {
             if (v.equals(values.get(i))) {
                 return i;
@@ -258,7 +268,7 @@ public class TupleCollection implements Iterable<Tuple> {
             Set<ValueDomain> domains = new HashSet<>();
             if (attributeIsCategorical(a)) {
                 Set<Value> valueSet = new HashSet<>();
-                valueSet.addAll(distinctValues.get(a));
+                valueSet.addAll(distinctValues.get(a).values());
 
                 // add subsets of bounded cardinality
                 Set<Set<Value>> valueSubsets = subsetsOfSize(valueSet, mC);

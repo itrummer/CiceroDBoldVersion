@@ -54,7 +54,7 @@ public class HybridPlanner extends VoicePlanner {
             }
 
             for (int t = 0; t < tupleCollection.tupleCount(); t++) {
-                Tuple tuple = tupleCollection.getTuples().get(t);
+                Tuple tuple = tupleCollection.getTuple(t);
                 int tWithoutContext = tuple.toSpeechText(true).length();
                 for (int c = 0; c < contextCount; c++) {
                     Context context = contextCandidates.get(c);

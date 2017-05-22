@@ -14,11 +14,6 @@ public class TupleCoveringPruner extends TopKPruner {
 
     @Override
     public Collection<Context> prune(Collection<Context> candidateContexts, TupleCollection tupleCollection) {
-        Map<Integer, Tuple> tupleMap = new HashMap<>();
-        for (int i = 0; i < tupleCollection.tupleCount(); i++) {
-            tupleMap.put(i, tupleCollection.getTuple(i));
-        }
-
         Collection<Context> result = new ArrayList<>();
         Collection<Tuple> uncovered = new ArrayList<>(tupleCollection.getTuples());
         Collection<Context> remainingCandidates = new ArrayList<>(candidateContexts);
