@@ -19,7 +19,9 @@ public class VoicePlannerTest extends TestCase {
         QUERY_1("model, dollars, pounds, inch_display", "macbooks"),
         QUERY_2("restaurant, price, rating, cuisine", "restaurants"),
         QUERY_3("restaurant, price, cuisine", "restaurants"),
-        QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks");
+        QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks"),
+        QUERY_5("restaurant, rating, price, reviews, location, cuisine", "yelp"),
+        QUERY_6("restaurant, rating, location, cuisine", "yelp");
 
         private String attributeList;
         private String relation;
@@ -83,6 +85,13 @@ public class VoicePlannerTest extends TestCase {
         GreedyPlanner planner = new GreedyPlanner(2, 1.5, 1);
         testPlannerAveragePlanningTime(10, planner, TestCase.QUERY_2);
         testPlannerAveragePlanningTime(100, planner, TestCase.QUERY_2);
+    }
+
+    public void testHybridAllTestCases100Times() throws Exception {
+        HybridPlanner planner = new HybridPlanner(new TupleCoveringPruner(30), 3, 2.0, 1);
+        for (TestCase testCase : TestCase.values()) {
+            testPlannerAveragePlanningTime(1, planner, testCase);
+        }
     }
 
     /**
