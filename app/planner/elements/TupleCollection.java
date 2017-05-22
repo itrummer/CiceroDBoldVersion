@@ -98,6 +98,7 @@ public class TupleCollection implements Iterable<Tuple> {
         if (!valueSets.get(a).contains(v)) {
             int index = distinctValues.get(a).size();
             distinctValues.get(a).put(index, v);
+            valueSets.get(a).add(v);
         }
     }
 
