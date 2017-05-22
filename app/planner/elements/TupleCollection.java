@@ -302,6 +302,23 @@ public class TupleCollection implements Iterable<Tuple> {
         return 0;
     }
 
+    public double entropy() {
+        double totalEntropy = 0.0;
+        for (int a = 0; a < attributeCount(); a++) {
+            totalEntropy += entropyForAttribute(a);
+        }
+        return totalEntropy / attributeCount();
+    }
+
+    private double entropyForAttribute(int a) {
+        if (attributeIsCategorical(a)) {
+
+        } else if (attributeIsNumerical(a)) {
+
+        }
+        return 0.0;
+    }
+
     /**
      * Computes the power set of a set of items
      * @param originalSet The original set of items

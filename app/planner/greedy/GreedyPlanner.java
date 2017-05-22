@@ -77,8 +77,8 @@ public class GreedyPlanner extends VoicePlanner {
             return new NaiveVoicePlanner().plan(tupleCollection);
         }
 
-        ArrayList<Tuple> unmatchedTuples = new ArrayList<>();
-        ArrayList<Tuple> matchedTuples = new ArrayList<>();
+        List<Tuple> unmatchedTuples = new ArrayList<>();
+        List<Tuple> matchedTuples = new ArrayList<>();
         for (Tuple t : tupleCollection) {
             boolean matched = false;
             Iterator<Context> contextIterator = contextCandidates.iterator();

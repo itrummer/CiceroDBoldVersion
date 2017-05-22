@@ -9,8 +9,6 @@ import planner.linear.LinearProgrammingPlanner;
 import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
-import java.sql.SQLException;
-
 import static org.junit.Assert.*;
 
 /**
@@ -54,7 +52,9 @@ public class VoicePlannerTest extends TestCase {
         long elapsedMillis = endTime - startTime;
         double elapsedSeconds = elapsedMillis / 1000.0;
         double averageSeconds = elapsedSeconds / n;
-        System.out.println(planner.getPlannerName() + " planner executed " + testCase.name() + " " + n + " times and took an average " + averageSeconds + " seconds");
+        System.out.println(planner.getPlannerName() + " planner executed " + testCase.name() + " on " +
+                testCase.getRelation() + " " + n + " times and took an average " + averageSeconds +
+                " seconds per execution");
         return averageSeconds;
     }
 
@@ -103,7 +103,7 @@ public class VoicePlannerTest extends TestCase {
             assertTrue(linearPlan.toSpeechText(true).length() <= greedyPlan.toSpeechText(true).length());
 
             VoiceOutputPlan hybridPlan = hybrid.plan(tupleCollection);
-            assertTrue(linearPlan.toSpeechText(true).length() <= greedyPlan.toSpeechText(true).length());
+            assertTrue(linearPlan.toSpeechText(true).length() <= hybridPlan.toSpeechText(true).length());
         }
     }
 

@@ -15,7 +15,7 @@ public class Tuple implements Speakable {
     /**
      * Constructor for a Tuple with a list of String attributes
      */
-    public Tuple(ArrayList<String> attributes) {
+    public Tuple(List<String> attributes) {
         this.attributes = attributes;
         this.valueAssignments = new HashMap<>();
         this.cachedLongFormResultWithoutContext = null;

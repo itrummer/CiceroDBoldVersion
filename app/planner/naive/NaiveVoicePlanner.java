@@ -21,21 +21,6 @@ public class NaiveVoicePlanner extends VoicePlanner {
         return outputPlan;
     }
 
-    public static void main(String[] args) {
-        try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
-            NaiveVoicePlanner planner = new NaiveVoicePlanner();
-            VoiceOutputPlan plan = planner.plan(tupleCollection);
-            if (plan != null) {
-                System.out.println(plan.toSpeechText(false));
-            } else {
-                System.out.println("Plan was null");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public String getPlannerName() {
         return "naive";
