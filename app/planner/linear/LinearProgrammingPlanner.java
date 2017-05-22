@@ -126,7 +126,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
                             upperBounds.addTerm(coefficient, u[c][a][v]);
                         }
                         cplex.addLe(lowerBounds, upperBounds);
-                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, maximalNumericalDomainWidth));
+                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, 1.01 * maximalNumericalDomainWidth));
                     }
                 }
             }
@@ -180,6 +180,12 @@ public class LinearProgrammingPlanner extends VoicePlanner {
                         cplex.addLe(e[c][a][v], u[c][a][v]);
                     }
                 }
+            }
+
+            // disallow context to fix the primary key
+            int pKey = tupleCollection.getPrimaryKeyIndex();
+            for (int c = 0; c < cMax; c++) {
+                cplex.addEq(f[c][pKey], 0);
             }
 
             // ADD COST OBJECTIVE TO MODEL

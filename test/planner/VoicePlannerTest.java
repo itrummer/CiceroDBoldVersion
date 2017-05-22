@@ -98,19 +98,26 @@ public class VoicePlannerTest extends TestCase {
         for (TestCase testCase : TestCase.values()) {
             TupleCollection tupleCollection = DatabaseUtilities.executeQuery(testCase.getQuery());
             VoiceOutputPlan linearPlan = linear.plan(tupleCollection);
+            System.out.println("Linear\n" + linearPlan.toSpeechText(false));
+            int linearCost = linearPlan.toSpeechText(true).length();
 
             VoiceOutputPlan greedyPlan = greedy.plan(tupleCollection);
-            assertTrue(linearPlan.toSpeechText(true).length() <= greedyPlan.toSpeechText(true).length());
+            int greedyCost = greedyPlan.toSpeechText(true).length();
+            System.out.println("Greedy\n" + greedyPlan.toSpeechText(false));
+            assertTrue(testCase.name(),linearCost <= greedyCost);
 
             VoiceOutputPlan hybridPlan = hybrid.plan(tupleCollection);
-            assertTrue(linearPlan.toSpeechText(true).length() <= hybridPlan.toSpeechText(true).length());
+            int hybridCost = hybridPlan.toSpeechText(true).length();
+            System.out.println("Hybrid\n" + hybridPlan.toSpeechText(false));
+            assertTrue(testCase.name(), linearCost <= hybridCost);
         }
     }
 
     public void testLinearHasSmallestCostManyConfigs() throws Exception {
         testLinearHasSmallestCost(2, 2.0, 2, 10);
+        testLinearHasSmallestCost(2, 2.0, 2, 30);
+        testLinearHasSmallestCost(2, 3.0, 2, 30);
         testLinearHasSmallestCost(3, 2.0, 2, 10);
-        testLinearHasSmallestCost(2, 2.5, 1, 10);
         testLinearHasSmallestCost(2, 1.0, 2, 10);
     }
 
