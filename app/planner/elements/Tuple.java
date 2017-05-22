@@ -55,6 +55,9 @@ public class Tuple implements Speakable {
         if (c == null && inLongForm && cachedLongFormResultWithoutContext != null) {
             return cachedLongFormResultWithoutContext;
         }
+        if (c != null && !c.matches(this)) {
+            return toSpeechText(null, inLongForm);
+        }
         String result = "";
         boolean firstAttribute = true;
         for (String attribute : attributes) {

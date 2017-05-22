@@ -20,4 +20,6 @@ public abstract class ContextPruner {
      * @return A filtered collection of Contexts according to this ContextPruner's pruning method
      */
     public abstract Collection<Context> prune(Collection<Context> candidateContexts, TupleCollection tupleCollection);
+
+    public abstract String getName();
 }

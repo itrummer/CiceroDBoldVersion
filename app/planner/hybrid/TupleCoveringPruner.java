@@ -40,4 +40,10 @@ public class TupleCoveringPruner extends TopKPruner {
 
         return result;
     }
+
+    @Override
+    public String getName() {
+        return super.getName() + "-tuple-covering";
+    }
+    
 }

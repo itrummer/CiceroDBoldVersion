@@ -6,6 +6,8 @@ import planner.VoicePlanner;
 import planner.elements.*;
 import ilog.concert.*;
 import ilog.cplex.*;
+import planner.hybrid.HybridPlanner;
+import planner.hybrid.TupleCoveringPruner;
 import util.DatabaseUtilities;
 
 import java.util.ArrayList;
@@ -47,7 +49,6 @@ public class LinearProgrammingPlanner extends VoicePlanner {
         int attributeCount = tupleCollection.attributeCount();
         int cMax = tupleCount/2;
         if (tupleCollection.getTuples().isEmpty()) {
-            // TODO: EmptyResultVoiceOutputPlan ?
             return null;
         }
 
@@ -325,21 +326,6 @@ public class LinearProgrammingPlanner extends VoicePlanner {
             }
         }
         return m;
-    }
-
-    public static void main(String[] args) {
-        try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
-            LinearProgrammingPlanner planner = new LinearProgrammingPlanner(3, 2.0, 1);
-            VoiceOutputPlan plan = planner.plan(tupleCollection);
-            if (plan != null) {
-                System.out.println(plan.toSpeechText(false));
-            } else {
-                System.out.println("Plan was null");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

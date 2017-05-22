@@ -44,7 +44,6 @@ public class GreedyPlanner extends VoicePlanner {
 
         // up to maximal number of useful contexts
         for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
-
             Context newContext = bestContext(candidateContexts, tupleCollection);
             candidateContexts.add(newContext);
             VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
@@ -82,11 +81,12 @@ public class GreedyPlanner extends VoicePlanner {
         ArrayList<Tuple> matchedTuples = new ArrayList<>();
         for (Tuple t : tupleCollection) {
             boolean matched = false;
-            for (Context c : contextCandidates) {
+            Iterator<Context> contextIterator = contextCandidates.iterator();
+            while (contextIterator.hasNext() && !matched) {
+                Context c = contextIterator.next();
                 if (c.matches(t)) {
                     matchedTuples.add(t);
                     matched = true;
-                    break;
                 }
             }
             if (!matched) {
@@ -94,20 +94,19 @@ public class GreedyPlanner extends VoicePlanner {
             }
         }
 
-        Scope emptyScope = new Scope(unmatchedTuples);
-        HashMap<Context, Scope> scopes = new HashMap<>();
+        Map<Context, Scope> scopes = new HashMap<>();
         for (Context c : contextCandidates) {
             scopes.put(c, new Scope(c));
         }
 
         // for each tuple, find the Context it most favors, i.e. the best
         // savings, and add it to the Scope that contains that Context
-        for (Tuple t : tupleCollection) {
+        for (Tuple t : matchedTuples) {
             Context favoredContext = null;
-            int bestSavings = Integer.MAX_VALUE;
+            int bestSavings = 0;
             for (Context c : contextCandidates) {
-                int newSavings = t.toSpeechText(c, true).length();
-                if (newSavings < bestSavings) {
+                int newSavings = t.toSpeechText(true).length() - t.toSpeechText(c, true).length();
+                if (newSavings > bestSavings) {
                     favoredContext = c;
                     bestSavings = newSavings;
                 }
@@ -116,7 +115,11 @@ public class GreedyPlanner extends VoicePlanner {
         }
 
         VoiceOutputPlan plan = new VoiceOutputPlan();
-        plan.addScope(emptyScope);
+
+        if (!unmatchedTuples.isEmpty()) {
+            plan.addScope(new Scope(unmatchedTuples));
+        }
+
         for (Scope s : scopes.values()) {
             if (s.numberTuples() > 0) {
                 plan.addScope(s);
@@ -208,27 +211,6 @@ public class GreedyPlanner extends VoicePlanner {
 
         // skip the domain at the current index
         candidateContextsForDomains(result, domains, subset, index + 1, s);
-    }
-
-    public static void main(String[] args) {
-        try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select model, dollars, pounds, inch_display from macbooks;");
-            GreedyPlanner planner = new GreedyPlanner(2, 1.5, 2);
-
-            long startTime = System.currentTimeMillis();
-            VoiceOutputPlan plan = planner.plan(tupleCollection);
-            long endTime = System.currentTimeMillis();
-            double seconds = (endTime - startTime) / 1000.0;
-            System.out.println("Time: " + seconds + " seconds");
-
-            if (plan != null) {
-                System.out.println(plan.toSpeechText(false));
-            } else {
-                System.out.println("Plan was null");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

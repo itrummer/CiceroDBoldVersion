@@ -65,4 +65,8 @@ public class TopKPruner extends ContextPruner {
         return nodeList;
     }
 
+    @Override
+    public String getName() {
+        return "top-" + k;
+    }
 }

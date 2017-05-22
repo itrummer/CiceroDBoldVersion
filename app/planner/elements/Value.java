@@ -103,7 +103,9 @@ public class Value implements Speakable, Comparable<Value> {
                     expandedValue = EnglishNumberToWords.convert(((Double) value).longValue()) + " point " + EnglishNumberToWords.convert(tenths);
                     break;
                 case FLOAT:
-                    expandedValue = EnglishNumberToWords.convert(((Float) value).longValue());
+                    Float f = (Float) value;
+                    long fTenths = (long) ((f - f.intValue()) * 10);
+                    expandedValue = EnglishNumberToWords.convert(((Float) value).longValue()) + " point " + EnglishNumberToWords.convert(fTenths);
                     break;
                 case STRING:
                     expandedValue = (String) value;

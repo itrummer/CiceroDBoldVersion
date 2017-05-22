@@ -36,4 +36,9 @@ public class UsefulPruner extends ContextPruner {
         }
         return c.toSpeechText(true).length() + Scope.contextOverheadCost() >= totalSavings;
     }
+
+    @Override
+    public String getName() {
+        return "useful";
+    }
 }

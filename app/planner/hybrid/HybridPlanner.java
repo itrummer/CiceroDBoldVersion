@@ -9,6 +9,7 @@ import planner.ToleranceConfig;
 import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
 import planner.elements.*;
+import planner.greedy.GreedyPlanner;
 import util.DatabaseUtilities;
 
 import java.util.*;
@@ -161,24 +162,9 @@ public class HybridPlanner extends VoicePlanner {
         return result;
     }
 
-    public static void main(String[] args) {
-        try {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery("select * from macbooks;");
-            HybridPlanner planner = new HybridPlanner(new TupleCoveringPruner(10),3, 2.0, 2);
-            VoiceOutputPlan plan = planner.plan(tupleCollection);
-            if (plan != null) {
-                System.out.println(plan.toSpeechText(false));
-            } else {
-                System.out.println("Plan was null");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public String getPlannerName() {
-        return "hybrid";
+        return "hybrid" + contextPruner.getName();
     }
 
     @Override

@@ -13,31 +13,17 @@ public class TupleCollection implements Iterable<Tuple> {
     static final String CSV_COLUMN_CATEGORICAL_COLUMN_COUNT = "categorical_cols";
     static final String CSV_COLUMN_NUMERICAL_COLUMN_COUNT = "numerical_cols";
 
-    ArrayList<String> attributes;
+    List<String> attributes;
     Map<Integer, Tuple> tuples;
-
-    // attributeCount x tupleCount matrix
     Map<Integer, Map<Integer, Value>> values;
-
-    // distinctValues contains only the distinct values for each attribute
-    // each 'column' in this matrix is of variable length, but must be <= tupleCount
-    // Example:
-    //  a1    a2    a3   ...
-    // "v1"   5     3    ...
-    // "v2"         4    ...
-    ArrayList<ArrayList<Value>> distinctValues;
-
+    List<List<Value>> distinctValues;
     HashMap<Integer, HashSet<Value>> valueSets;
-
-    // attributeCount x tupleCount
-    // let index = indexMap.get(a).get(t)
-    // distinctValues.get(a).get(t) == t's value for a
     ArrayList<ArrayList<Integer>> indexMap;
 
     /**
      * Constructs a TupleCollection with 0 rows.
      */
-    public TupleCollection(ArrayList<String> attributes) {
+    public TupleCollection(List<String> attributes) {
         // TODO: eliminate distinctValues and just use valueSets, using the size to determine the index
 
         this.attributes = attributes;
@@ -66,7 +52,7 @@ public class TupleCollection implements Iterable<Tuple> {
         return tuples.get(t);
     }
 
-    public ArrayList<String> getAttributes() {
+    public List<String> getAttributes() {
         return attributes;
     }
 
@@ -95,7 +81,7 @@ public class TupleCollection implements Iterable<Tuple> {
             aValues.put(tupleIndex, tValue);
 
             // add any new values to the distinctValues matrix
-            ArrayList<Value> aDistinctValues = distinctValues.get(a);
+            List<Value> aDistinctValues = distinctValues.get(a);
             if (!valueSets.get(a).contains(tValue)) {
                 aDistinctValues.add(tValue);
                 valueSets.get(a).add(tValue);
@@ -141,7 +127,7 @@ public class TupleCollection implements Iterable<Tuple> {
      */
     public int getIndexOfDistinctValue(int a, int t) {
         Value v = getValueForAttributeAndTuple(a, t);
-        ArrayList<Value> values = distinctValues.get(a);
+        List<Value> values = distinctValues.get(a);
         for (int i = 0; i < values.size(); i++) {
             if (v.equals(values.get(i))) {
                 return i;
@@ -228,7 +214,7 @@ public class TupleCollection implements Iterable<Tuple> {
         try {
             ResultSetMetaData metaData = resultSet.getMetaData();
 
-            ArrayList<String> attributes = new ArrayList<String>();
+            ArrayList<String> attributes = new ArrayList<>();
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
                 attributes.add(metaData.getColumnName(i));
             }
@@ -271,7 +257,6 @@ public class TupleCollection implements Iterable<Tuple> {
             }
             Set<ValueDomain> domains = new HashSet<>();
             if (attributeIsCategorical(a)) {
-                distinctValues.get(a).toArray();
                 Set<Value> valueSet = new HashSet<>();
                 valueSet.addAll(distinctValues.get(a));
 
@@ -362,31 +347,6 @@ public class TupleCollection implements Iterable<Tuple> {
         return result.substring(result.length()-2);
     }
 
-    @Override
-    public Iterator<Tuple> iterator() {
-        return new TupleCollectionIterator();
-    }
-
-    class TupleCollectionIterator implements Iterator<Tuple> {
-        int currentTuple = 0;
-
-        @Override
-        public boolean hasNext() {
-            return currentTuple < TupleCollection.this.tupleCount();
-        }
-
-        @Override
-        public Tuple next() {
-            if (this.hasNext()) {
-                int toReturn = currentTuple;
-                currentTuple++;
-                return TupleCollection.this.getTuple(toReturn);
-            }
-            throw new NoSuchElementException();
-        }
-
-    }
-
     public Map<String, String> csvMap() {
         Map<String, String> csv = new HashMap<>();
 
@@ -410,6 +370,31 @@ public class TupleCollection implements Iterable<Tuple> {
         columnNames.add(CSV_COLUMN_CATEGORICAL_COLUMN_COUNT);
         columnNames.add(CSV_COLUMN_NUMERICAL_COLUMN_COUNT);
         return columnNames;
+    }
+
+    @Override
+    public Iterator<Tuple> iterator() {
+        return new TupleCollectionIterator();
+    }
+
+    class TupleCollectionIterator implements Iterator<Tuple> {
+        int currentTuple = 0;
+
+        @Override
+        public boolean hasNext() {
+            return currentTuple < TupleCollection.this.tupleCount();
+        }
+
+        @Override
+        public Tuple next() {
+            if (this.hasNext()) {
+                int toReturn = currentTuple;
+                currentTuple++;
+                return TupleCollection.this.getTuple(toReturn);
+            }
+            throw new NoSuchElementException();
+        }
+
     }
 
 }
