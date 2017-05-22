@@ -3,6 +3,9 @@ package planner;
 import junit.framework.TestCase;
 import planner.elements.TupleCollection;
 import planner.greedy.GreedyPlanner;
+import planner.hybrid.HybridPlanner;
+import planner.hybrid.TupleCoveringPruner;
+import planner.linear.LinearProgrammingPlanner;
 import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
@@ -41,7 +44,7 @@ public class VoicePlannerTest extends TestCase {
      * Executes the given planner n times on tupleCollection. Calculates the average execution time by
      * dividing total execution time in milliseconds by the number of executions n.
      */
-    public double testPlannerAveragePlanningTime(int n, VoicePlanner planner, TestCase testCase) throws Exception{
+    private double testPlannerAveragePlanningTime(int n, VoicePlanner planner, TestCase testCase) throws Exception{
         TupleCollection tuples = DatabaseUtilities.executeQuery(testCase.getQuery());
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -82,7 +85,34 @@ public class VoicePlannerTest extends TestCase {
         testPlannerAveragePlanningTime(100, planner, TestCase.QUERY_2);
     }
 
+    /**
+     * Executes each planner with the same configuration and asserts that the linear algorithm's
+     * output plan has the smallest speech cost
+     * @param k The k value to use in configuring the HybridPlanner
+     */
+    public void testLinearHasSmallestCost(int mS, double mW, int mC, int k) throws Exception {
+        VoicePlanner linear = new LinearProgrammingPlanner(mS, mW, mC);
+        VoicePlanner greedy = new GreedyPlanner(mS, mW, mC);
+        VoicePlanner hybrid = new HybridPlanner(new TupleCoveringPruner(k), mS, mW, mC);
 
+        for (TestCase testCase : TestCase.values()) {
+            TupleCollection tupleCollection = DatabaseUtilities.executeQuery(testCase.getQuery());
+            VoiceOutputPlan linearPlan = linear.plan(tupleCollection);
+
+            VoiceOutputPlan greedyPlan = greedy.plan(tupleCollection);
+            assertTrue(linearPlan.toSpeechText(true).length() <= greedyPlan.toSpeechText(true).length());
+
+            VoiceOutputPlan hybridPlan = hybrid.plan(tupleCollection);
+            assertTrue(linearPlan.toSpeechText(true).length() <= greedyPlan.toSpeechText(true).length());
+        }
+    }
+
+    public void testLinearHasSmallestCostManyConfigs() throws Exception {
+        testLinearHasSmallestCost(2, 2.0, 2, 10);
+        testLinearHasSmallestCost(3, 2.0, 2, 10);
+        testLinearHasSmallestCost(2, 2.5, 1, 10);
+        testLinearHasSmallestCost(2, 1.0, 2, 10);
+    }
 
 
 }
