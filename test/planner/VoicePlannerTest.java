@@ -119,7 +119,7 @@ public class VoicePlannerTest extends TestCase {
         testLinearHasSmallestCost(2, 3.0, 2, 30);
         testLinearHasSmallestCost(3, 2.0, 2, 10);
         testLinearHasSmallestCost(2, 1.0, 2, 10);
+        testLinearHasSmallestCost(3, 1.5, 2, 10);
     }
-
 
 }
