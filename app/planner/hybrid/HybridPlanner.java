@@ -160,7 +160,7 @@ public class HybridPlanner extends NaiveVoicePlanner {
 
     @Override
     public String getPlannerName() {
-        return "hybrid" + contextPruner.getName();
+        return "hybrid-" + contextPruner.getName();
     }
 
 }

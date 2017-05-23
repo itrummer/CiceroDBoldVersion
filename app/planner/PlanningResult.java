@@ -5,11 +5,11 @@ package planner;
  */
 public class PlanningResult {
     VoiceOutputPlan plan;
-    double totalExecutionTimeMillis;
+    long totalExecutionTimeMillis;
     int executionCount;
     boolean timedOut;
 
-    public PlanningResult(VoiceOutputPlan plan, double totalExecutionTimeMillis, int n, boolean timedOut) {
+    public PlanningResult(VoiceOutputPlan plan, long totalExecutionTimeMillis, int n, boolean timedOut) {
         this.plan = plan;
         this.totalExecutionTimeMillis = totalExecutionTimeMillis;
         this.executionCount = n;
@@ -28,7 +28,7 @@ public class PlanningResult {
         return plan;
     }
 
-    public double getAverageExecutionTimeMillis() {
+    public long getAverageExecutionTimeMillis() {
         return totalExecutionTimeMillis / executionCount;
     }
 

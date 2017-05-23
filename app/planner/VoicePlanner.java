@@ -37,6 +37,8 @@ public abstract class VoicePlanner {
 
     public abstract ToleranceConfig getConfig();
 
+    public abstract void setConfig(ToleranceConfig config);
+
     public abstract String getPlannerName();
 
 }

@@ -5,11 +5,15 @@ import planner.elements.TupleCollection;
 import planner.greedy.GreedyPlanner;
 import planner.hybrid.HybridPlanner;
 import planner.hybrid.TupleCoveringPruner;
+import planner.hybrid.UsefulPruner;
 import planner.linear.LinearProgrammingPlanner;
 import planner.naive.NaiveVoicePlanner;
+import util.CSVBuilder;
 import util.DatabaseUtilities;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -22,8 +26,8 @@ public class VoicePlannerTest extends TestCase {
         QUERY_2("restaurant, price, rating, cuisine", "restaurants"),
         QUERY_3("restaurant, price, cuisine", "restaurants"),
         QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks"),
-        QUERY_5("restaurant, rating, price, reviews, location, cuisine", "yelp"),
-        QUERY_6("restaurant, rating, location, cuisine", "yelp");
+        QUERY_6("restaurant, rating, location, cuisine", "yelp"),
+        QUERY_5("restaurant, rating, price, reviews, location, cuisine", "yelp");
 
         private String attributeList;
         private String relation;
@@ -115,7 +119,7 @@ public class VoicePlannerTest extends TestCase {
         VoicePlanner greedy = new GreedyPlanner(mS, mW, mC);
         VoicePlanner hybrid = new HybridPlanner(new TupleCoveringPruner(k), mS, mW, mC);
 
-        for (TestCase testCase : TestCase.values()) {
+        for (TestCase testCase : new TestCase[] {TestCase.QUERY_1, TestCase.QUERY_2}) {
             PlanningResult result;
             TupleCollection tupleCollection = testCase.getTupleCollection();
 
@@ -142,6 +146,51 @@ public class VoicePlannerTest extends TestCase {
         testLinearHasSmallestCost(3, 2.0, 2, 10);
         testLinearHasSmallestCost(2, 1.0, 2, 10);
         testLinearHasSmallestCost(3, 1.5, 2, 10);
+    }
+
+    /**
+     * Executes each test case for each planner-config combination
+     */
+    public void executeTests(TestCase[] testCases, VoicePlanner[] planners, ToleranceConfig[] configs, NaiveVoicePlanner naiveVoicePlanner) throws Exception {
+        CSVBuilder csvBuilder = new CSVBuilder();
+        for (TestCase testCase : testCases) {
+            TupleCollection tupleCollection = testCase.getTupleCollection();
+
+            PlanningResult naiveResult = naiveVoicePlanner.plan(tupleCollection);
+            csvBuilder.addTestResult(naiveVoicePlanner, naiveResult, naiveResult, tupleCollection, testCase.name());
+
+            for (ToleranceConfig config : configs) {
+                for (VoicePlanner planner : planners) {
+                    planner.setConfig(config);
+                    PlanningResult result = planner.plan(tupleCollection);
+                    csvBuilder.addTestResult(planner, result, naiveResult, tupleCollection, testCase.name());
+                }
+            }
+        }
+        System.out.println(csvBuilder.getCSVString());
+    }
+
+    public void testPlannerGroup1() throws Exception {
+        TestCase[] testCases = new TestCase[] {
+                TestCase.QUERY_1,
+                TestCase.QUERY_2,
+                TestCase.QUERY_3,
+                TestCase.QUERY_4,
+        };
+
+        ToleranceConfig[] configs = new ToleranceConfig[] {
+                new ToleranceConfig(2, 2.0, 1),
+                new ToleranceConfig(2, 2.5, 1),
+        };
+
+        VoicePlanner[] planners = new VoicePlanner[] {
+                new LinearProgrammingPlanner(1, 1.0, 1),
+                new HybridPlanner(new TupleCoveringPruner(10), 1, 1.0, 1),
+                new HybridPlanner(new UsefulPruner(), 1, 1.0, 1),
+                new GreedyPlanner(1, 1.0, 1),
+        };
+
+        executeTests(testCases, planners, configs, new NaiveVoicePlanner());
     }
 
 }

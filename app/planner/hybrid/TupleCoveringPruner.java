@@ -38,7 +38,7 @@ public class TupleCoveringPruner extends TopKPruner {
 
     @Override
     public String getName() {
-        return super.getName() + "-tuple-covering";
+        return super.getName() + "tuple-covering";
     }
     
 }
