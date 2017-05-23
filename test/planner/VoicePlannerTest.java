@@ -9,6 +9,8 @@ import planner.linear.LinearProgrammingPlanner;
 import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
+import java.sql.SQLException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -38,60 +40,69 @@ public class VoicePlannerTest extends TestCase {
         public String getRelation() {
             return relation;
         }
+
+        public TupleCollection getTupleCollection() throws SQLException {
+            return DatabaseUtilities.executeQuery(getQuery());
+        }
     }
 
-    /**
-     * Executes the given planner n times on tupleCollection. Calculates the average execution time by
-     * dividing total execution time in milliseconds by the number of executions n.
-     */
-    private double testPlannerAveragePlanningTime(int n, VoicePlanner planner, TestCase testCase) throws Exception{
-        TupleCollection tuples = DatabaseUtilities.executeQuery(testCase.getQuery());
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < n; i++) {
-            planner.plan(tuples);
-        }
-        long endTime = System.currentTimeMillis();
-        long elapsedMillis = endTime - startTime;
-        double elapsedSeconds = elapsedMillis / 1000.0;
-        double averageSeconds = elapsedSeconds / n;
-        System.out.println(planner.getPlannerName() + " planner executed " + testCase.name() + " on " +
-                testCase.getRelation() + " " + n + " times and took an average " + averageSeconds +
+    public void printResult(String plannerName, TestCase testCase, PlanningResult result) {
+        System.out.println(plannerName + " planner executed " + testCase.name() +
+                " on " + testCase.getRelation() + " " + result.getExecutionCount() +
+                " times and took an average "  + result.getAverageExecutionTimeSeconds() +
                 " seconds per execution");
-        return averageSeconds;
     }
 
     public void testNaivePlanner() throws Exception {
         VoicePlanner planner = new NaiveVoicePlanner();
         for (TestCase testCase : TestCase.values()) {
-            testPlannerAveragePlanningTime(100, planner, testCase);
+            PlanningResult result = planner.plan(testCase.getTupleCollection(), 100);
+            printResult(planner.getPlannerName(), testCase, result);
         }
     }
 
     public void testGreedyAllTestCases100Times() throws Exception {
         VoicePlanner planner = new GreedyPlanner(2, 1.5, 1);
         for (TestCase testCase : TestCase.values()) {
-            testPlannerAveragePlanningTime(100, planner, testCase);
+            PlanningResult result = planner.plan(testCase.getTupleCollection(), 100);
+            printResult(planner.getPlannerName(), testCase, result);
         }
     }
 
     public void testGreedyPlannerQuery1() throws Exception {
         GreedyPlanner planner = new GreedyPlanner(2, 1.5, 1);
-        testPlannerAveragePlanningTime(10, planner, TestCase.QUERY_1);
-        testPlannerAveragePlanningTime(100, planner, TestCase.QUERY_1);
-        testPlannerAveragePlanningTime(1000, planner, TestCase.QUERY_1);
+        PlanningResult result;
+        result = planner.plan(TestCase.QUERY_1.getTupleCollection(), 10);
+        printResult(planner.getPlannerName(), TestCase.QUERY_2, result);
+        result = planner.plan(TestCase.QUERY_1.getTupleCollection(), 100);
+        printResult(planner.getPlannerName(), TestCase.QUERY_2, result);
+        result = planner.plan(TestCase.QUERY_1.getTupleCollection(), 1000);
+        printResult(planner.getPlannerName(), TestCase.QUERY_2, result);
     }
 
     public void testGreedyPlannerOver10ExecutionsQuery2() throws Exception {
         GreedyPlanner planner = new GreedyPlanner(2, 1.5, 1);
-        testPlannerAveragePlanningTime(10, planner, TestCase.QUERY_2);
-        testPlannerAveragePlanningTime(100, planner, TestCase.QUERY_2);
+        PlanningResult result;
+        result = planner.plan(TestCase.QUERY_2.getTupleCollection(), 10);
+        printResult(planner.getPlannerName(), TestCase.QUERY_2, result);
+        result = planner.plan(TestCase.QUERY_2.getTupleCollection(), 100);
+        printResult(planner.getPlannerName(), TestCase.QUERY_2, result);
+        result = planner.plan(TestCase.QUERY_2.getTupleCollection(), 1000);
+        printResult(planner.getPlannerName(), TestCase.QUERY_2, result);
     }
 
     public void testHybridAllTestCases100Times() throws Exception {
         HybridPlanner planner = new HybridPlanner(new TupleCoveringPruner(30), 3, 2.0, 1);
         for (TestCase testCase : TestCase.values()) {
-            testPlannerAveragePlanningTime(1, planner, testCase);
+            PlanningResult result = planner.plan(testCase.getTupleCollection(), 100);
+            printResult(planner.getPlannerName(), testCase, result);
         }
+    }
+
+    public void testGreedyPlannerQuery6() throws Exception {
+        GreedyPlanner planner = new GreedyPlanner(2, 2.0, 1);
+        PlanningResult result = planner.plan(DatabaseUtilities.executeQuery(TestCase.QUERY_6.getQuery()));
+        printResult(planner.getPlannerName(), TestCase.QUERY_6, result);
     }
 
     /**
@@ -105,19 +116,21 @@ public class VoicePlannerTest extends TestCase {
         VoicePlanner hybrid = new HybridPlanner(new TupleCoveringPruner(k), mS, mW, mC);
 
         for (TestCase testCase : TestCase.values()) {
-            TupleCollection tupleCollection = DatabaseUtilities.executeQuery(testCase.getQuery());
-            VoiceOutputPlan linearPlan = linear.plan(tupleCollection);
-            System.out.println("Linear\n" + linearPlan.toSpeechText(false));
-            int linearCost = linearPlan.toSpeechText(true).length();
+            PlanningResult result;
+            TupleCollection tupleCollection = testCase.getTupleCollection();
 
-            VoiceOutputPlan greedyPlan = greedy.plan(tupleCollection);
-            int greedyCost = greedyPlan.toSpeechText(true).length();
-            System.out.println("Greedy\n" + greedyPlan.toSpeechText(false));
+            result = linear.plan(tupleCollection);
+            System.out.println("Linear\n" + result.getPlan().toSpeechText(false));
+            int linearCost = result.getPlan().toSpeechText(true).length();
+
+            result = greedy.plan(tupleCollection);
+            int greedyCost = result.getPlan().toSpeechText(true).length();
+            System.out.println("Greedy\n" + result.getPlan().toSpeechText(false));
             assertTrue(testCase.name(),linearCost <= greedyCost);
 
-            VoiceOutputPlan hybridPlan = hybrid.plan(tupleCollection);
-            int hybridCost = hybridPlan.toSpeechText(true).length();
-            System.out.println("Hybrid\n" + hybridPlan.toSpeechText(false));
+            result = hybrid.plan(tupleCollection);
+            int hybridCost = result.getPlan().toSpeechText(true).length();
+            System.out.println("Hybrid\n" + result.getPlan().toSpeechText(false));
             assertTrue(testCase.name(), linearCost <= hybridCost);
         }
     }

@@ -10,27 +10,23 @@ import planner.VoiceOutputPlan;
 import planner.VoicePlanner;
 import planner.elements.*;
 import planner.greedy.GreedyPlanner;
+import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
 import java.util.*;
 
 /**
  */
-public class HybridPlanner extends VoicePlanner {
+public class HybridPlanner extends NaiveVoicePlanner {
     private ContextPruner contextPruner;
-    private int maximalContextSize;
-    private double maximalNumericalDomainWidth;
-    private int maximalCategoricalDomainSize;
 
     public HybridPlanner(ContextPruner contextPruner, int mS, double mW, int mC) {
         this.contextPruner = contextPruner;
-        this.maximalContextSize = mS;
-        this.maximalNumericalDomainWidth = mW;
-        this.maximalCategoricalDomainSize = mC;
+        setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
     @Override
-    public VoiceOutputPlan plan(TupleCollection tupleCollection) {
+    public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
         ArrayList<Context> contextCandidates = generateContextCandidates(tupleCollection);
         VoiceOutputPlan plan = null;
 
@@ -131,7 +127,7 @@ public class HybridPlanner extends VoicePlanner {
     }
 
     public ArrayList<Context> generateContextCandidates(TupleCollection tupleCollection) {
-        Map<Integer, Set<ValueDomain>> candidateAssignments = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
+        Map<Integer, Set<ValueDomain>> candidateAssignments = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
 
         ArrayList<Context> result = new ArrayList<>();
 
@@ -139,7 +135,7 @@ public class HybridPlanner extends VoicePlanner {
         Collection<Context> kAssignmentContexts = new ArrayList<>();
         kAssignmentContexts.add(new Context());
 
-        while (k < maximalContextSize) {
+        while (k < config.getMaxContextSize()) {
             Collection<Context> kPlusOneAssignmentContexts = new ArrayList<>();
             for (Context c : kAssignmentContexts) {
                 ArrayList<Context> unfiltered = new ArrayList<>();
@@ -167,8 +163,4 @@ public class HybridPlanner extends VoicePlanner {
         return "hybrid" + contextPruner.getName();
     }
 
-    @Override
-    public ToleranceConfig getConfig() {
-        return new ToleranceConfig(maximalContextSize, maximalNumericalDomainWidth, maximalCategoricalDomainSize);
-    }
 }

@@ -106,7 +106,7 @@ public class TestRunner {
 
         // calculate planning time
         long startTime = System.currentTimeMillis();
-        VoiceOutputPlan outputPlan = planner.plan(tupleCollection);
+        VoiceOutputPlan outputPlan = planner.plan(tupleCollection).getPlan();
         long endTime = System.currentTimeMillis();
         double planningTime = (endTime - startTime) / 1000.0;
         csv.put(CSV_COLUMN_PLANNING_TIME, planningTime + "");

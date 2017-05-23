@@ -14,19 +14,10 @@ import java.util.*;
  * two stages. First, for each context set, it generates the best plan that uses only the context candidates in the set.
  * Second, it returns the plan with minimal run time among all generated plans
  */
-public class GreedyPlanner extends VoicePlanner {
-    private int maximalContextSize;
-    private double maximalNumericalDomainWidth;
-    private int maximalCategoricalDomainSize;
+public class GreedyPlanner extends NaiveVoicePlanner {
 
     public GreedyPlanner(int mS, double mW, int mC) {
-        this.maximalContextSize = mS;
-        this.maximalNumericalDomainWidth = mW;
-        this.maximalCategoricalDomainSize = mC;
-    }
-
-    public GreedyPlanner() {
-        this(2, 2.0, 2);
+        setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
     /**
@@ -35,7 +26,7 @@ public class GreedyPlanner extends VoicePlanner {
      * @return
      */
     @Override
-    public VoiceOutputPlan plan(TupleCollection tupleCollection) {
+    public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
         ArrayList<Context> candidateContexts = new ArrayList<>();
         ArrayList<VoiceOutputPlan> plans = new ArrayList<>();
 
@@ -73,8 +64,7 @@ public class GreedyPlanner extends VoicePlanner {
      */
     private VoiceOutputPlan minTimePlan(ArrayList<Context> contextCandidates, TupleCollection tupleCollection) {
         if (contextCandidates.isEmpty()) {
-            // if there are no contexts, the best we can do is output the Naive plan
-            return new NaiveVoicePlanner().plan(tupleCollection);
+            return super.executeAlgorithm(tupleCollection);
         }
 
         List<Tuple> unmatchedTuples = new ArrayList<>();
@@ -175,12 +165,12 @@ public class GreedyPlanner extends VoicePlanner {
         Context bestContext = null;
         int bestSavings = Integer.MIN_VALUE;
 
-        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(maximalCategoricalDomainSize, maximalNumericalDomainWidth);
+        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
         List<Context> contexts = new ArrayList<>();
 
-        candidateContextsForDomains(contexts, domains, new HashSet<>(), 1, maximalContextSize);
+        candidateContextsForDomains(contexts, domains, new HashSet<>(), 1, config.getMaxContextSize());
         for (Context c : contexts) {
             int savings = timeSavingsFromContext(c, tupleCollection);
             if (savings > bestSavings) {
@@ -216,11 +206,6 @@ public class GreedyPlanner extends VoicePlanner {
     @Override
     public String getPlannerName() {
         return "greedy";
-    }
-
-    @Override
-    public ToleranceConfig getConfig() {
-        return new ToleranceConfig(maximalContextSize, maximalNumericalDomainWidth, maximalCategoricalDomainSize);
     }
 
 }

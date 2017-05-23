@@ -8,6 +8,7 @@ import ilog.concert.*;
 import ilog.cplex.*;
 import planner.hybrid.HybridPlanner;
 import planner.hybrid.TupleCoveringPruner;
+import planner.naive.NaiveVoicePlanner;
 import util.DatabaseUtilities;
 
 import java.util.ArrayList;
@@ -18,24 +19,10 @@ import java.util.Map;
  * This class constructs VoiceOutputPlans according to the integer programming model. It specifically uses the CPLEX
  * integer programming solver to plan
  */
-public class LinearProgrammingPlanner extends VoicePlanner {
-    private int maximalContextSize;
-    private double maximalNumericalDomainWidth;
-    private int maximalCategoricalDomainSize;
+public class LinearProgrammingPlanner extends NaiveVoicePlanner {
 
     public LinearProgrammingPlanner(int mS, double mW, int mC) {
-        this.maximalContextSize = mS;
-        this.maximalNumericalDomainWidth = mW;
-        this.maximalCategoricalDomainSize = mC;
-    }
-
-    /**
-     * Sets Default values for configuration parameters
-     */
-    public LinearProgrammingPlanner() {
-        this.maximalContextSize = 3;
-        this.maximalNumericalDomainWidth = 2.0;
-        this.maximalCategoricalDomainSize = 2;
+        setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
     /**
@@ -44,7 +31,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
      * @return The optimal VoiceOutputPlan according to the integer programming approach
      */
     @Override
-    public VoiceOutputPlan plan(TupleCollection tupleCollection) {
+    public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
         int tupleCount = tupleCollection.tupleCount();
         int attributeCount = tupleCollection.attributeCount();
         int cMax = tupleCount/2;
@@ -81,7 +68,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
 
             // each context can fix domains for at most maximalContextSize attributes
             for (int c = 0; c < f.length; c++) {
-                cplex.addLe(cplex.sum(f[c]), maximalContextSize);
+                cplex.addLe(cplex.sum(f[c]), config.getMaxContextSize());
             }
 
             // we save time only if t is output in context c and if context c fixes the value for attribute a
@@ -109,7 +96,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
             for (int c = 0; c < cMax; c++) {
                 for (int a = 0; a < attributeCount; a++) {
                     if (d[c][a].length > 0) {
-                        cplex.addLe(cplex.sum(d[c][a]), maximalCategoricalDomainSize);
+                        cplex.addLe(cplex.sum(d[c][a]), config.getMaxCategoricalDomainSize());
                     }
                 }
             }
@@ -126,7 +113,7 @@ public class LinearProgrammingPlanner extends VoicePlanner {
                             upperBounds.addTerm(coefficient, u[c][a][v]);
                         }
                         cplex.addLe(lowerBounds, upperBounds);
-                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, 1.01 * maximalNumericalDomainWidth));
+                        cplex.addLe(upperBounds, cplex.prod(lowerBounds, 1.01 * config.getMaxNumericalDomainWidth()));
                     }
                 }
             }
@@ -332,11 +319,6 @@ public class LinearProgrammingPlanner extends VoicePlanner {
             }
         }
         return m;
-    }
-
-    @Override
-    public ToleranceConfig getConfig() {
-        return new ToleranceConfig(maximalContextSize, maximalNumericalDomainWidth, maximalCategoricalDomainSize);
     }
 
     @Override

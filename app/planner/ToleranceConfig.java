@@ -22,12 +22,6 @@ public class ToleranceConfig {
         this.mC = mC;
     }
 
-    public ToleranceConfig() {
-        this.mS = null;
-        this.mW = null;
-        this.mC = null;
-    }
-
     public static List<String> csvColumnNames() {
         List<String> columnNames = new ArrayList<>();
         columnNames.add(CSV_COLUMN_MS);
@@ -42,6 +36,18 @@ public class ToleranceConfig {
         csv.put(CSV_COLUMN_MW, mW != null ? mW.toString() : "null");
         csv.put(CSV_COLUMN_MC, mC != null ? mC.toString() : "null");
         return csv;
+    }
+
+    public int getMaxContextSize() {
+        return mS;
+    }
+
+    public double getMaxNumericalDomainWidth() {
+        return mW;
+    }
+
+    public int getMaxCategoricalDomainSize() {
+        return mC;
     }
 
 }

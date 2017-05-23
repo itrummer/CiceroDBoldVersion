@@ -45,7 +45,7 @@ public class CommandLineUtility
                 System.out.println("Set VoicePlanner to Naive");
                 continue;
             } else if (input.startsWith("lp")) {
-                planner = new LinearProgrammingPlanner();
+                planner = new LinearProgrammingPlanner(2, 2.0, 2);
                 System.out.println("Set VoicePlanner to LinearProgramming");
                 continue;
             }
@@ -53,7 +53,7 @@ public class CommandLineUtility
             try {
                 TupleCollection results = DatabaseUtilities.executeQuery(input);
                 if (results != null) {
-                    VoiceOutputPlan outputPlan = planner.plan(results);
+                    VoiceOutputPlan outputPlan = planner.plan(results).getPlan();
                     if (outputPlan != null) {
                         String speechText = outputPlan.toSpeechText(false);
                         System.out.println(speechText);

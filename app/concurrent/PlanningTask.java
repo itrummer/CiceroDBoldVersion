@@ -24,6 +24,6 @@ public class PlanningTask extends Task<VoiceOutputPlan> {
 
     @Override
     protected VoiceOutputPlan call() throws Exception {
-        return planner.plan(tupleCollection);
+        return planner.plan(tupleCollection).getPlan();
     }
 }

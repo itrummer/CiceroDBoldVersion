@@ -41,7 +41,7 @@ public class DemoController extends Controller {
         String greedy = "";
         try {
             TupleCollection tupleCollection = DatabaseUtilities.executeQuery(query);
-            naive = new NaiveVoicePlanner().plan(tupleCollection).toSpeechText(false);
+            naive = new NaiveVoicePlanner().plan(tupleCollection).getPlan().toSpeechText(false);
         } catch (Exception e) {
             naive = "error while executing query";
         }
