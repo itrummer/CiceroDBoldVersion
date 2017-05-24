@@ -20,6 +20,10 @@ public class GreedyPlanner extends NaiveVoicePlanner {
         setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
+    public GreedyPlanner() {
+        
+    }
+
     /**
      * Constructs
      * @param tupleCollection

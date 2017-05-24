@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  */
-public class CategoricalValueDomain extends ValueDomain {
+public class CategoricalValueDomain extends ValueDomain implements Speakable {
     List<Value> domainValues;
     String cachedResult;
 

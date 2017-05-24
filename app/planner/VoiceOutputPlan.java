@@ -37,17 +37,21 @@ public class VoiceOutputPlan implements Speakable {
 
         for (Scope scope : scopes) {
             if (scope.getContext() == null) {
-                builder.append(scope.toSpeechText(inLongForm) + (inLongForm ? "\n":""));
+                builder.append(scope.toSpeechText(inLongForm) + " ");
             }
         }
 
         for (Scope scope : scopes) {
             if (scope.getContext() != null) {
-                builder.append(scope.toSpeechText(inLongForm) + (inLongForm ? "\n":""));
+                builder.append(scope.toSpeechText(inLongForm) + " ");
             }
         }
 
         return builder.toString();
+    }
+
+    public int speechCost() {
+        return toSpeechText(true).length();
     }
 
 }

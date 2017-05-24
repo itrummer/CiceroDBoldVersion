@@ -93,7 +93,7 @@ public class Scope implements Speakable {
                 result.append("and ");
             }
             result.append(t.toSpeechText(context, inLongForm));
-            result.append(i == tuples.size()-1 ? ". " : ", ");
+            result.append(i == tuples.size()-1 ? "." : ", ");
         }
 
         if (inLongForm) {

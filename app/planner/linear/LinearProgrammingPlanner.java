@@ -25,6 +25,10 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
         setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
+    public LinearProgrammingPlanner() {
+
+    }
+
     /**
      * Constructs a VoiceOutputPlan using the CPLEX integer programming solver.
      * @param tupleCollection The collection of Tuples to construct a voice plan

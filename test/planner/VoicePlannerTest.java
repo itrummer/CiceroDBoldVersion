@@ -3,6 +3,7 @@ package planner;
 import junit.framework.TestCase;
 import planner.elements.TupleCollection;
 import planner.greedy.GreedyPlanner;
+import planner.hybrid.ContextPruner;
 import planner.hybrid.HybridPlanner;
 import planner.hybrid.TupleCoveringPruner;
 import planner.hybrid.UsefulPruner;
@@ -11,6 +12,7 @@ import planner.naive.NaiveVoicePlanner;
 import util.CSVBuilder;
 import util.DatabaseUtilities;
 import util.Utilities;
+import voice.WatsonVoiceGenerator;
 
 import java.sql.SQLException;
 
@@ -25,8 +27,8 @@ public class VoicePlannerTest extends TestCase {
         QUERY_2("restaurant, price, rating, cuisine", "restaurants"),
         QUERY_3("restaurant, price, cuisine", "restaurants"),
         QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks"),
-        QUERY_6("restaurant, rating, location, cuisine", "yelp"),
-        QUERY_5("restaurant, rating, price, reviews, location, cuisine", "yelp");
+        QUERY_5("restaurant, rating, location, cuisine", "yelp"),
+        QUERY_6("restaurant, rating, price, reviews, location, cuisine", "yelp");
 
         private String attributeList;
         private String relation;
@@ -150,22 +152,50 @@ public class VoicePlannerTest extends TestCase {
     /**
      * Executes each test case for each planner-config combination
      */
-    public String executeTests(TestCase[] testCases, VoicePlanner[] planners, ToleranceConfig[] configs, NaiveVoicePlanner naiveVoicePlanner) throws Exception {
+    public String executeTests(TestCase[] testCases, ToleranceConfig[] configs, ContextPruner[] pruners) throws Exception {
         CSVBuilder csvBuilder = new CSVBuilder();
+        WatsonVoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
+        NaiveVoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
+        LinearProgrammingPlanner linearProgrammingPlanner = new LinearProgrammingPlanner();
+        HybridPlanner hybridPlanner = new HybridPlanner();
+        GreedyPlanner greedyPlanner = new GreedyPlanner();
+
         for (TestCase testCase : testCases) {
             TupleCollection tupleCollection = testCase.getTupleCollection();
+            String basePath = "/Users/mabryan/Desktop/" + testCase.name() + "_";
 
             PlanningResult naiveResult = naiveVoicePlanner.plan(tupleCollection);
-            System.out.println(naiveResult.getPlan().toSpeechText(true));
             csvBuilder.addTestResult(naiveVoicePlanner, naiveResult, naiveResult, tupleCollection, testCase.name());
+            voiceGenerator.generateAndWriteToFile(naiveResult.getPlan().toSpeechText(false),
+                    basePath + naiveVoicePlanner.getPlannerName() + ".wav");
 
-            for (ToleranceConfig config : configs) {
-                for (VoicePlanner planner : planners) {
-                    planner.setConfig(config);
-                    PlanningResult result = planner.plan(tupleCollection);
-                    System.out.println(result.getPlan().toSpeechText(true));
-                    csvBuilder.addTestResult(planner, result, naiveResult, tupleCollection, testCase.name());
+            for (int c = 0; c < configs.length; c++) {
+                ToleranceConfig config = configs[c];
+
+                linearProgrammingPlanner.setConfig(config);
+                PlanningResult linearResult = linearProgrammingPlanner.plan(tupleCollection);
+                int linearCost = linearResult.getPlan().speechCost();
+                csvBuilder.addTestResult(linearProgrammingPlanner, linearResult, naiveResult, tupleCollection, testCase.name());
+                voiceGenerator.generateAndWriteToFile(linearResult.getPlan().toSpeechText(false),
+                        basePath + linearProgrammingPlanner.getPlannerName() + "-config" + c + ".wav");
+
+                hybridPlanner.setConfig(config);
+                for (int p = 0; p < pruners.length; p++) {
+                    hybridPlanner.setContextPruner(pruners[p]);
+                    PlanningResult hybridResult = hybridPlanner.plan(tupleCollection);
+                    assertTrue(hybridResult.getPlan().speechCost() >= linearCost);
+                    csvBuilder.addTestResult(hybridPlanner, hybridResult, naiveResult, tupleCollection, testCase.name());
+                    voiceGenerator.generateAndWriteToFile(hybridResult.getPlan().toSpeechText(false),
+                            basePath + hybridPlanner.getPlannerName() + "-config" + c + ".wav");
                 }
+
+                greedyPlanner.setConfig(config);
+                PlanningResult greedyResult = greedyPlanner.plan(tupleCollection);
+                assertTrue(greedyResult.getPlan().speechCost() >= linearCost);
+                csvBuilder.addTestResult(greedyPlanner, greedyResult, naiveResult, tupleCollection, testCase.name());
+                voiceGenerator.generateAndWriteToFile(greedyResult.getPlan().toSpeechText(false),
+                        basePath + greedyPlanner.getPlannerName() + "-config" + c + ".wav");
+
             }
         }
         return csvBuilder.getCSVString();
@@ -181,18 +211,17 @@ public class VoicePlannerTest extends TestCase {
         };
 
         ToleranceConfig[] configs = new ToleranceConfig[] {
+                new ToleranceConfig(2, 2.0, 2),
                 new ToleranceConfig(2, 2.0, 1),
-                new ToleranceConfig(2, 2.5, 1),
+                new ToleranceConfig(2, 3.0, 1)
         };
 
-        VoicePlanner[] planners = new VoicePlanner[] {
-//                new LinearProgrammingPlanner(1, 1.0, 1),
-                new HybridPlanner(new TupleCoveringPruner(10), 1, 1.0, 1),
-                new HybridPlanner(new UsefulPruner(), 1, 1.0, 1),
-                new GreedyPlanner(1, 1.0, 1),
+        ContextPruner[] pruners = new ContextPruner[] {
+                new TupleCoveringPruner(15)
         };
 
-        String csvResult = executeTests(testCases, planners, configs, new NaiveVoicePlanner());
+
+        String csvResult = executeTests(testCases, configs, pruners);
         Utilities.writeStringToFile("/Users/mabryan/Desktop/output.csv", csvResult);
     }
 

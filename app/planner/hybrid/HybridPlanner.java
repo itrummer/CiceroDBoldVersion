@@ -25,6 +25,10 @@ public class HybridPlanner extends NaiveVoicePlanner {
         setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
+    public HybridPlanner() {
+
+    }
+
     @Override
     public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
         ArrayList<Context> contextCandidates = generateContextCandidates(tupleCollection);
@@ -156,6 +160,10 @@ public class HybridPlanner extends NaiveVoicePlanner {
         }
 
         return result;
+    }
+
+    public void setContextPruner(ContextPruner contextPruner) {
+        this.contextPruner = contextPruner;
     }
 
     @Override

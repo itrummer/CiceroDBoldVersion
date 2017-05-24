@@ -322,7 +322,7 @@ public class TupleCollection implements Iterable<Tuple> {
     public static <T> Set<Set<T>> powerSet(Set<T> originalSet) {
         Set<Set<T>> sets = new HashSet<>();
         if (originalSet.isEmpty()) {
-            sets.add(new HashSet<T>());
+            sets.add(new HashSet<>());
             return sets;
         }
         List<T> list = new ArrayList<T>(originalSet);
@@ -335,7 +335,6 @@ public class TupleCollection implements Iterable<Tuple> {
             sets.add(newSet);
             sets.add(set);
         }
-        System.out.println("leaving powerSet");
         return sets;
     }
 
@@ -347,14 +346,12 @@ public class TupleCollection implements Iterable<Tuple> {
      * @return All subsets of the original set that contain at most k elements, excluding the empty set
      */
     public static <T> Set<Set<T>> subsetsOfSize(Set<T> originalSet, int k) {
-        System.out.println("subsetsOfSize");
         Set<Set<T>> filteredSets = new HashSet<>();
         for (Set<T> set : powerSet(originalSet)) {
             if (set.size() <= k && set.size() > 0) {
                 filteredSets.add(set);
             }
         }
-        System.out.println("leaving subsetsOfSize");
         return filteredSets;
     }
 
