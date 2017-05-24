@@ -10,10 +10,9 @@ import planner.linear.LinearProgrammingPlanner;
 import planner.naive.NaiveVoicePlanner;
 import util.CSVBuilder;
 import util.DatabaseUtilities;
+import util.Utilities;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -151,31 +150,34 @@ public class VoicePlannerTest extends TestCase {
     /**
      * Executes each test case for each planner-config combination
      */
-    public void executeTests(TestCase[] testCases, VoicePlanner[] planners, ToleranceConfig[] configs, NaiveVoicePlanner naiveVoicePlanner) throws Exception {
+    public String executeTests(TestCase[] testCases, VoicePlanner[] planners, ToleranceConfig[] configs, NaiveVoicePlanner naiveVoicePlanner) throws Exception {
         CSVBuilder csvBuilder = new CSVBuilder();
         for (TestCase testCase : testCases) {
             TupleCollection tupleCollection = testCase.getTupleCollection();
 
             PlanningResult naiveResult = naiveVoicePlanner.plan(tupleCollection);
+            System.out.println(naiveResult.getPlan().toSpeechText(true));
             csvBuilder.addTestResult(naiveVoicePlanner, naiveResult, naiveResult, tupleCollection, testCase.name());
 
             for (ToleranceConfig config : configs) {
                 for (VoicePlanner planner : planners) {
                     planner.setConfig(config);
                     PlanningResult result = planner.plan(tupleCollection);
+                    System.out.println(result.getPlan().toSpeechText(true));
                     csvBuilder.addTestResult(planner, result, naiveResult, tupleCollection, testCase.name());
                 }
             }
         }
-        System.out.println(csvBuilder.getCSVString());
+        return csvBuilder.getCSVString();
     }
 
     public void testPlannerGroup1() throws Exception {
         TestCase[] testCases = new TestCase[] {
-                TestCase.QUERY_1,
-                TestCase.QUERY_2,
-                TestCase.QUERY_3,
-                TestCase.QUERY_4,
+//                TestCase.QUERY_1,
+//                TestCase.QUERY_2,
+//                TestCase.QUERY_3,
+//                TestCase.QUERY_4,
+                TestCase.QUERY_5,
         };
 
         ToleranceConfig[] configs = new ToleranceConfig[] {
@@ -184,13 +186,14 @@ public class VoicePlannerTest extends TestCase {
         };
 
         VoicePlanner[] planners = new VoicePlanner[] {
-                new LinearProgrammingPlanner(1, 1.0, 1),
+//                new LinearProgrammingPlanner(1, 1.0, 1),
                 new HybridPlanner(new TupleCoveringPruner(10), 1, 1.0, 1),
                 new HybridPlanner(new UsefulPruner(), 1, 1.0, 1),
                 new GreedyPlanner(1, 1.0, 1),
         };
 
-        executeTests(testCases, planners, configs, new NaiveVoicePlanner());
+        String csvResult = executeTests(testCases, planners, configs, new NaiveVoicePlanner());
+        Utilities.writeStringToFile("/Users/mabryan/Desktop/output.csv", csvResult);
     }
 
 }

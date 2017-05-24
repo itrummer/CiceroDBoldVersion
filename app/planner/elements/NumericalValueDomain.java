@@ -8,9 +8,11 @@ import planner.Speakable;
 public class NumericalValueDomain extends ValueDomain {
     Value lowerBound;
     Value upperBound;
+    String cachedResult;
 
     public NumericalValueDomain(String attribute, Value v1, Value v2) {
         this.attribute = attribute;
+        this.cachedResult = null;
         if (v1.compareTo(v2) <= 0) {
             this.lowerBound = v1;
             this.upperBound = v2;
@@ -60,11 +62,15 @@ public class NumericalValueDomain extends ValueDomain {
     }
 
     public String toSpeechText(boolean inLongForm) {
-        if (lowerBound.equals(upperBound)) {
-            return lowerBound.toSpeechText(inLongForm) + " " + attribute;
-        } else {
-            return "between " + lowerBound.toSpeechText(inLongForm) + " and " + upperBound.toSpeechText(inLongForm) + " " + attribute;
+        if (cachedResult != null) {
+            return cachedResult;
         }
+        if (lowerBound.equals(upperBound)) {
+            cachedResult = lowerBound.toSpeechText(inLongForm) + " " + attribute;
+        } else {
+            cachedResult = "between " + lowerBound.toSpeechText(inLongForm) + " and " + upperBound.toSpeechText(inLongForm) + " " + attribute;
+        }
+        return cachedResult;
     }
 
     @Override

@@ -19,6 +19,7 @@ public class Value implements Speakable, Comparable<Value> {
 
     Comparable value;
     ValueType type;
+    String cachedLongFormResult;
 
     public Value(Integer i) {
         this.value = i;
@@ -92,26 +93,29 @@ public class Value implements Speakable, Comparable<Value> {
 
     public String toSpeechText(boolean inLongForm) {
         if (inLongForm) {
-            String expandedValue = "";
+            if (cachedLongFormResult != null) {
+                return cachedLongFormResult;
+            }
+            cachedLongFormResult = "";
             switch (type) {
                 case INTEGER:
-                    expandedValue = EnglishNumberToWords.convert(((Integer) value).longValue());
+                    cachedLongFormResult = EnglishNumberToWords.convert(((Integer) value).longValue());
                     break;
                 case DOUBLE:
                     Double v = (Double) value;
                     long tenths = (long) ((v - v.intValue()) * 10);
-                    expandedValue = EnglishNumberToWords.convert(((Double) value).longValue()) + " point " + EnglishNumberToWords.convert(tenths);
+                    cachedLongFormResult = EnglishNumberToWords.convert(((Double) value).longValue()) + " point " + EnglishNumberToWords.convert(tenths);
                     break;
                 case FLOAT:
                     Float f = (Float) value;
                     long fTenths = (long) ((f - f.intValue()) * 10);
-                    expandedValue = EnglishNumberToWords.convert(((Float) value).longValue()) + " point " + EnglishNumberToWords.convert(fTenths);
+                    cachedLongFormResult = EnglishNumberToWords.convert(((Float) value).longValue()) + " point " + EnglishNumberToWords.convert(fTenths);
                     break;
                 case STRING:
-                    expandedValue = (String) value;
+                    cachedLongFormResult = (String) value;
                     break;
             }
-            return expandedValue;
+            return cachedLongFormResult;
         } else {
             return value.toString();
         }

@@ -9,16 +9,11 @@ import java.util.*;
  * Class representation of a collection of Tuples returned from a SQL query
  */
 public class TupleCollection implements Iterable<Tuple> {
-    static final String CSV_COLUMN_TUPLE_COUNT = "tuple_count";
-    static final String CSV_COLUMN_CATEGORICAL_COLUMN_COUNT = "categorical_cols";
-    static final String CSV_COLUMN_NUMERICAL_COLUMN_COUNT = "numerical_cols";
-
     List<String> attributes;
     Map<Integer, Tuple> tuples;
     Map<Integer, Map<Integer, Value>> values;
     Map<Integer, Map<Integer, Value>> distinctValues;
     HashMap<Integer, HashSet<Value>> valueSets;
-    ArrayList<ArrayList<Integer>> indexMap;
 
     /**
      * Constructs a TupleCollection with 0 rows.
@@ -29,12 +24,10 @@ public class TupleCollection implements Iterable<Tuple> {
         this.values = new HashMap<>();
         this.distinctValues = new HashMap<>();
         this.valueSets = new HashMap<>();
-        this.indexMap = new ArrayList<>();
         for (int a = 0; a < attributeCount(); a++) {
             values.put(a, new HashMap<>());
             distinctValues.put(a, new HashMap<>());
             valueSets.put(a, new HashSet<>());
-            indexMap.add(new ArrayList<>());
         }
     }
 
@@ -342,6 +335,7 @@ public class TupleCollection implements Iterable<Tuple> {
             sets.add(newSet);
             sets.add(set);
         }
+        System.out.println("leaving powerSet");
         return sets;
     }
 
@@ -353,51 +347,15 @@ public class TupleCollection implements Iterable<Tuple> {
      * @return All subsets of the original set that contain at most k elements, excluding the empty set
      */
     public static <T> Set<Set<T>> subsetsOfSize(Set<T> originalSet, int k) {
+        System.out.println("subsetsOfSize");
         Set<Set<T>> filteredSets = new HashSet<>();
         for (Set<T> set : powerSet(originalSet)) {
             if (set.size() <= k && set.size() > 0) {
                 filteredSets.add(set);
             }
         }
+        System.out.println("leaving subsetsOfSize");
         return filteredSets;
-    }
-
-    @Override
-    public String toString() {
-        if (tupleCount() == 0) {
-            return "TupleCollection: empty";
-        }
-
-        String result = "";
-        for (int i = 0; i < tupleCount(); i++) {
-            result += getTuple(i).toString() + ", ";
-        }
-        return result.substring(result.length()-2);
-    }
-
-    public Map<String, String> csvMap() {
-        Map<String, String> csv = new HashMap<>();
-
-        csv.put(CSV_COLUMN_TUPLE_COUNT, tupleCount() + "");
-
-        int categoricalCount = 0;
-        int numericalCount = 0;
-        for (int i = 0; i < attributeCount(); i++) {
-            categoricalCount += attributeIsCategorical(i) ? 1 : 0;
-            numericalCount += attributeIsNumerical(i) ? 1 : 0;
-        }
-
-        csv.put(CSV_COLUMN_CATEGORICAL_COLUMN_COUNT, categoricalCount + "");
-        csv.put(CSV_COLUMN_NUMERICAL_COLUMN_COUNT, numericalCount + "");
-        return csv;
-    }
-
-    public static List<String> csvColumnNames() {
-        List<String> columnNames = new ArrayList<>();
-        columnNames.add(CSV_COLUMN_TUPLE_COUNT);
-        columnNames.add(CSV_COLUMN_CATEGORICAL_COLUMN_COUNT);
-        columnNames.add(CSV_COLUMN_NUMERICAL_COLUMN_COUNT);
-        return columnNames;
     }
 
     @Override
@@ -415,7 +373,7 @@ public class TupleCollection implements Iterable<Tuple> {
 
         @Override
         public Tuple next() {
-            if (this.hasNext()) {
+            if (hasNext()) {
                 int toReturn = currentTuple;
                 currentTuple++;
                 return TupleCollection.this.getTuple(toReturn);

@@ -60,7 +60,7 @@ public class CSVBuilder {
         Iterator<String> columns = csvColumnNames.iterator();
         while (columns.hasNext()) {
             header += columns.next();
-            header += columns.hasNext() ? "," : "\n";
+            header += columns.hasNext() ? "," : "";
         }
         return header;
     }

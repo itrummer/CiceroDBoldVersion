@@ -80,7 +80,7 @@ public class Context implements Speakable {
             return cachedShortResult;
         }
 
-        String cachedResult = "";
+        StringBuilder result = new StringBuilder("");
 
         List<String> parsed = new ArrayList<>();
 
@@ -89,24 +89,24 @@ public class Context implements Speakable {
         }
 
         if (parsed.size() == 1) {
-            cachedResult = parsed.get(0);
+            result.append(parsed.get(0));
         } else if (parsed.size() == 2) {
-            cachedResult += parsed.get(0) + " and " + parsed.get(1);
+            result.append(parsed.get(0) + " and " + parsed.get(1));
         } else if (parsed.size() > 2) {
-            cachedResult += parsed.get(0);
+            result.append(parsed.get(0));
             for (int i = 1; i < parsed.size() - 1; i++) {
-                cachedResult += ", " + parsed.get(i);
+                result.append(", " + parsed.get(i));
             }
-            cachedResult += ", and " + parsed.get(parsed.size()-1);
+            result.append(", and " + parsed.get(parsed.size()-1));
         }
 
         if (inLongForm) {
-            cachedLongFormResult = cachedResult;
+            cachedLongFormResult = result.toString();
         } else {
-            cachedShortResult = cachedResult;
+            cachedShortResult = result.toString();
         }
 
-        return cachedResult;
+        return inLongForm ? cachedLongFormResult : cachedShortResult;
     }
 
     @Override

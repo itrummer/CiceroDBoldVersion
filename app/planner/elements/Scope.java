@@ -85,24 +85,24 @@ public class Scope implements Speakable {
             return cachedShortResult;
         }
 
-        String result = context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE;
+        StringBuilder result = new StringBuilder(context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE);
 
         for (int i = 0; i < tuples.size(); i++) {
             Tuple t = tuples.get(i);
             if (tuples.size() > 1 && i == tuples.size()-1) {
-                result += "and ";
+                result.append("and ");
             }
-            result += t.toSpeechText(context, inLongForm);
-            result += i == tuples.size()-1 ? ".  " : ", ";
+            result.append(t.toSpeechText(context, inLongForm));
+            result.append(i == tuples.size()-1 ? ". " : ", ");
         }
 
         if (inLongForm) {
-            cachedLongFormResult = result;
+            cachedLongFormResult = result.toString();
         } else {
-            cachedShortResult = result;
+            cachedShortResult = result.toString();
         }
 
-        return result;
+        return (inLongForm ? cachedLongFormResult : cachedShortResult);
     }
 
     public int numberTuples() {

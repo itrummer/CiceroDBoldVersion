@@ -1,3 +1,5 @@
+package planner.elements;
+
 import junit.framework.TestCase;
 import planner.elements.NumericalValueDomain;
 import planner.elements.Value;

@@ -9,10 +9,12 @@ import java.util.List;
  */
 public class CategoricalValueDomain extends ValueDomain {
     List<Value> domainValues;
+    String cachedResult;
 
     public CategoricalValueDomain(String attribute, List<Value> domainValues) {
         this.attribute = attribute;
         this.domainValues = domainValues;
+        this.cachedResult = null;
     }
 
     public CategoricalValueDomain(String attribute) {
@@ -56,23 +58,25 @@ public class CategoricalValueDomain extends ValueDomain {
 
     @Override
     public String toSpeechText(boolean inLongForm) {
+        if (cachedResult != null) {
+            return cachedResult;
+        }
+
         if (domainValues.size() == 1) {
             // example: "category Italian"
-            return domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
+            cachedResult = domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
+        } else if (domainValues.size() == 2) {
+            // example: "category Italian or American"
+            cachedResult = domainValues.get(0).toSpeechText(inLongForm) + " or " + domainValues.get(1).toSpeechText(inLongForm) + " " + attribute;
+        } else {
+            // example: "category Italian, American, or Pub Food"
+            cachedResult = domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
+            for (int i = 1; i < domainValues.size(); i++) {
+                cachedResult += ", " + domainValues.get(i).toSpeechText(inLongForm);
+            }
         }
 
-        // example: "category Italian or American"
-        if (domainValues.size() == 2) {
-            return domainValues.get(0).toSpeechText(inLongForm) + " or " + domainValues.get(1).toSpeechText(inLongForm) + " " + attribute;
-        }
-
-        // example: "category Italian, American, or Pub Food"
-        String result = domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
-        for (int i = 1; i < domainValues.size(); i++) {
-            result += ", " + domainValues.get(i).toSpeechText(inLongForm);
-        }
-
-        return result;
+        return cachedResult;
     }
 
     @Override

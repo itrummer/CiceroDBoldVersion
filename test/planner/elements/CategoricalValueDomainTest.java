@@ -1,3 +1,5 @@
+package planner.elements;
+
 import junit.framework.TestCase;
 import planner.elements.CategoricalValueDomain;
 import planner.elements.Value;
