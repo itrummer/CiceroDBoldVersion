@@ -114,6 +114,7 @@ public class Value implements Speakable, Comparable<Value> {
                     cachedLongFormResult = (String) value;
                     break;
             }
+            cachedLongFormResult = cachedLongFormResult.trim();
             return cachedLongFormResult;
         } else {
             return value.toString();

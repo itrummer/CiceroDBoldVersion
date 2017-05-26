@@ -9,7 +9,7 @@ import java.util.List;
  * A Scope represents an optional context with a set tuples that match the context
  */
 public class Scope implements Speakable {
-    static final String PRECONTEXT_PHRASE = "Entries for ";
+    static final String PRECONTEXT_PHRASE = "Entries with ";
     static final String POSTCONTEXT_PHRASE = ": ";
     static final String SCOPE_END_STRING = ".";
     static final String TUPLE_SEPARATOR_STRING = ", ";
