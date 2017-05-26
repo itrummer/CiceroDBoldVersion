@@ -6,6 +6,8 @@ import planner.Speakable;
  * A representation of a domain of numerical Values. The lower and upper bounds are inclusive bounds.
  */
 public class NumericalValueDomain extends ValueDomain {
+    public static final String BETWEEN_UPPER_AND_LOWER_PHRASE = " to ";
+
     Value lowerBound;
     Value upperBound;
     String longFormCachedResult;
@@ -77,9 +79,8 @@ public class NumericalValueDomain extends ValueDomain {
             result.append(" ");
             result.append(attribute);
         } else {
-            result.append("from ");
             result.append(lowerBound.toSpeechText(inLongForm));
-            result.append(" to ");
+            result.append(BETWEEN_UPPER_AND_LOWER_PHRASE);
             result.append(upperBound.toSpeechText(inLongForm));
             result.append(" ");
             result.append(attribute);
@@ -92,6 +93,10 @@ public class NumericalValueDomain extends ValueDomain {
             shortFormCachedResult = result.toString();
             return shortFormCachedResult;
         }
+    }
+
+    public static int speechCostForInequalBounds() {
+        return BETWEEN_UPPER_AND_LOWER_PHRASE.length();
     }
 
     @Override

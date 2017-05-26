@@ -197,9 +197,9 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
                             contextTime.addTerm(d[c][a][v], valueCost);
                         } else {
                             // 2. add the cost of outputting the lower and upper bound or just lower bound if both bounds are equal
-                            contextTime.addTerm(l[c][a][v], valueCost);
+                            contextTime.addTerm(l[c][a][v], valueCost + NumericalValueDomain.speechCostForInequalBounds());
                             contextTime.addTerm(u[c][a][v], valueCost);
-                            contextTime.addTerm(e[c][a][v], -valueCost);
+                            contextTime.addTerm(e[c][a][v], -(valueCost + NumericalValueDomain.speechCostForInequalBounds()));
                         }
                     }
                 }
