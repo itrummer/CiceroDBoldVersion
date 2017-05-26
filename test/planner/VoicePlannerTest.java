@@ -21,30 +21,37 @@ import static org.junit.Assert.*;
 public class VoicePlannerTest extends TestCase {
     public enum TestCase {
         QUERY_1("model, dollars, pounds, inch_display", "macbooks"),
-        QUERY_2("restaurant, price, rating, cuisine", "restaurants"),
+        QUERY_2("restaurant, price, user_rating, cuisine", "restaurants"),
         QUERY_3("restaurant, price, cuisine", "restaurants"),
         QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks"),
-        QUERY_5("restaurant, rating, location, category", "yelp", "random() < 0.4"),
-        QUERY_6("restaurant, rating, price, reviews, location, cuisine", "yelp"),
-        QUERY_7("team, wins, touchdowns, conference, total_points_against", "football", "random() < 0.4"),
-        QUERY_8("model, core_processors, operating_system, grams, gigabytes_of_storage, gigabytes_of_ram", "phones", "random() < 0.4");
+        QUERY_5("restaurant, user_rating, area, category", "yelp", 20),
+        QUERY_6("restaurant, user_rating, price, reviews, area, category", "yelp"),
+        QUERY_7("team, wins, touchdowns, conference, total_points_against", "football", 20),
+        QUERY_8("model, operating_system, gigabytes_of_storage, gigabytes_of_ram", "phones", 20),
+        QUERY_9("model, core_processors, operating_system, grams, gigabytes_of_storage, gigabytes_of_ram", "phones", 20);
 
         private String attributeList;
         private String relation;
         private String condition;
+        private Integer limit;
 
-        TestCase(String attributeList, String relation, String condition) {
+        TestCase(String attributeList, String relation, String condition, Integer limit) {
             this.attributeList = attributeList;
             this.relation = relation;
             this.condition = condition;
+            this.limit = limit;
         }
 
         TestCase(String attributeList, String relation) {
-            this(attributeList, relation, null);
+            this(attributeList, relation, null, null);
+        }
+
+        TestCase(String attributeList, String relation, int limit) {
+            this(attributeList, relation, null, limit);
         }
 
         public String getQuery() {
-            return "SELECT " + attributeList + " FROM " + relation + (condition != null ? " WHERE " + condition : "");
+            return "SELECT " + attributeList + " FROM " + relation + (condition != null ? " WHERE " + condition : "") + (limit != null ? " LIMIT " + limit : "");
         }
 
         public String getRelation() {
