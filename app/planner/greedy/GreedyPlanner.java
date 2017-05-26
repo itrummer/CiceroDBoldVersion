@@ -40,6 +40,9 @@ public class GreedyPlanner extends NaiveVoicePlanner {
         // up to maximal number of useful contexts
         for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
             Context newContext = bestContext(candidateContexts, tupleCollection);
+            if (newContext == null) {
+                break;
+            }
             candidateContexts.add(newContext);
             VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
             plans.add(bestNewPlan);
@@ -166,17 +169,21 @@ public class GreedyPlanner extends NaiveVoicePlanner {
             }
         }
 
+        if (unmatchedTuples.tupleCount() == 0) {
+            return null;
+        }
+
         Context bestContext = null;
         int bestSavings = Integer.MIN_VALUE;
 
-        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
+        Map<Integer, Set<ValueDomain>> domains = unmatchedTuples.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
         // consider each Context that takes a maximum mS number of domain assignments and
         // at most one domain assignment for a given attribute; compare with bestContext;
         List<Context> contexts = new ArrayList<>();
 
         candidateContextsForDomains(contexts, domains, new HashSet<>(), 1, config.getMaxContextSize());
         for (Context c : contexts) {
-            int savings = timeSavingsFromContext(c, tupleCollection);
+            int savings = timeSavingsFromContext(c, unmatchedTuples);
             if (savings > bestSavings) {
                 bestContext = c;
                 bestSavings = savings;
