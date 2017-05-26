@@ -50,4 +50,8 @@ public class ToleranceConfig {
         return mC;
     }
 
+    @Override
+    public String toString() {
+        return String.format("mS = %d, mW = %f, mC = %d", mS, mW, mC);
+    }
 }

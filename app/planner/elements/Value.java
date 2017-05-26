@@ -96,7 +96,6 @@ public class Value implements Speakable, Comparable<Value> {
             if (cachedLongFormResult != null) {
                 return cachedLongFormResult;
             }
-            cachedLongFormResult = "";
             switch (type) {
                 case INTEGER:
                     cachedLongFormResult = EnglishNumberToWords.convert(((Integer) value).longValue());
@@ -104,12 +103,12 @@ public class Value implements Speakable, Comparable<Value> {
                 case DOUBLE:
                     Double v = (Double) value;
                     long tenths = (long) ((v - v.intValue()) * 10);
-                    cachedLongFormResult = EnglishNumberToWords.convert(((Double) value).longValue()) + " point " + EnglishNumberToWords.convert(tenths);
+                    cachedLongFormResult = EnglishNumberToWords.convert(((Double) value).longValue()) + (tenths != 0 ? " point " + EnglishNumberToWords.convert(tenths) : "");
                     break;
                 case FLOAT:
                     Float f = (Float) value;
                     long fTenths = (long) ((f - f.intValue()) * 10);
-                    cachedLongFormResult = EnglishNumberToWords.convert(((Float) value).longValue()) + " point " + EnglishNumberToWords.convert(fTenths);
+                    cachedLongFormResult = EnglishNumberToWords.convert(((Float) value).longValue()) + (fTenths != 0 ? " point " + EnglishNumberToWords.convert(fTenths) : "");
                     break;
                 case STRING:
                     cachedLongFormResult = (String) value;
@@ -158,7 +157,7 @@ public class Value implements Speakable, Comparable<Value> {
             rawValue = -rawValue;
         }
 
-        int sigfigs = (int) Math.log10(rawValue);
+        int sigfigs = Math.max((int) Math.log10(rawValue), 0);
         int mostSignificantUnits = (int) Math.pow(10, sigfigs);
         int lower = rawValue / mostSignificantUnits;
         int upper = lower + 1;
@@ -204,6 +203,20 @@ public class Value implements Speakable, Comparable<Value> {
      */
     public boolean isNumerical() {
         return !isCategorical();
+    }
+
+    public Value times(double multiplier) {
+        switch (type) {
+            case FLOAT:
+                return new Value((float) multiplier * (Float) value);
+            case DOUBLE:
+                return new Value(multiplier * (Double) value);
+            case INTEGER:
+                return new Value((int) (multiplier * (Integer) value));
+            case STRING:
+                return new Value((String) value);
+        }
+        return null;
     }
 
 }

@@ -10,9 +10,10 @@ import java.util.List;
  */
 public class VoiceOutputPlan implements Speakable {
     List<Scope> scopes;
-    String cachedResult;
+    String longFormCachedResult;
+    String shortFormCachedResult;
 
-    public VoiceOutputPlan(ArrayList<Scope> scopes) {
+    public VoiceOutputPlan(List<Scope> scopes) {
         this.scopes = scopes;
     }
 
@@ -29,25 +30,40 @@ public class VoiceOutputPlan implements Speakable {
      * @return The String representation of the speech output for this plan
      */
     public String toSpeechText(boolean inLongForm) {
-        if (cachedResult != null) {
-            return cachedResult;
+        if (inLongForm && longFormCachedResult != null) {
+            return longFormCachedResult;
+        } else if (!inLongForm && shortFormCachedResult != null) {
+            return shortFormCachedResult;
         }
 
         StringBuilder builder = new StringBuilder("");
 
+        boolean firstScope = true;
+
         for (Scope scope : scopes) {
             if (scope.getContext() == null) {
-                builder.append(scope.toSpeechText(inLongForm) + " ");
+                builder.append(scope.toSpeechText(inLongForm));
+                firstScope = false;
             }
         }
 
         for (Scope scope : scopes) {
             if (scope.getContext() != null) {
-                builder.append(scope.toSpeechText(inLongForm) + " ");
+                if (!firstScope) {
+                    builder.append(" ");
+                    firstScope = false;
+                }
+                builder.append(scope.toSpeechText(inLongForm));
             }
         }
 
-        return builder.toString();
+        if (inLongForm) {
+            longFormCachedResult = builder.toString();
+            return longFormCachedResult;
+        } else {
+            shortFormCachedResult= builder.toString();
+            return shortFormCachedResult;
+        }
     }
 
     public int speechCost() {

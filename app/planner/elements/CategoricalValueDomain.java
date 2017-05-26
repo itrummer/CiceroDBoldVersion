@@ -2,19 +2,20 @@ package planner.elements;
 
 import planner.Speakable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  */
 public class CategoricalValueDomain extends ValueDomain implements Speakable {
-    List<Value> domainValues;
-    String cachedResult;
+    Set<Value> domainValues;
+    String shortFormCachedResult;
+    String longFormCachedResult;
 
     public CategoricalValueDomain(String attribute, List<Value> domainValues) {
         this.attribute = attribute;
-        this.domainValues = domainValues;
-        this.cachedResult = null;
+        this.domainValues = new HashSet<>(domainValues);
+        this.shortFormCachedResult = null;
+        this.longFormCachedResult = null;
     }
 
     public CategoricalValueDomain(String attribute) {
@@ -38,12 +39,7 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
      */
     @Override
     public boolean contains(Value v) {
-        for (Value vInDomain : domainValues) {
-            if (vInDomain.equals(v)) {
-                return true;
-            }
-        }
-        return false;
+        return (domainValues.contains(v));
     }
 
     @Override
@@ -58,25 +54,44 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
 
     @Override
     public String toSpeechText(boolean inLongForm) {
-        if (cachedResult != null) {
-            return cachedResult;
+        if (inLongForm && longFormCachedResult != null) {
+            return longFormCachedResult;
+        } else if (!inLongForm && shortFormCachedResult != null) {
+            return shortFormCachedResult;
         }
 
-        if (domainValues.size() == 1) {
+        Value[] domainList = domainValues.toArray(new Value[0]);
+
+        StringBuilder result = new StringBuilder("");
+
+        if (domainList.length == 1) {
             // example: "category Italian"
-            cachedResult = domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
+            result.append(domainList[0].toSpeechText(inLongForm) + " " + attribute);
         } else if (domainValues.size() == 2) {
             // example: "category Italian or American"
-            cachedResult = domainValues.get(0).toSpeechText(inLongForm) + " or " + domainValues.get(1).toSpeechText(inLongForm) + " " + attribute;
+            result.append(domainList[0].toSpeechText(inLongForm));
+            result.append(" or ");
+            result.append(domainList[1].toSpeechText(inLongForm));
+            result.append(" ");
+            result.append(attribute);
         } else {
             // example: "category Italian, American, or Pub Food"
-            cachedResult = domainValues.get(0).toSpeechText(inLongForm) + " " + attribute;
-            for (int i = 1; i < domainValues.size(); i++) {
-                cachedResult += ", " + domainValues.get(i).toSpeechText(inLongForm);
+            result.append(domainList[0].toSpeechText(inLongForm));
+            result.append(" ");
+            result.append(attribute);
+            for (int i = 1; i < domainList.length; i++) {
+                result.append(", ");
+                result.append(domainList[i].toSpeechText(inLongForm));
             }
         }
 
-        return cachedResult;
+        if (inLongForm) {
+            longFormCachedResult = result.toString();
+            return longFormCachedResult;
+        } else {
+            shortFormCachedResult = result.toString();
+            return shortFormCachedResult;
+        }
     }
 
     @Override
@@ -84,4 +99,33 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
         return attribute + " : " + domainValues;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CategoricalValueDomain)) {
+            return false;
+        }
+
+        CategoricalValueDomain otherDomain = (CategoricalValueDomain) obj;
+        if (domainValues.size() != otherDomain.domainValues.size()) {
+            return false;
+        }
+
+        for (Value v : domainValues) {
+            if (!otherDomain.contains(v)) {
+                return false;
+            }
+        }
+
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int total = 0;
+        for (Value v : domainValues) {
+            total += v.hashCode();
+        }
+        return total;
+    }
 }

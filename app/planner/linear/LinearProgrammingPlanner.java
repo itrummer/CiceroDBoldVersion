@@ -13,6 +13,7 @@ import util.DatabaseUtilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -222,7 +223,7 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
 
             // 1. see which contexts are used, create an empty context for each used "slot" and
             //    add it by its slot number to the scopes map, as each context is assigned to one scope
-            HashMap<Integer, Scope> scopes = new HashMap<Integer, Scope>();
+            Map<Integer, Scope> scopes = new HashMap<>();
             for (int c = 0; c < cMax; c++) {
                 if (cplex.getValue(g[c]) > 0.5) {
                     scopes.put(c, new Scope(new Context()));
@@ -279,7 +280,7 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
                 }
             }
 
-            ArrayList<Scope> scopeList = new ArrayList<Scope>();
+            List<Scope> scopeList = new ArrayList<>();
             for (Scope scope : scopes.values()) {
                 scopeList.add(scope);
             }

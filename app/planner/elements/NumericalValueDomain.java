@@ -8,11 +8,13 @@ import planner.Speakable;
 public class NumericalValueDomain extends ValueDomain {
     Value lowerBound;
     Value upperBound;
-    String cachedResult;
+    String longFormCachedResult;
+    String shortFormCachedResult;
 
     public NumericalValueDomain(String attribute, Value v1, Value v2) {
         this.attribute = attribute;
-        this.cachedResult = null;
+        this.shortFormCachedResult = null;
+        this.longFormCachedResult = null;
         if (v1.compareTo(v2) <= 0) {
             this.lowerBound = v1;
             this.upperBound = v2;
@@ -62,19 +64,53 @@ public class NumericalValueDomain extends ValueDomain {
     }
 
     public String toSpeechText(boolean inLongForm) {
-        if (cachedResult != null) {
-            return cachedResult;
+        if (inLongForm && longFormCachedResult != null) {
+            return longFormCachedResult;
+        } else if (!inLongForm && shortFormCachedResult != null) {
+            return shortFormCachedResult;
         }
+
+        StringBuilder result = new StringBuilder("");
+
         if (lowerBound.equals(upperBound)) {
-            cachedResult = lowerBound.toSpeechText(inLongForm) + " " + attribute;
+            result.append(lowerBound.toSpeechText(inLongForm));
+            result.append(" ");
+            result.append(attribute);
         } else {
-            cachedResult = "between " + lowerBound.toSpeechText(inLongForm) + " and " + upperBound.toSpeechText(inLongForm) + " " + attribute;
+            result.append("from ");
+            result.append(lowerBound.toSpeechText(inLongForm));
+            result.append(" to ");
+            result.append(upperBound.toSpeechText(inLongForm));
+            result.append(" ");
+            result.append(attribute);
         }
-        return cachedResult;
+
+        if (inLongForm) {
+            longFormCachedResult = result.toString();
+            return longFormCachedResult;
+        } else {
+            shortFormCachedResult = result.toString();
+            return shortFormCachedResult;
+        }
     }
 
     @Override
     public String toString() {
         return attribute + ": " + lowerBound + " to " + upperBound;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof NumericalValueDomain)) {
+            return false;
+        }
+
+        NumericalValueDomain otherDomain = (NumericalValueDomain) obj;
+        return attribute.equals(otherDomain.attribute) && lowerBound.equals(otherDomain.lowerBound) && upperBound.equals(otherDomain.upperBound);
+    }
+
+    @Override
+    public int hashCode() {
+        return lowerBound.hashCode() + upperBound.hashCode();
     }
 }

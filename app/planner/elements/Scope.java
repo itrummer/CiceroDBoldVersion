@@ -11,6 +11,8 @@ import java.util.List;
 public class Scope implements Speakable {
     static final String PRECONTEXT_PHRASE = "Entries for ";
     static final String POSTCONTEXT_PHRASE = ": ";
+    static final String SCOPE_END_STRING = ".";
+    static final String TUPLE_SEPARATOR_STRING = ", ";
 
     Context context;
     List<Tuple> tuples;
@@ -66,8 +68,7 @@ public class Scope implements Speakable {
     }
 
     /**
-     *
-     * @return
+     * Returns the speech cost of using a context
      */
     public static int contextOverheadCost() {
         return PRECONTEXT_PHRASE.length() + POSTCONTEXT_PHRASE.length();
@@ -87,13 +88,11 @@ public class Scope implements Speakable {
 
         StringBuilder result = new StringBuilder(context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE);
 
-        for (int i = 0; i < tuples.size(); i++) {
-            Tuple t = tuples.get(i);
-            if (tuples.size() > 1 && i == tuples.size()-1) {
-                result.append("and ");
-            }
+        int i = 0;
+        for (Tuple t : tuples) {
             result.append(t.toSpeechText(context, inLongForm));
-            result.append(i == tuples.size()-1 ? "." : ", ");
+            result.append(i == tuples.size()-1 ? SCOPE_END_STRING : TUPLE_SEPARATOR_STRING);
+            i++;
         }
 
         if (inLongForm) {

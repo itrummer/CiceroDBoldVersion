@@ -58,22 +58,27 @@ public class Tuple implements Speakable {
         if (c != null && !c.matches(this)) {
             return toSpeechText(null, inLongForm);
         }
-        String result = "";
+        StringBuilder result = new StringBuilder("");
         boolean firstAttribute = true;
         for (String attribute : attributes) {
             if (c == null || !c.isAttributeFixed(attribute)) {
                 Value v = valueForAttribute(attribute);
                 if (firstAttribute) {
-                    result += v.toSpeechText(inLongForm);
+                    result.append(v.toSpeechText(inLongForm));
                 } else {
-                    result += ", " + v.toSpeechText(inLongForm) + " " + attribute;
+                    result.append(", ");
+                    result.append(v.toSpeechText(inLongForm));
+                    result.append(" ");
+                    result.append(attribute);
                 }
                 firstAttribute = false;
             }
         }
+
+        String t = result.toString();
         if (c == null && inLongForm) {
-            cachedLongFormResultWithoutContext = result;
+            cachedLongFormResultWithoutContext = t;
         }
-        return result;
+        return t;
     }
 }
