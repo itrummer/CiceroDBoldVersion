@@ -95,7 +95,7 @@ public class NumericalValueDomain extends ValueDomain {
         }
     }
 
-    public static int speechCostForInequalBounds() {
+    public static int speechCostForUnequalBounds() {
         return BETWEEN_UPPER_AND_LOWER_PHRASE.length();
     }
 
