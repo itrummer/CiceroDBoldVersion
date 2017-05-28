@@ -69,7 +69,7 @@ public class GreedyPlanner extends NaiveVoicePlanner {
      * @param tupleCollection The collection of tuples for which to plan
      * @return The fastest VoiceOutputPlan that uses some subset of the context candidates
      */
-    private VoiceOutputPlan minTimePlan(ArrayList<Context> contextCandidates, TupleCollection tupleCollection) {
+    private VoiceOutputPlan minTimePlan(List<Context> contextCandidates, TupleCollection tupleCollection) {
         if (contextCandidates.isEmpty()) {
             return super.executeAlgorithm(tupleCollection);
         }
@@ -126,6 +126,15 @@ public class GreedyPlanner extends NaiveVoicePlanner {
         return plan;
     }
 
+    public VoiceOutputPlan minTimePlan(Collection<Set<ValueDomain>> domainSets, TupleCollection tuples) {
+        List<Context> contextCandidates = new ArrayList<>();
+        for (Set<ValueDomain> domainSet : domainSets) {
+            contextCandidates.add(new Context(domainSet));
+        }
+
+        return minTimePlan(contextCandidates, tuples);
+    }
+
     /**
      * Calculates time savings when outputting rows in a TupleCollection within a specified Context.
      * @param c The Context used to save time in outputting rows
@@ -154,7 +163,7 @@ public class GreedyPlanner extends NaiveVoicePlanner {
      * @param tupleCollection A collection of Tuples
      * @return The best Context
      */
-    private Context bestContext(ArrayList<Context> contextSet, TupleCollection tupleCollection) {
+    protected Context bestContext(ArrayList<Context> contextSet, TupleCollection tupleCollection) {
         TupleCollection unmatchedTuples = new TupleCollection(tupleCollection.getAttributes());
         for (Tuple t : tupleCollection) {
             boolean unmatched = true;

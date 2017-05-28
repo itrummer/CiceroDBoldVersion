@@ -39,6 +39,9 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
      */
     @Override
     public boolean contains(Value v) {
+        if (!v.isCategorical()) {
+            return false;
+        }
         return (domainValues.contains(v));
     }
 

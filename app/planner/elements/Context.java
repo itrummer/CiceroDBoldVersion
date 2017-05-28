@@ -2,10 +2,7 @@ package planner.elements;
 
 import planner.Speakable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A set of value assignments
@@ -17,6 +14,15 @@ public class Context implements Speakable {
 
     public Context() {
         this.valueDomains = new HashMap<>();
+        this.cachedShortResult = null;
+        this.cachedLongFormResult = null;
+    }
+
+    public Context(Set<ValueDomain> domains) {
+        this.valueDomains = new HashMap<>();
+        for (ValueDomain domain : domains) {
+            addDomainAssignment(domain);
+        }
         this.cachedShortResult = null;
         this.cachedLongFormResult = null;
     }

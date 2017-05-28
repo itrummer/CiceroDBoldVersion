@@ -39,7 +39,7 @@ public class NumericalValueDomain extends ValueDomain {
      */
     @Override
     public boolean contains(Value v) {
-        if (v == null) { return false; }
+        if (v == null || !v.isNumerical()) { return false; }
         boolean geqLowerBound = v.compareTo(lowerBound) >= 0;
         boolean leqUpperBound = v.compareTo(upperBound) <= 0;
         return geqLowerBound && leqUpperBound;

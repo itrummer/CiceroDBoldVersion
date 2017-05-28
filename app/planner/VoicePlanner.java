@@ -1,6 +1,9 @@
 package planner;
 
 import planner.elements.TupleCollection;
+import sql.Query;
+
+import java.sql.SQLException;
 
 /**
  * Abstract representation of VoicePlanners
@@ -31,6 +34,21 @@ public abstract class VoicePlanner {
         }
         long endTime = System.currentTimeMillis();
         return new PlanningResult(plan, endTime - startTime, n, false);
+    }
+
+    public PlanningResult plan(Query query) {
+        TupleCollection tuples;
+        try {
+            tuples = query.getTupleCollection();
+        } catch (SQLException e) {
+            return null;
+        }
+
+        long startTime = System.currentTimeMillis();
+        VoiceOutputPlan plan = executeAlgorithm(tuples);
+        long endTime = System.currentTimeMillis();
+
+        return new PlanningResult(plan, endTime - startTime, false, query.getColumns(), tuples.tupleCount(), this, query.getRelation());
     }
 
     protected abstract VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection);

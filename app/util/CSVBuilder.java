@@ -42,7 +42,7 @@ public class CSVBuilder {
         testCSV.put("test case name", testCaseName);
         testCSV.put("planner", planner.getPlannerName());
         testCSV.put("tuple count", tuples.tupleCount() + "");
-        testCSV.put("average entropy", tuples.entropy() + "");
+        testCSV.put("average entropy", tuples.entropy(planner.getConfig().getMaxNumericalDomainWidth()) + "");
         testCSV.put("max context size", planner.getConfig().getMaxContextSize() + "");
         testCSV.put("max numerical domain width", planner.getConfig().getMaxNumericalDomainWidth() + "");
         testCSV.put("max categorical domain size", planner.getConfig().getMaxCategoricalDomainSize() + "");

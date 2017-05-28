@@ -130,4 +130,30 @@ public class TupleCollectionTest extends TestCase {
         assertEquals(14, tupleCollection.costForAttribute(2));
     }
 
+    public void testEntropy() {
+        List<String> attributes = new ArrayList<>();
+        attributes.add("a");
+        attributes.add("b");
+        attributes.add("c");
+        attributes.add("d");
+        TupleCollection tuples = new TupleCollection(attributes);
+
+        Tuple t1 = new Tuple(attributes);
+        t1.addValueAssignment("a", new Value("a1"));
+        t1.addValueAssignment("b", new Value("b1"));
+        t1.addValueAssignment("c", new Value("c1"));
+        t1.addValueAssignment("d", new Value(1));
+
+        Tuple t2 = new Tuple(attributes);
+        t2.addValueAssignment("a", new Value("a2"));
+        t2.addValueAssignment("b", new Value("b2"));
+        t2.addValueAssignment("c", new Value("c2"));
+        t2.addValueAssignment("d", new Value(2));
+
+        tuples.addTuple(t1);
+        tuples.addTuple(t2);
+
+        System.out.println(tuples.entropy(2.0));
+    }
+
 }

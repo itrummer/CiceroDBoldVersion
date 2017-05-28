@@ -296,21 +296,88 @@ public class TupleCollection implements Iterable<Tuple> {
         return 0;
     }
 
-    public double entropy() {
+    public double entropy(double mW) {
         double totalEntropy = 0.0;
         for (int a = 0; a < attributeCount(); a++) {
-            totalEntropy += entropyForAttribute(a);
+            if (a == getPrimaryKeyIndex()) {
+                continue;
+            }
+            totalEntropy += entropyForAttribute(a, mW);
         }
         return totalEntropy / attributeCount();
     }
 
-    private double entropyForAttribute(int a) {
+    private double entropyForAttribute(int a, double mW) {
+        double totalEntropy = 0.0;
         if (attributeIsCategorical(a)) {
-
+            Map<Value, Integer> valueCounts = new HashMap<>();
+            for (int t = 0; t < tupleCount(); t++) {
+                Value v = getValueForAttributeAndTuple(a, t);
+                valueCounts.putIfAbsent(v, 0);
+                valueCounts.put(v, valueCounts.get(v) + 1);
+            }
+            for (Value v : valueCounts.keySet()) {
+                int count = valueCounts.get(v);
+                double p = count / (double) tupleCount();
+                totalEntropy += -p * Math.log(p);
+            }
         } else if (attributeIsNumerical(a)) {
+            if (mW <= 1.0) {
+                return 0.0;
+            }
+
+            // find min and max value
+            Value maxValue = getDistinctValue(a, 0);
+            Value minValue = maxValue;
+            for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
+                Value value = getDistinctValue(a, v);
+                if (value.compareTo(maxValue) > 0) {
+                    maxValue = value;
+                }
+                if (value.compareTo(minValue) < 0) {
+                    minValue = value;
+                }
+            }
+
+            // generate intervals
+            List<Value> intervals = new ArrayList<>();
+            Value current = minValue;
+            intervals.add(current);
+
+            while (current.compareTo(maxValue) < 0) {
+                current = current.times(mW);
+                intervals.add(current);
+            }
+
+            int[] counts = new int[intervals.size()];
+            for (int t = 0; t < tupleCount(); t++) {
+                Value v = getValueForAttributeAndTuple(a, t);
+                int matchedInterval = 0;
+                for (int i = 1; i < intervals.size(); i++) {
+                    matchedInterval = i;
+                    Value startOfNextInterval = intervals.get(i);
+                    if (v.compareTo(intervals.get(i)) < 0) {
+                        break;
+                    }
+                }
+                counts[matchedInterval]++;
+            }
+
+            // compute entropy from counts (probabilities)
+            for (int i = 0; i < counts.length; i++) {
+                if (counts[i] == 0) {
+                    continue;
+                }
+                double p = counts[i] / (double) tupleCount();
+                double entropy = -p * Math.log(p);
+                // we know that <count> number of tuples have this same probability, so we multiply the entropy by count
+                // so we avoid having to iterate through each value
+                totalEntropy += counts[i] * entropy;
+            }
+
 
         }
-        return 0.0;
+        return totalEntropy;
     }
 
     /**

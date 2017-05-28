@@ -34,6 +34,14 @@ public class Tuple implements Speakable {
         return attributes;
     }
 
+    public int timeSavingsFromValueDomain(ValueDomain d) {
+        Value v = valueAssignments.get(d.getAttribute());
+        if (v != null && d.contains(v)) {
+            return v.toSpeechText(true).length();
+        }
+        return 0;
+    }
+
     /**
      * Retrieves the value for the specified attribute
      */
