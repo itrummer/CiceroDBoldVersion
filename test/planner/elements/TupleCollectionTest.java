@@ -166,4 +166,32 @@ public class TupleCollectionTest extends TestCase {
         System.out.println(tuples.entropy(1.0));
     }
 
+    public void testEntropySmallerForMoreRedundancy() {
+        List<String> attributes = new ArrayList<>();
+        attributes.add("a1");
+        attributes.add("a2");
+
+        Tuple t1 = new Tuple(attributes);
+        t1.addValueAssignment("a1", new Value("pkey1"));
+        t1.addValueAssignment("a2", new Value("value1"));
+
+        Tuple t2WithoutRedundancy = new Tuple(attributes);
+        t2WithoutRedundancy.addValueAssignment("a1", new Value("pkey2"));
+        t2WithoutRedundancy.addValueAssignment("a2", new Value("value2"));
+
+        Tuple t2WithRedundancy = new Tuple(attributes);
+        t2WithRedundancy.addValueAssignment("a1", new Value("pkey2"));
+        t2WithRedundancy.addValueAssignment("a2", new Value("value1"));
+
+        TupleCollection tuplesWithoutRedundancy = new TupleCollection(attributes);
+        tuplesWithoutRedundancy.addTuple(t1);
+        tuplesWithoutRedundancy.addTuple(t2WithoutRedundancy);
+
+        TupleCollection tuplesWithRedundancy = new TupleCollection(attributes);
+        tuplesWithRedundancy.addTuple(t1);
+        tuplesWithRedundancy.addTuple(t2WithRedundancy);
+
+        assertTrue(tuplesWithRedundancy.entropy(2.0) < tuplesWithoutRedundancy.entropy(2.0));
+    }
+
 }
