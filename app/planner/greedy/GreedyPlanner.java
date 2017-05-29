@@ -69,7 +69,7 @@ public class GreedyPlanner extends NaiveVoicePlanner {
      * @param tupleCollection The collection of tuples for which to plan
      * @return The fastest VoiceOutputPlan that uses some subset of the context candidates
      */
-    private VoiceOutputPlan minTimePlan(List<Context> contextCandidates, TupleCollection tupleCollection) {
+    protected VoiceOutputPlan minTimePlan(List<Context> contextCandidates, TupleCollection tupleCollection) {
         if (contextCandidates.isEmpty()) {
             return super.executeAlgorithm(tupleCollection);
         }

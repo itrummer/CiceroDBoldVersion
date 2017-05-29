@@ -1,16 +1,61 @@
 package planner.greedy;
 
+import planner.PlanningResult;
+import planner.ToleranceConfig;
 import planner.VoiceOutputPlan;
 import planner.elements.*;
+import sql.Query;
 
 import java.util.*;
 
 public class FantomGreedyPlanner extends GreedyPlanner {
     public static final int P = 2;
 
+    public FantomGreedyPlanner(int mS, double mW, int mC) {
+        setConfig(new ToleranceConfig(mS, mW, mC));
+    }
+
+    public FantomGreedyPlanner() {
+
+    }
+
     @Override
     public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
-        return super.executeAlgorithm(tupleCollection);
+        List<Context> candidateContexts = new ArrayList<>();
+        List<VoiceOutputPlan> plans = new ArrayList<>();
+
+        plans.add(minTimePlan(candidateContexts, tupleCollection));
+
+        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
+        Set<ValueDomain> domainSet = new HashSet<>();
+        for (Set<ValueDomain> d : domains.values()) {
+            domainSet.addAll(d);
+        }
+
+        // up to maximal number of useful contexts
+        for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
+            Set<ValueDomain> valueDomains = executeFANTOM(tupleCollection, domainSet);
+            if (valueDomains == null) {
+                break;
+            }
+            candidateContexts.add(new Context(domainSet));
+            VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
+            plans.add(bestNewPlan);
+        }
+
+        int minCost = Integer.MAX_VALUE;
+        VoiceOutputPlan minPlan = null;
+
+        for (VoiceOutputPlan plan : plans) {
+            if (plan == null) continue;
+            int planCost = plan.toSpeechText(true).length();
+            if (planCost < minCost) {
+                minCost = planCost;
+                minPlan = plan;
+            }
+        }
+
+        return minPlan;
     }
 
     public Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
@@ -120,7 +165,7 @@ public class FantomGreedyPlanner extends GreedyPlanner {
             }
 
             if (selection == null) {
-                // we can assume that we will not reach the max context size and can exit early
+                // no qualifying domains, exit early
                 break;
             }
 
@@ -216,7 +261,13 @@ public class FantomGreedyPlanner extends GreedyPlanner {
     public boolean meetsDensityThreshold(int marginalSavings, int setSize, double rho) {
         double costPerValueDomain = 1.0 / config.getMaxContextSize();
         double knapsackCost = setSize * costPerValueDomain;
-        return marginalSavings /knapsackCost >= rho;
+        return marginalSavings / knapsackCost >= rho;
+    }
+
+    public static void main(String[] args) {
+        FantomGreedyPlanner planner = new FantomGreedyPlanner(3, 2.0, 1);
+        PlanningResult result = planner.plan(new Query(new String[] { "model", "dollars", "gigabytes_of_storage" }, "macbooks"));
+        System.out.println(result.getPlan().toSpeechText(false));
     }
 
 }

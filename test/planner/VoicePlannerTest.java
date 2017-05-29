@@ -2,6 +2,7 @@ package planner;
 
 import junit.framework.TestCase;
 import planner.elements.TupleCollection;
+import planner.greedy.FantomGreedyPlanner;
 import planner.greedy.GreedyPlanner;
 import planner.hybrid.*;
 import planner.linear.LinearProgrammingPlanner;
@@ -24,10 +25,10 @@ import static org.junit.Assert.*;
 public class VoicePlannerTest extends TestCase {
     public enum TestCase {
         QUERY_1("model, dollars, pounds, inch_display", "macbooks"),
-        QUERY_2("restaurant, price, user_rating, cuisine", "restaurants"),
+        QUERY_2("restaurant, price, user_rating as \"user rating\", cuisine", "restaurants"),
         QUERY_3("restaurant, price, cuisine", "restaurants"),
         QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks"),
-        QUERY_5("restaurant, user_rating, area, category", "yelp", 50),
+        QUERY_5("restaurant, user_rating, area, category", "yelp", 40),
         QUERY_6("restaurant, user_rating, price, reviews, area, category", "yelp"),
         QUERY_7("team, wins, touchdowns, conference, total_points_against", "football", 20),
         QUERY_8("model, operating_system, gigabytes_of_storage, gigabytes_of_ram", "phones", 20),
@@ -236,7 +237,7 @@ public class VoicePlannerTest extends TestCase {
         NaiveVoicePlanner naiveVoicePlanner = new NaiveVoicePlanner();
         LinearProgrammingPlanner linearProgrammingPlanner = new LinearProgrammingPlanner();
         HybridPlanner hybridPlanner = new HybridPlanner();
-        GreedyPlanner greedyPlanner = new GreedyPlanner();
+        FantomGreedyPlanner greedyPlanner = new FantomGreedyPlanner();
 
         for (TestCase testCase : testCases) {
             TupleCollection tupleCollection = testCase.getTupleCollection();
@@ -285,16 +286,17 @@ public class VoicePlannerTest extends TestCase {
     public void testPlannerGroup1() throws Exception {
         TestCase[] testCases = new TestCase[] {
                 TestCase.QUERY_1,
-//                TestCase.QUERY_2,
-//                TestCase.QUERY_3,
-//                TestCase.QUERY_4,
+                TestCase.QUERY_2,
+                TestCase.QUERY_3,
+                TestCase.QUERY_4,
                 TestCase.QUERY_5,
         };
 
         ToleranceConfig[] configs = new ToleranceConfig[] {
-                new ToleranceConfig(2, 2.0, 2),
+                new ToleranceConfig(2, 1.0, 2),
                 new ToleranceConfig(2, 2.0, 1),
-                new ToleranceConfig(2, 4.0, 1),
+                new ToleranceConfig(2, 2.0, 2),
+                new ToleranceConfig(2, 3.0, 1),
         };
 
         ContextPruner[] pruners = new ContextPruner[] {
@@ -367,5 +369,7 @@ public class VoicePlannerTest extends TestCase {
 
         Utilities.writeStringToFile("/Users/mabryan/temp/results.csv", csvHeader + "\n" + csvLines.toString());
     }
+
+
 
 }

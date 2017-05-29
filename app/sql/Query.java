@@ -6,16 +6,6 @@ import util.DatabaseUtilities;
 import java.sql.SQLException;
 
 public class Query {
-//    QUERY_1("model, dollars, pounds, inch_display", "macbooks"),
-//    QUERY_2("restaurant, price, user_rating, cuisine", "restaurants"),
-//    QUERY_3("restaurant, price, cuisine", "restaurants"),
-//    QUERY_4("model, gigabytes_of_memory, gigabytes_of_storage, dollars", "macbooks"),
-//    QUERY_5("restaurant, user_rating, area, category", "yelp", 50),
-//    QUERY_6("restaurant, user_rating, price, reviews, area, category", "yelp"),
-//    QUERY_7("team, wins, touchdowns, conference, total_points_against", "football", 20),
-//    QUERY_8("model, operating_system, gigabytes_of_storage, gigabytes_of_ram", "phones", 20),
-//    QUERY_9("model, core_processors, operating_system, grams, gigabytes_of_storage, gigabytes_of_ram", "phones", 20);
-
     private String[] attributes;
     private String relation;
     private String condition;
