@@ -51,9 +51,9 @@ public class VoiceOutputPlan implements Speakable {
             if (scope.getContext() != null) {
                 if (!firstScope) {
                     builder.append(" ");
-                    firstScope = false;
                 }
                 builder.append(scope.toSpeechText(inLongForm));
+                firstScope = false;
             }
         }
 

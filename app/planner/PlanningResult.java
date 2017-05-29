@@ -84,7 +84,10 @@ public class PlanningResult {
     }
 
     public String getFileNameBase() {
-        return relation + "_" + plannerName + "_" + columns + "cols" + "_" + tuples + "tuples" + "__mS_" + mS + "__mW_" + (int) mW + "__mC_" + mC;
+        int mWIntegerValue = (int) mW;
+        int tenths = (int) ((mW - mWIntegerValue) * 10);
+        String mWString = mWIntegerValue + (tenths != 0 ? "point" + tenths : "");
+        return relation + "_" + columns + "cols" + "_" + tuples + "tuples" + "__mS_" + mS + "__mW_" + mWString + "__mC_" + mC + "__" + plannerName;
     }
 
 }

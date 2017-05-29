@@ -312,20 +312,22 @@ public class VoicePlannerTest extends TestCase {
                 new Query(new String[] { "model", "dollars", "gigabytes_of_memory as \"gigabytes of memory\"" }, "macbooks"),
                 new Query(new String[] { "restaurant", "user_rating as \"user rating\"" }, "restaurants"),
                 new Query(new String[] { "restaurant", "user_rating as \"user rating\"", "cuisine" }, "restaurants"),
+                new Query(new String[] { "team", "wins" }, "football"),
+                new Query(new String[] { "team", "wins", "conference" }, "football"),
+                new Query(new String[] { "model", "operating_system as \"operating system\"" }, "phones"),
+                new Query(new String[] { "model", "operating_system as \"operating system\"", "gigabytes_of_storage as \"gigabytes of storage\"" }, "phones"),
         };
 
         int[] limits = new int[] { 2, 4, 6, 8, 10 };
 
         int[] mSValues = new int[] { 1, 2 };
         int[] mCValues = new int[] { 1, 2 };
-        double[] mWValues = new double[] { 1.0, 2.0, 3.0 };
-        ToleranceConfig[] configs = new ToleranceConfig[12];
-        int i = 0;
+        double[] mWValues = new double[] { 1.0, 1.5, 2.0, 3.0 };
+        List<ToleranceConfig> configs = new ArrayList<>();
         for (int mS = 0; mS < mSValues.length; mS++) {
             for (int mC = 0; mC < mCValues.length; mC++) {
                 for (int mW = 0; mW < mWValues.length; mW++) {
-                    configs[i] = new ToleranceConfig(mSValues[mS], mWValues[mW], mCValues[mC]);
-                    i++;
+                    configs.add(new ToleranceConfig(mSValues[mS], mWValues[mW], mCValues[mC]));
                 }
             }
         }
@@ -333,6 +335,7 @@ public class VoicePlannerTest extends TestCase {
         NaiveVoicePlanner naive = new NaiveVoicePlanner();
         HybridPlanner hybridPlanner = new HybridPlanner();
         hybridPlanner.setContextPruner(new TupleCoveringPruner(20));
+        LinearProgrammingPlanner linearPlanner = new LinearProgrammingPlanner();
 
         List<PlanningResult> testResults = new ArrayList<>();
 
@@ -344,6 +347,9 @@ public class VoicePlannerTest extends TestCase {
                 for (ToleranceConfig config : configs) {
                     hybridPlanner.setConfig(config);
                     testResults.add(hybridPlanner.plan(query));
+
+                    linearPlanner.setConfig(config);
+                    testResults.add(linearPlanner.plan(query));
                 }
             }
         }
@@ -353,8 +359,8 @@ public class VoicePlannerTest extends TestCase {
         StringBuilder csvLines = new StringBuilder("");
         for (PlanningResult result : testResults) {
             String fileNameBase = result.getFileNameBase();
-            Utilities.writeStringToFile("/Users/mabryan/temp/" + fileNameBase + "_LONGFORM" + ".txt", result.getPlan().toSpeechText(true));
-            Utilities.writeStringToFile("/Users/mabryan/temp/" + fileNameBase + "_SHORTFORM" + ".txt", result.getPlan().toSpeechText(false));
+            String text = "LONGFORM:\n" + result.getPlan().toSpeechText(true) + "\n\nSHORTFORM:\n" + result.getPlan().toSpeechText(false);
+            Utilities.writeStringToFile("/Users/mabryan/temp/" + fileNameBase + ".txt", text);
             voiceGenerator.generateAndWriteToFile(result.getPlan().toSpeechText(false), "/Users/mabryan/temp/" + fileNameBase + ".wav");
             csvLines.append(result.getCSVLine() + "\n");
         }

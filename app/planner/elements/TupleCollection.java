@@ -304,80 +304,103 @@ public class TupleCollection implements Iterable<Tuple> {
             }
             totalEntropy += entropyForAttribute(a, mW);
         }
-        return totalEntropy / attributeCount();
+        return totalEntropy / (attributeCount() - 1);
+    }
+
+    /**
+     * Computes the entropy given an array of counts corresponding to the number of Values found in a given
+     * "bucket". To compute entropy, we assume there are discrete Values or independent partitions or ranges
+     * of Values, in the case of numerical values. Thus, given a count, we can compute the probability, and
+     * then can calculate how many values share this probability. Each value with this same probability and
+     * count will contribute the same amount of entropy to the total entropy, so we avoid having to recalculate
+     * the same probability multiple times.
+     */
+    private double entropyForCounts(int[] counts) {
+        int totalCount = 0;
+        for (int i = 0; i < counts.length; i++) {
+            totalCount += counts[i];
+        }
+
+        double totalEntropy = 0.0;
+        for (int i = 0; i < counts.length; i++) {
+            if (counts[i] == 0) {
+                continue;
+            }
+
+            double p = counts[i] / (double) totalCount;
+            double entropy = -p * Math.log(p);
+            totalEntropy += counts[i] * entropy;
+        }
+
+        return totalEntropy;
     }
 
     private double entropyForAttribute(int a, double mW) {
-        double totalEntropy = 0.0;
-        if (attributeIsCategorical(a)) {
-            Map<Value, Integer> valueCounts = new HashMap<>();
-            for (int t = 0; t < tupleCount(); t++) {
-                Value v = getValueForAttributeAndTuple(a, t);
-                valueCounts.putIfAbsent(v, 0);
-                valueCounts.put(v, valueCounts.get(v) + 1);
-            }
-            for (Value v : valueCounts.keySet()) {
-                int count = valueCounts.get(v);
-                double p = count / (double) tupleCount();
-                totalEntropy += -p * Math.log(p);
-            }
+        int[] counts = new int[0];
+
+        if (attributeIsCategorical(a) || mW <= 1.0) {
+            counts = distinctValueCounts(a);
         } else if (attributeIsNumerical(a)) {
-            if (mW <= 1.0) {
-                return 0.0;
-            }
-
-            // find min and max value
-            Value maxValue = getDistinctValue(a, 0);
-            Value minValue = maxValue;
-            for (int v = 0; v < distinctValueCountForAttribute(a); v++) {
-                Value value = getDistinctValue(a, v);
-                if (value.compareTo(maxValue) > 0) {
-                    maxValue = value;
-                }
-                if (value.compareTo(minValue) < 0) {
-                    minValue = value;
-                }
-            }
-
-            // generate intervals
-            List<Value> intervals = new ArrayList<>();
-            Value current = minValue;
-            intervals.add(current);
-
-            while (current.compareTo(maxValue) < 0) {
-                current = current.times(mW);
-                intervals.add(current);
-            }
-
-            int[] counts = new int[intervals.size()];
+            Value[] tupleValues = new Value[tupleCount()];
             for (int t = 0; t < tupleCount(); t++) {
-                Value v = getValueForAttributeAndTuple(a, t);
-                int matchedInterval = 0;
-                for (int i = 1; i < intervals.size(); i++) {
-                    matchedInterval = i;
-                    Value startOfNextInterval = intervals.get(i);
-                    if (v.compareTo(intervals.get(i)) < 0) {
-                        break;
+                tupleValues[t] = getValueForAttributeAndTuple(a, t);
+            }
+
+            Arrays.sort(tupleValues, new Comparator<Value>() {
+                @Override
+                public int compare(Value o1, Value o2) {
+                    return o1.compareTo(o2);
+                }
+            });
+
+            List<Integer> countList = new ArrayList<>();
+
+            Value startOfNextInterval = tupleValues[0].times(mW);
+            int currentCount = 0;
+            int i = 0;
+            while (i < tupleValues.length) {
+                Value current = tupleValues[i];
+                if (current.compareTo(startOfNextInterval) < 0) {
+                    // increment count and keep interval the same
+                    currentCount++;
+                    i++;
+                } else {
+                    // move interval so that we now start at startOfNextInterval and adjust the next intervals end
+                    if (currentCount > 0) {
+                        countList.add(currentCount);
                     }
+                    startOfNextInterval = startOfNextInterval.times(mW);
                 }
-                counts[matchedInterval]++;
             }
 
-            // compute entropy from counts (probabilities)
-            for (int i = 0; i < counts.length; i++) {
-                if (counts[i] == 0) {
-                    continue;
-                }
-                double p = counts[i] / (double) tupleCount();
-                double entropy = -p * Math.log(p);
-                // we know that <count> number of tuples have this same probability, so we multiply the entropy by count
-                // so we avoid having to iterate through each value
-                totalEntropy += counts[i] * entropy;
+            int c = 0;
+            counts = new int[countList.size()];
+            for (Integer count : countList) {
+                counts[c] = count;
+                c++;
             }
-
-
         }
-        return totalEntropy;
+
+        return entropyForCounts(counts);
+    }
+
+    private int[] distinctValueCounts(int a) {
+        Map<Value, Integer> valueCounts = new HashMap<>();
+        for (int t = 0; t < tupleCount(); t++) {
+            Value v = getValueForAttributeAndTuple(a, t);
+            valueCounts.putIfAbsent(v, 0);
+            valueCounts.put(v, valueCounts.get(v) + 1);
+        }
+
+        int[] counts = new int[valueCounts.size()];
+
+        int i = 0;
+        for (int c : valueCounts.values()) {
+            counts[i] = c;
+            i++;
+        }
+
+        return counts;
     }
 
     /**

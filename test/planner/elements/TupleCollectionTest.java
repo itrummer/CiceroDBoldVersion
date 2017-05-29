@@ -154,6 +154,16 @@ public class TupleCollectionTest extends TestCase {
         tuples.addTuple(t2);
 
         System.out.println(tuples.entropy(2.0));
+
+        Tuple t3 = new Tuple(attributes);
+        t3.addValueAssignment("a", new Value("a2"));
+        t3.addValueAssignment("b", new Value("b2"));
+        t3.addValueAssignment("c", new Value("c2"));
+        t3.addValueAssignment("d", new Value(2));
+
+        tuples.addTuple(t3);
+
+        System.out.println(tuples.entropy(1.0));
     }
 
 }

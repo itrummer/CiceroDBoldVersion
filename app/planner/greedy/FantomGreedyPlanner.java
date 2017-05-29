@@ -2,7 +2,6 @@ package planner.greedy;
 
 import planner.VoiceOutputPlan;
 import planner.elements.*;
-import planner.naive.NaiveVoicePlanner;
 
 import java.util.*;
 
@@ -14,7 +13,7 @@ public class FantomGreedyPlanner extends GreedyPlanner {
         return super.executeAlgorithm(tupleCollection);
     }
 
-    public void executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
+    public Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
         int M = 0;
         for (ValueDomain domain : domains) {
             M = Math.max(M, timeSavingsFromSingleDomain(tuples, domain));
@@ -22,16 +21,27 @@ public class FantomGreedyPlanner extends GreedyPlanner {
 
         double gamma = (2 * P * M) / (double) ((P + 1) * (2 * P + 1));
 
-        Set<ValueDomain> U = new HashSet<>();
+        Set<Set<ValueDomain>> U = new HashSet<>();
 
         // TODO: what is n...
         int n = 1;
         for (int i = 0; i < n; i++) {
             double rho = gamma * i;
             Set<ValueDomain> S = iteratedGreedyWithDensityThreshold(tuples, rho, domains);
-            U.addAll(S);
+            U.add(S);
         }
 
+        Set<ValueDomain> result = null;
+        int bestSavings = 0;
+        for (Set<ValueDomain> domainSet : U) {
+            int savings = timeGainFromValueDomains(tuples, domainSet);
+            if (savings >= bestSavings) {
+                result = domainSet;
+                bestSavings = savings;
+            }
+        }
+
+        return result;
     }
 
     public int timeSavingsFromSingleDomain(TupleCollection tuples, ValueDomain domain) {
@@ -208,5 +218,5 @@ public class FantomGreedyPlanner extends GreedyPlanner {
         double knapsackCost = setSize * costPerValueDomain;
         return marginalSavings /knapsackCost >= rho;
     }
-    
+
 }
