@@ -291,6 +291,14 @@ public class TupleCollection implements Iterable<Tuple> {
         return attributeDomains;
     }
 
+    public Set<ValueDomain> candidateAssignmentSet(int mC, double mW) {
+        Set<ValueDomain> result = new HashSet<>();
+        for (Set<ValueDomain> set : candidateAssignments(mC, mW).values()) {
+            set.addAll(set);
+        }
+        return result;
+    }
+
     /**
      * For now, we assume that the first attribute is the primary key of this tuple collection
      */

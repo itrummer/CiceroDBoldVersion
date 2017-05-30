@@ -20,11 +20,13 @@ public class Context implements Speakable {
 
     public Context(Set<ValueDomain> domains) {
         this.valueDomains = new HashMap<>();
-        for (ValueDomain domain : domains) {
-            addDomainAssignment(domain);
-        }
         this.cachedShortResult = null;
         this.cachedLongFormResult = null;
+        if (domains != null) {
+            for (ValueDomain domain : domains) {
+                addDomainAssignment(domain);
+            }
+        }
     }
 
     public Context(Context otherContext) {

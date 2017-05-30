@@ -26,19 +26,13 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
 
         plans.add(minTimePlan(candidateContexts, tupleCollection));
 
-        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
-        Set<ValueDomain> domainSet = new HashSet<>();
-        for (Set<ValueDomain> d : domains.values()) {
-            domainSet.addAll(d);
-        }
-
         // up to maximal number of useful contexts
         for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
-            Set<ValueDomain> valueDomains = executeFANTOM(tupleCollection, domainSet);
-            if (valueDomains == null) {
+            Context bestContext = bestContext(candidateContexts, tupleCollection);
+            if (bestContext == null) {
                 break;
             }
-            candidateContexts.add(new Context(domainSet));
+            candidateContexts.add(bestContext);
             VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
             plans.add(bestNewPlan);
         }
@@ -121,7 +115,32 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
         return plan;
     }
 
-    public Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
+    private Context bestContext(List<Context> contextSet, TupleCollection tupleCollection) {
+        TupleCollection unmatchedTuples = new TupleCollection(tupleCollection.getAttributes());
+        for (Tuple t : tupleCollection) {
+            boolean unmatched = true;
+            for (Context c : contextSet) {
+                if (c.matches(t)) {
+                    unmatched = false;
+                    break;
+                }
+            }
+            if (unmatched) {
+                unmatchedTuples.addTuple(t);
+            }
+        }
+
+        if (unmatchedTuples.tupleCount() == 0) {
+            return null;
+        }
+
+        Set<ValueDomain> candidateDomains = unmatchedTuples.candidateAssignmentSet(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
+        Set<ValueDomain> bestDomains = executeFANTOM(unmatchedTuples, candidateDomains);
+
+        return new Context(bestDomains);
+    }
+
+    private Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
         // calculate the best savings from a single domain
         int M = 0;
         for (ValueDomain d : domains) {
@@ -159,7 +178,6 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
     /**
      * Runs the Greedy With Density Theshold Algorithm multiple times to produce multiple solutions for a ValueDomain
      * set. Returns the set of all produced solutions with the maximum savings
-     *
      * @param tuples A collection of tuples to be used to compute the submodular utility function
      * @param density The density threshold
      * @param domains A set of candidate ValueDomains
