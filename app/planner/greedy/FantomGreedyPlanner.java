@@ -9,13 +9,17 @@ import java.util.*;
 
 public class FantomGreedyPlanner extends NaiveVoicePlanner {
     public static final int P = 2;
-    public static double epsilon = 0.1;
+    public double epsilon = 0.1;
 
     public FantomGreedyPlanner(int mS, double mW, int mC) {
         setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
     public FantomGreedyPlanner() { }
+
+    public FantomGreedyPlanner(double epsilon) {
+        this.epsilon = epsilon;
+    }
 
     @Override
     public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
@@ -349,6 +353,10 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
     @Override
     public String getPlannerName() {
         return "greedy-FANTOM";
+    }
+
+    public double getEpsilon() {
+        return epsilon;
     }
 
 }

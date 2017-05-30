@@ -1,6 +1,7 @@
 package planner;
 
 import planner.elements.TupleCollection;
+import planner.greedy.FantomGreedyPlanner;
 import sql.Query;
 
 /**
@@ -21,6 +22,7 @@ public class PlanningResult {
     double entropy;
     Integer naiveCost;
     Integer audioSpeechCost;
+    Double epsilon;
 
     public PlanningResult(VoiceOutputPlan plan) {
         this.plan = plan;
@@ -29,6 +31,7 @@ public class PlanningResult {
         this.relation = "no_relation";
         this.naiveCost = null;
         this.audioSpeechCost = null;
+        this.epsilon = null;
     }
 
     public int getExecutionCount() {
@@ -70,7 +73,8 @@ public class PlanningResult {
                 "," + String.format("%.5f", entropy) +
                 "," + mS +
                 "," + mW +
-                "," + mC;
+                "," + mC +
+                "," + (epsilon != null ? String.format("%.2f", epsilon) : "nil");
     }
 
     public static String getCSVHeader() {
@@ -86,7 +90,8 @@ public class PlanningResult {
                 ",entropy" +
                 ",mS" +
                 ",mW" +
-                ",mC";
+                ",mC" +
+                ",epsilon";
     }
 
     public String getFileNameBase() {
@@ -107,6 +112,9 @@ public class PlanningResult {
         mW = planner.getConfig().getMaxNumericalDomainWidth();
         mC = planner.getConfig().getMaxCategoricalDomainSize();
         plannerName = planner.getPlannerName();
+        if (planner instanceof FantomGreedyPlanner) {
+            epsilon = ((FantomGreedyPlanner) planner).getEpsilon();
+        }
         return this;
     }
 
