@@ -1,17 +1,15 @@
 package planner.greedy;
 
-import planner.PlanningResult;
 import planner.ToleranceConfig;
 import planner.VoiceOutputPlan;
 import planner.elements.*;
 import planner.naive.NaiveVoicePlanner;
-import sql.Query;
 
 import java.util.*;
 
 public class FantomGreedyPlanner extends NaiveVoicePlanner {
     public static final int P = 2;
-    public static double epsilon = 0.2;
+    public static double epsilon = 0.1;
 
     public FantomGreedyPlanner(int mS, double mW, int mC) {
         setConfig(new ToleranceConfig(mS, mW, mC));
@@ -65,6 +63,7 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
 
         List<Tuple> unmatchedTuples = new ArrayList<>();
         List<Tuple> matchedTuples = new ArrayList<>();
+
         for (Tuple t : tupleCollection) {
             boolean matched = false;
             Iterator<Context> contextIterator = contextCandidates.iterator();
@@ -137,11 +136,14 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
         Set<ValueDomain> candidateDomains = unmatchedTuples.candidateAssignmentSet(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
         Set<ValueDomain> bestDomains = executeFANTOM(unmatchedTuples, candidateDomains);
 
+        if (bestDomains == null || bestDomains.isEmpty()) {
+            return null;
+        }
+
         return new Context(bestDomains);
     }
 
     private Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
-        // calculate the best savings from a single domain
         int M = 0;
         for (ValueDomain d : domains) {
             Set<ValueDomain> singleDomain = new HashSet<>();
@@ -235,6 +237,7 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
                 Set<ValueDomain> SWithElement = new HashSet<>(S);
                 SWithElement.add(d);
                 int marginalSavings = timeGainFromValueDomains(tuples, SWithElement) - savingsFromS;
+
                 if (meetsDensityThreshold(marginalSavings, SWithElement.size(), density) && marginalSavings > bestMarginalSavings) {
                     bestMarginalSavings = marginalSavings;
                     selection = d;

@@ -366,7 +366,7 @@ public class VoicePlannerTest extends TestCase {
         HybridPlanner hybridPlanner = new HybridPlanner();
         hybridPlanner.setContextPruner(new TupleCoveringPruner(20));
         LinearProgrammingPlanner linearPlanner = new LinearProgrammingPlanner();
-//        FantomGreedyPlanner greedyPlanner = new FantomGreedyPlanner();
+        FantomGreedyPlanner greedyPlanner = new FantomGreedyPlanner();
 
         List<PlanningResult> testResults = new ArrayList<>();
 
@@ -403,20 +403,22 @@ public class VoicePlannerTest extends TestCase {
                         linearPlanner.setConfig(config);
                         testResults.add(linearPlanner.plan(query).withCorrespondingNaive(naiveResult));
 
-//                        greedyPlanner.setConfig(config);
-//                        testResults.add(greedyPlanner.plan(query).withCorrespondingNaive(naiveResult));
+                        greedyPlanner.setConfig(config);
+                        testResults.add(greedyPlanner.plan(query).withCorrespondingNaive(naiveResult));
                     }
                 }
             }
             relationIndex++;
         }
 
+        System.out.println("Done generating results. Building analytics CSV...");
 
         WatsonVoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
         String csvHeader = PlanningResult.getCSVHeader();
         StringBuilder csvLines = new StringBuilder("");
         for (PlanningResult result : testResults) {
             String fileNameBase = result.getFileNameBase();
+            System.out.println("Evaluating test case: " + fileNameBase);
             String text = "LONGFORM:\n" + result.getPlan().toSpeechText(true) + "\n\nSHORTFORM:\n" + result.getPlan().toSpeechText(false);
             Utilities.writeStringToFile("/Users/mabryan/temp/" + fileNameBase + ".txt", text);
             String wavFilePath = "/Users/mabryan/temp/" + fileNameBase + ".wav";

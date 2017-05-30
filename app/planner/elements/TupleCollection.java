@@ -294,7 +294,7 @@ public class TupleCollection implements Iterable<Tuple> {
     public Set<ValueDomain> candidateAssignmentSet(int mC, double mW) {
         Set<ValueDomain> result = new HashSet<>();
         for (Set<ValueDomain> set : candidateAssignments(mC, mW).values()) {
-            set.addAll(set);
+            result.addAll(set);
         }
         return result;
     }

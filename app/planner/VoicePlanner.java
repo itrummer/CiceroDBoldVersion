@@ -39,6 +39,7 @@ public abstract class VoicePlanner {
             executionTime = endTime - startTime;
             timeout = false;
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            e.printStackTrace();
             plan = new NaiveVoicePlanner().executeAlgorithm(tupleCollection);
             executionTime = DEFAULT_TIMEOUT_MILLIS;
             timeout = true;
