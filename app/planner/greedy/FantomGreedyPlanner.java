@@ -11,12 +11,52 @@ import java.util.*;
 
 public class FantomGreedyPlanner extends NaiveVoicePlanner {
     public static final int P = 2;
+    public static double epsilon = 0.2;
 
     public FantomGreedyPlanner(int mS, double mW, int mC) {
         setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
     public FantomGreedyPlanner() { }
+
+    @Override
+    public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
+        List<Context> candidateContexts = new ArrayList<>();
+        List<VoiceOutputPlan> plans = new ArrayList<>();
+
+        plans.add(minTimePlan(candidateContexts, tupleCollection));
+
+        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
+        Set<ValueDomain> domainSet = new HashSet<>();
+        for (Set<ValueDomain> d : domains.values()) {
+            domainSet.addAll(d);
+        }
+
+        // up to maximal number of useful contexts
+        for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
+            Set<ValueDomain> valueDomains = executeFANTOM(tupleCollection, domainSet);
+            if (valueDomains == null) {
+                break;
+            }
+            candidateContexts.add(new Context(domainSet));
+            VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
+            plans.add(bestNewPlan);
+        }
+
+        int minCost = Integer.MAX_VALUE;
+        VoiceOutputPlan minPlan = null;
+
+        for (VoiceOutputPlan plan : plans) {
+            if (plan == null) continue;
+            int planCost = plan.toSpeechText(true).length();
+            if (planCost < minCost) {
+                minCost = planCost;
+                minPlan = plan;
+            }
+        }
+
+        return minPlan;
+    }
 
     /**
      * Uses a set of Context candidates to generate the fastest output plan for a TupleCollection.
@@ -81,45 +121,6 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
         return plan;
     }
 
-    @Override
-    public VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection) {
-        List<Context> candidateContexts = new ArrayList<>();
-        List<VoiceOutputPlan> plans = new ArrayList<>();
-
-        plans.add(minTimePlan(candidateContexts, tupleCollection));
-
-        Map<Integer, Set<ValueDomain>> domains = tupleCollection.candidateAssignments(config.getMaxCategoricalDomainSize(), config.getMaxNumericalDomainWidth());
-        Set<ValueDomain> domainSet = new HashSet<>();
-        for (Set<ValueDomain> d : domains.values()) {
-            domainSet.addAll(d);
-        }
-
-        // up to maximal number of useful contexts
-        for (int i = 0; i < tupleCollection.tupleCount()/2; i++) {
-            Set<ValueDomain> valueDomains = executeFANTOM(tupleCollection, domainSet);
-            if (valueDomains == null) {
-                break;
-            }
-            candidateContexts.add(new Context(domainSet));
-            VoiceOutputPlan bestNewPlan = minTimePlan(candidateContexts, tupleCollection);
-            plans.add(bestNewPlan);
-        }
-
-        int minCost = Integer.MAX_VALUE;
-        VoiceOutputPlan minPlan = null;
-
-        for (VoiceOutputPlan plan : plans) {
-            if (plan == null) continue;
-            int planCost = plan.toSpeechText(true).length();
-            if (planCost < minCost) {
-                minCost = planCost;
-                minPlan = plan;
-            }
-        }
-
-        return minPlan;
-    }
-
     public Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
         // calculate the best savings from a single domain
         int M = 0;
@@ -132,12 +133,14 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
         // generate multiple solutions by running the Iterated Greedy Algorithm on multiple density values
         double gamma = (2 * P * M) / (double) ((P + 1) * (2 * P + 1));
         Set<Set<ValueDomain>> iteratedGreedyResults = new HashSet<>();
-        // TODO: what is n...
-        int n = 1;
-        for (int i = 0; i < n; i++) {
-            double rho = gamma * i;
-            Set<ValueDomain> S = iteratedGreedyWithDensityThreshold(tuples, rho, domains);
+
+        // iterate through densities: { gamma, gamma * (1+epsilon)^1, gamma * (1+epsilon)^2, ..., gamma * n }
+        int n = domains.size();
+        double currentDensity = gamma;
+        while (currentDensity < gamma * n) {
+            Set<ValueDomain> S = iteratedGreedyWithDensityThreshold(tuples, currentDensity, domains);
             iteratedGreedyResults.add(S);
+            currentDensity = currentDensity * (1.0 + epsilon);
         }
 
         Set<ValueDomain> result = null;
