@@ -50,7 +50,7 @@ public class CSVBuilder {
         testCSV.put("speech cost (characters)", speechCost + "");
         int naiveCost = naiveResult.getPlan().toSpeechText(true).length();
         testCSV.put("speech cost relative to naive", String.format("%.4f", ((double) speechCost) / naiveCost) + "");
-        testCSV.put("average planning time (milliseconds)", result.getAverageExecutionTimeMillis() + "");
+        testCSV.put("average planning time (milliseconds)", result.getExecutionTimeMillis() + "");
         testCSV.put("execution count", result.getExecutionCount() + "");
         csvLines.add(testCSV);
     }

@@ -8,6 +8,7 @@ public class Relation {
     public static Relation MACBOOKS = new Relation("macbooks", "model");
     public static Relation FOOTBALL = new Relation("football", "team");
     public static Relation YELP = new Relation("yelp", "restaurant");
+    public static Relation PHONES = new Relation("phones", "model");
 
     static {
         RESTAURANTS.addAttribute("user_rating", "user rating");
@@ -38,6 +39,13 @@ public class Relation {
         YELP.addAttribute("reviews");
         YELP.addAttribute("area");
         YELP.addAttribute("category");
+
+        PHONES.addAttribute("core_processors", "core processors");
+        PHONES.addAttribute("operating_system", "operating system");
+        PHONES.addAttribute("grams");
+        PHONES.addAttribute("megapixels");
+        PHONES.addAttribute("gigabytes_of_storage", "gigabytes_of_storage");
+        PHONES.addAttribute("gigabytes_of_ram", "gigabytes of ram");
     }
 
     String name;
@@ -50,12 +58,30 @@ public class Relation {
         this.attributes = new HashSet<>();
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void addAttribute(String attribute, String alias) {
         attributes.add(new Attribute(attribute, alias));
     }
 
     public void addAttribute(String attribute) {
         attributes.add(new Attribute(attribute));
+    }
+
+    public Query queryWithColumns(int c) {
+        String[] columns = new String[c+1];
+        columns[0] = primaryKey.formatSQL();
+        int i = 1;
+        for (Attribute a : attributes) {
+            if (i >= columns.length) {
+                break;
+            }
+            columns[i] = a.formatSQL();
+            i++;
+        }
+        return new Query(columns, this);
     }
 
 }

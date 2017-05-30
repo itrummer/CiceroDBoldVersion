@@ -4,19 +4,81 @@ import planner.PlanningResult;
 import planner.ToleranceConfig;
 import planner.VoiceOutputPlan;
 import planner.elements.*;
+import planner.naive.NaiveVoicePlanner;
 import sql.Query;
 
 import java.util.*;
 
-public class FantomGreedyPlanner extends GreedyPlanner {
+public class FantomGreedyPlanner extends NaiveVoicePlanner {
     public static final int P = 2;
 
     public FantomGreedyPlanner(int mS, double mW, int mC) {
         setConfig(new ToleranceConfig(mS, mW, mC));
     }
 
-    public FantomGreedyPlanner() {
+    public FantomGreedyPlanner() { }
 
+    /**
+     * Uses a set of Context candidates to generate the fastest output plan for a TupleCollection.
+     * @param contextCandidates The set of Contexts to consider when constructing the fastest VoiceOutputPlan
+     * @param tupleCollection The collection of tuples for which to plan
+     * @return The fastest VoiceOutputPlan that uses some subset of the context candidates
+     */
+    private VoiceOutputPlan minTimePlan(List<Context> contextCandidates, TupleCollection tupleCollection) {
+        if (contextCandidates.isEmpty()) {
+            return super.executeAlgorithm(tupleCollection);
+        }
+
+        List<Tuple> unmatchedTuples = new ArrayList<>();
+        List<Tuple> matchedTuples = new ArrayList<>();
+        for (Tuple t : tupleCollection) {
+            boolean matched = false;
+            Iterator<Context> contextIterator = contextCandidates.iterator();
+            while (contextIterator.hasNext() && !matched) {
+                Context c = contextIterator.next();
+                if (c.matches(t)) {
+                    matchedTuples.add(t);
+                    matched = true;
+                }
+            }
+            if (!matched) {
+                unmatchedTuples.add(t);
+            }
+        }
+
+        Map<Context, Scope> scopes = new HashMap<>();
+        for (Context c : contextCandidates) {
+            scopes.put(c, new Scope(c));
+        }
+
+        // for each tuple, find the Context it most favors, i.e. the best
+        // savings, and add it to the Scope that contains that Context
+        for (Tuple t : matchedTuples) {
+            Context favoredContext = null;
+            int bestSavings = 0;
+            for (Context c : contextCandidates) {
+                int newSavings = t.toSpeechText(true).length() - t.toSpeechText(c, true).length();
+                if (newSavings > bestSavings) {
+                    favoredContext = c;
+                    bestSavings = newSavings;
+                }
+            }
+            scopes.get(favoredContext).addMatchingTuple(t);
+        }
+
+        VoiceOutputPlan plan = new VoiceOutputPlan();
+
+        if (!unmatchedTuples.isEmpty()) {
+            plan.addScope(new Scope(unmatchedTuples));
+        }
+
+        for (Scope s : scopes.values()) {
+            if (s.numberTuples() > 0) {
+                plan.addScope(s);
+            }
+        }
+
+        return plan;
     }
 
     @Override
@@ -59,26 +121,28 @@ public class FantomGreedyPlanner extends GreedyPlanner {
     }
 
     public Set<ValueDomain> executeFANTOM(TupleCollection tuples, Set<ValueDomain> domains) {
+        // calculate the best savings from a single domain
         int M = 0;
-        for (ValueDomain domain : domains) {
-            M = Math.max(M, timeSavingsFromSingleDomain(tuples, domain));
+        for (ValueDomain d : domains) {
+            Set<ValueDomain> singleDomain = new HashSet<>();
+            singleDomain.add(d);
+            M = Math.max(M, timeGainFromValueDomains(tuples, singleDomain));
         }
 
+        // generate multiple solutions by running the Iterated Greedy Algorithm on multiple density values
         double gamma = (2 * P * M) / (double) ((P + 1) * (2 * P + 1));
-
-        Set<Set<ValueDomain>> U = new HashSet<>();
-
+        Set<Set<ValueDomain>> iteratedGreedyResults = new HashSet<>();
         // TODO: what is n...
         int n = 1;
         for (int i = 0; i < n; i++) {
             double rho = gamma * i;
             Set<ValueDomain> S = iteratedGreedyWithDensityThreshold(tuples, rho, domains);
-            U.add(S);
+            iteratedGreedyResults.add(S);
         }
 
         Set<ValueDomain> result = null;
         int bestSavings = 0;
-        for (Set<ValueDomain> domainSet : U) {
+        for (Set<ValueDomain> domainSet : iteratedGreedyResults) {
             int savings = timeGainFromValueDomains(tuples, domainSet);
             if (savings >= bestSavings) {
                 result = domainSet;
@@ -89,29 +153,21 @@ public class FantomGreedyPlanner extends GreedyPlanner {
         return result;
     }
 
-    public int timeSavingsFromSingleDomain(TupleCollection tuples, ValueDomain domain) {
-        int savings = 0;
-        for (Tuple t : tuples) {
-            savings += t.timeSavingsFromValueDomain(domain);
-        }
-        return savings;
-    }
-
     /**
      * Runs the Greedy With Density Theshold Algorithm multiple times to produce multiple solutions for a ValueDomain
      * set. Returns the set of all produced solutions with the maximum savings
      *
      * @param tuples A collection of tuples to be used to compute the submodular utility function
-     * @param rho The density threshold
+     * @param density The density threshold
      * @param domains A set of candidate ValueDomains
      * @return A set of ValueDomains satisfying the independences of attributes and the context size constraint
      */
-    public Set<ValueDomain> iteratedGreedyWithDensityThreshold(TupleCollection tuples, double rho, Set<ValueDomain> domains) {
+    public Set<ValueDomain> iteratedGreedyWithDensityThreshold(TupleCollection tuples, double density, Set<ValueDomain> domains) {
         Set<ValueDomain> remainingDomains = new HashSet<>(domains);
         Set<Set<ValueDomain>> U = new HashSet<>();
 
         for (int i = 0; i <= P + 1; i++) {
-            Set<ValueDomain> S = greedyWithDensityThreshold(tuples, rho, remainingDomains);
+            Set<ValueDomain> S = greedyWithDensityThreshold(tuples, density, remainingDomains);
             Set<ValueDomain> SPrime = unconstrainedSubmodularMaximization(tuples, S);
             U.add(S);
             U.add(SPrime);
@@ -135,11 +191,11 @@ public class FantomGreedyPlanner extends GreedyPlanner {
      * Runs the greedy algorithm and picks ValueDomains as long as the marginal savings from adding a new ValueDomain
      * proportional to the total cost of the new set of ValueDomains meets a minimum density threshold.
      * @param tuples
-     * @param rho The minimum density threshold
+     * @param density The minimum density threshold
      * @param domains The candidate domains from which to greedily construct a domain set
      * @return A set of domains with at most one ValueDomain corresponding to each attribute and at most mS domains
      */
-    public Set<ValueDomain> greedyWithDensityThreshold(TupleCollection tuples, double rho, Set<ValueDomain> domains) {
+    public Set<ValueDomain> greedyWithDensityThreshold(TupleCollection tuples, double density, Set<ValueDomain> domains) {
         Set<ValueDomain> S = new HashSet<>();
         Set<String> SAttributes = new HashSet<>();
         int savingsFromS = timeGainFromValueDomains(tuples, S);
@@ -158,7 +214,7 @@ public class FantomGreedyPlanner extends GreedyPlanner {
                 Set<ValueDomain> SWithElement = new HashSet<>(S);
                 SWithElement.add(d);
                 int marginalSavings = timeGainFromValueDomains(tuples, SWithElement) - savingsFromS;
-                if (meetsDensityThreshold(marginalSavings, SWithElement.size(), rho) && marginalSavings > bestMarginalSavings) {
+                if (meetsDensityThreshold(marginalSavings, SWithElement.size(), density) && marginalSavings > bestMarginalSavings) {
                     bestMarginalSavings = marginalSavings;
                     selection = d;
                 }
@@ -199,9 +255,9 @@ public class FantomGreedyPlanner extends GreedyPlanner {
      * Runs an unconstrained submodular maximization algorithm on the given ValueDomain sets.
      * @param tuples The tuples to be used to calculate the time savings for domain sets
      * @param domains A domain set satisfying the constraint that no two ValueDomains fix a domain for the same attribute
-     * @return
+     * @return A ValueDomain set satisfying matroid and knapsack contraints
      */
-    public Set<ValueDomain> unconstrainedSubmodularMaximization(TupleCollection tuples, Set<ValueDomain> domains) {
+    private Set<ValueDomain> unconstrainedSubmodularMaximization(TupleCollection tuples, Set<ValueDomain> domains) {
         Set<ValueDomain> X = new HashSet<>();
         Set<ValueDomain> Y = new HashSet<>(domains);
 
@@ -235,7 +291,7 @@ public class FantomGreedyPlanner extends GreedyPlanner {
      * Returns the time gained from using the given ValueDomain set with the collection of Tuples. This is the
      * submodular utility function for our greedy algorithm.
      */
-    public int timeGainFromValueDomains(TupleCollection tuples, Set<ValueDomain> domains) {
+    private int timeGainFromValueDomains(TupleCollection tuples, Set<ValueDomain> domains) {
         if (domains.isEmpty()) {
             return 0;
         }
@@ -246,7 +302,9 @@ public class FantomGreedyPlanner extends GreedyPlanner {
             savings += t.toSpeechText(true).length() - t.toSpeechText(c, true).length();
         }
 
-        return savings;
+        int contextCost = c.toSpeechText(true).length();
+
+        return savings - contextCost;
     }
 
     /**
@@ -255,19 +313,18 @@ public class FantomGreedyPlanner extends GreedyPlanner {
      *
      * @param marginalSavings The time savings gained from adding an element
      * @param setSize The number of ValueDomains in the set with an additional element
-     * @param rho A density threshold
+     * @param density A density threshold
      * @return
      */
-    public boolean meetsDensityThreshold(int marginalSavings, int setSize, double rho) {
+    private boolean meetsDensityThreshold(int marginalSavings, int setSize, double density) {
         double costPerValueDomain = 1.0 / config.getMaxContextSize();
         double knapsackCost = setSize * costPerValueDomain;
-        return marginalSavings / knapsackCost >= rho;
+        return marginalSavings / knapsackCost >= density;
     }
 
-    public static void main(String[] args) {
-        FantomGreedyPlanner planner = new FantomGreedyPlanner(3, 2.0, 1);
-        PlanningResult result = planner.plan(new Query(new String[] { "model", "dollars", "gigabytes_of_storage" }, "macbooks"));
-        System.out.println(result.getPlan().toSpeechText(false));
+    @Override
+    public String getPlannerName() {
+        return "greedy-FANTOM";
     }
 
 }

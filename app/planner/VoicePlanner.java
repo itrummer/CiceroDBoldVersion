@@ -3,6 +3,7 @@ package planner;
 import planner.elements.TupleCollection;
 import planner.naive.NaiveVoicePlanner;
 import sql.Query;
+import util.DatabaseUtilities;
 
 import java.sql.SQLException;
 import java.util.concurrent.*;
@@ -11,7 +12,7 @@ import java.util.concurrent.*;
  * Abstract representation of VoicePlanners
  */
 public abstract class VoicePlanner {
-    public static int DEFAULT_TIMEOUT_SECONDS = 400;
+    public static int DEFAULT_TIMEOUT_MILLIS = 30000;
 
     /**
      * Visits a TupleCollection to construct a VoiceOutputPlan that represents the contents of rowCollection
@@ -19,60 +20,56 @@ public abstract class VoicePlanner {
      * @return The VoiceOutputPlan for the TupleCollection
      */
     public PlanningResult plan(TupleCollection tupleCollection) {
-        return plan(tupleCollection, 1);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        AlgorithmCaller algorithmCaller = new AlgorithmCaller(tupleCollection);
+        Future<VoiceOutputPlan> future = executor.submit(algorithmCaller);
+
+        boolean timeout;
+        long executionTime;
+        VoiceOutputPlan plan;
+
+        try {
+            long startTime = System.currentTimeMillis();
+            plan = future.get(DEFAULT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            long endTime = System.currentTimeMillis();
+            if (plan == null) {
+                throw new TimeoutException();
+            }
+            executor.shutdown();
+            executionTime = endTime - startTime;
+            timeout = false;
+        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+            plan = new NaiveVoicePlanner().executeAlgorithm(tupleCollection);
+            executionTime = DEFAULT_TIMEOUT_MILLIS;
+            timeout = true;
+        } finally {
+            if (!executor.isTerminated()) {
+                executor.shutdownNow();
+            }
+        }
+
+        return new PlanningResult(plan)
+                .withPlanner(this)
+                .withTimeout(timeout)
+                .forTuples(tupleCollection)
+                .withExecutionTime(executionTime);
     }
 
     /**
      * Executes the planning algorithm of this VoicePlanner. Allows specification of how many times the
      * algorithm should be executed. Uses the default timeout.
-     * @param tupleCollection
-     * @param n The number of times to execute the algorithm
+     * @param query
      */
-    public PlanningResult plan(TupleCollection tupleCollection, int n) {
-        ExecutorService executor = Executors.newCachedThreadPool();
-        Callable<VoiceOutputPlan> task = new Callable<VoiceOutputPlan>() {
-            public VoiceOutputPlan call() {
-                return executeAlgorithm(tupleCollection);
-            }
-        };
-
-        Future<VoiceOutputPlan> future = executor.submit(task);
-
-        try {
-            long startTime = System.currentTimeMillis();
-            VoiceOutputPlan plan = null;
-            for (int i = 0; i < n; i++) {
-                plan = future.get(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-            }
-            long endTime = System.currentTimeMillis();
-            return new PlanningResult(plan, endTime - startTime, n, false);
-        } catch (TimeoutException ex) {
-            VoiceOutputPlan plan = new NaiveVoicePlanner().executeAlgorithm(tupleCollection);
-            return new PlanningResult(plan, DEFAULT_TIMEOUT_SECONDS * 1000, n, true);
-        } catch (InterruptedException e) {
-            // handle the interrupts
-        } catch (ExecutionException e) {
-            // handle other exceptions
-        } finally {
-            future.cancel(true);
-        }
-
-        return null;
-    }
-
     public PlanningResult plan(Query query) {
-        TupleCollection tuples;
+        TupleCollection tupleCollection = null;
         try {
-            tuples = query.getTupleCollection();
+            tupleCollection = query.getTupleCollection();
         } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
 
-        long startTime = System.currentTimeMillis();
-        VoiceOutputPlan plan = executeAlgorithm(tuples);
-        long endTime = System.currentTimeMillis();
-
-        return new PlanningResult(plan, endTime - startTime, false, query.getColumns(), tuples.tupleCount(), this, query.getRelation());
+        return plan(tupleCollection).fromQuery(query);
     }
 
     protected abstract VoiceOutputPlan executeAlgorithm(TupleCollection tupleCollection);
@@ -82,5 +79,18 @@ public abstract class VoicePlanner {
     public abstract void setConfig(ToleranceConfig config);
 
     public abstract String getPlannerName();
+
+    public class AlgorithmCaller implements Callable<VoiceOutputPlan> {
+        final TupleCollection tupleCollection;
+
+        public AlgorithmCaller(TupleCollection tupleCollection) {
+            this.tupleCollection = tupleCollection;
+        }
+
+        @Override
+        public VoiceOutputPlan call() throws Exception {
+            return executeAlgorithm(tupleCollection);
+        }
+    }
 
 }

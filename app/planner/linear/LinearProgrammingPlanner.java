@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This class constructs VoiceOutputPlans according to the integer programming model. It specifically uses the CPLEX
@@ -215,9 +216,16 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
                 }
             }
 
+            // set timeout
+            cplex.setParam(IloCplex.DoubleParam.TiLim, (DEFAULT_TIMEOUT_MILLIS - 3000) / 1000);
+
             // minimize the objective function
             cplex.addMinimize(cplex.sum(contextOverhead, contextTime, negativeSavings));
             cplex.solve();
+
+            if (cplex.getStatus() != IloCplex.Status.Optimal) {
+                return null;
+            }
 
             // EXTRACT SOLUTION AS A VoiceOutputPlan
 

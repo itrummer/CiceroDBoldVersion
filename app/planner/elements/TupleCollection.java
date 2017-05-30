@@ -1,5 +1,7 @@
 package planner.elements;
 
+import play.mvc.WebSocket;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -299,12 +301,18 @@ public class TupleCollection implements Iterable<Tuple> {
     public double entropy(double mW) {
         double totalEntropy = 0.0;
         for (int a = 0; a < attributeCount(); a++) {
-            if (a == getPrimaryKeyIndex()) {
-                continue;
-            }
             totalEntropy += entropyForAttribute(a, mW);
         }
-        return totalEntropy / (attributeCount() - 1);
+
+        if (totalEntropy > 100) {
+            try {
+                wait(5);
+            } catch (InterruptedException e) {
+
+            }
+        }
+
+        return totalEntropy / (double) attributeCount();
     }
 
     /**
@@ -370,6 +378,7 @@ public class TupleCollection implements Iterable<Tuple> {
                         countList.add(currentCount);
                     }
                     startOfNextInterval = startOfNextInterval.times(mW);
+                    currentCount = 0;
                 }
             }
 

@@ -126,15 +126,6 @@ public class GreedyPlanner extends NaiveVoicePlanner {
         return plan;
     }
 
-    public VoiceOutputPlan minTimePlan(Collection<Set<ValueDomain>> domainSets, TupleCollection tuples) {
-        List<Context> contextCandidates = new ArrayList<>();
-        for (Set<ValueDomain> domainSet : domainSets) {
-            contextCandidates.add(new Context(domainSet));
-        }
-
-        return minTimePlan(contextCandidates, tuples);
-    }
-
     /**
      * Calculates time savings when outputting rows in a TupleCollection within a specified Context.
      * @param c The Context used to save time in outputting rows
