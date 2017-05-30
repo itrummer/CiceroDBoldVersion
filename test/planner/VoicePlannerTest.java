@@ -146,8 +146,8 @@ public class VoicePlannerTest extends TestCase {
         };
 
         int[][] numberColumns = new int[][]{
-                { 1, 2 },
-                { 1, 2 },
+                { 1, 2, 4 },
+                { 1, 2, 3 },
                 { 1, 2 },
                 { 1, 2 },
         };
@@ -183,23 +183,29 @@ public class VoicePlannerTest extends TestCase {
 
         System.out.println("Done generating results. Building analytics CSV...");
 
-        WatsonVoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
+
         String csvHeader = PlanningResult.getCSVHeader();
-        StringBuilder csvLines = new StringBuilder("");
+        StringBuilder csvLinesWithoutAudio = new StringBuilder("");
         for (PlanningResult result : testResults) {
             String fileNameBase = result.getFileNameBase();
-            System.out.println("Evaluating test case: " + fileNameBase);
+            System.out.println("Writing result for test case: " + fileNameBase);
             String text = "LONGFORM:\n" + result.getPlan().toSpeechText(true) + "\n\nSHORTFORM:\n" + result.getPlan().toSpeechText(false);
             Utilities.writeStringToFile("/Users/mabryan/temp/" + fileNameBase + ".txt", text);
+            csvLinesWithoutAudio.append(result.getCSVLine() + "\n");
+        }
+        Utilities.writeStringToFile("/Users/mabryan/temp/results_without_audio.csv", csvHeader + "\n" + csvLinesWithoutAudio.toString());
+
+        WatsonVoiceGenerator voiceGenerator = new WatsonVoiceGenerator();
+        StringBuilder csvLinesWithAudio = new StringBuilder("");
+        for (PlanningResult result : testResults) {
+            String fileNameBase = result.getFileNameBase();
+            System.out.println("Generating audio for test case: " + fileNameBase);
             String wavFilePath = "/Users/mabryan/temp/" + fileNameBase + ".wav";
             voiceGenerator.generateAndWriteToFile(result.getPlan().toSpeechText(false), wavFilePath);
             result.setAudioSpeechCost(Utilities.audioLengthInSeconds(wavFilePath));
-            csvLines.append(result.getCSVLine() + "\n");
+            csvLinesWithAudio.append(result.getCSVLine() + "\n");
         }
-
-        Utilities.writeStringToFile("/Users/mabryan/temp/results.csv", csvHeader + "\n" + csvLines.toString());
+        Utilities.writeStringToFile("/Users/mabryan/temp/results_with_audio.csv", csvHeader + "\n" + csvLinesWithAudio.toString());
     }
-
-
 
 }
