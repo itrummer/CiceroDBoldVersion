@@ -59,11 +59,11 @@ public class PlanningResult {
         if (plannerName.equals("naive")) {
             naiveCostString = String.format("%.4f", 1.0);
         } else {
-            naiveCostString = (naiveCost != null ? String.format("%.4f", (double) naiveCost / (double) plan.toSpeechText(true).length()) : "nil");
+            naiveCostString = (naiveCost != null ? String.format("%.4f", (double) plan.toSpeechText(true).length() / (double) naiveCost) : "nil");
         }
         return relation +
                 "," + plannerName +
-                "," + getExecutionCount() +
+                "," + getExecutionTimeMillis() +
                 "," + timedOut +
                 "," + plan.toSpeechText(true).length() +
                 "," + (audioSpeechCost != null ? audioSpeechCost : "nil") +

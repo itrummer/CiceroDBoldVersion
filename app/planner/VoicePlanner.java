@@ -22,26 +22,21 @@ public abstract class VoicePlanner {
     public PlanningResult plan(TupleCollection tupleCollection) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         AlgorithmCaller algorithmCaller = new AlgorithmCaller(tupleCollection);
-        Future<VoiceOutputPlan> future = executor.submit(algorithmCaller);
+        Future<PlanningResult> future = executor.submit(algorithmCaller);
 
         boolean timeout;
-        long executionTime;
-        VoiceOutputPlan plan;
+        PlanningResult plan;
 
         try {
-            long startTime = System.currentTimeMillis();
             plan = future.get(DEFAULT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-            long endTime = System.currentTimeMillis();
             if (plan == null) {
                 throw new TimeoutException();
             }
             executor.shutdown();
-            executionTime = endTime - startTime;
             timeout = false;
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            plan = new NaiveVoicePlanner().executeAlgorithm(tupleCollection);
-            executionTime = DEFAULT_TIMEOUT_MILLIS;
+            plan = new PlanningResult(new NaiveVoicePlanner().executeAlgorithm(tupleCollection)).withExecutionTime(DEFAULT_TIMEOUT_MILLIS);
             timeout = true;
         } finally {
             if (!executor.isTerminated()) {
@@ -49,11 +44,9 @@ public abstract class VoicePlanner {
             }
         }
 
-        return new PlanningResult(plan)
-                .withPlanner(this)
+        return plan.withPlanner(this)
                 .withTimeout(timeout)
-                .forTuples(tupleCollection)
-                .withExecutionTime(executionTime);
+                .forTuples(tupleCollection);
     }
 
     /**
@@ -81,7 +74,7 @@ public abstract class VoicePlanner {
 
     public abstract String getPlannerName();
 
-    public class AlgorithmCaller implements Callable<VoiceOutputPlan> {
+    public class AlgorithmCaller implements Callable<PlanningResult> {
         final TupleCollection tupleCollection;
 
         public AlgorithmCaller(TupleCollection tupleCollection) {
@@ -89,8 +82,16 @@ public abstract class VoicePlanner {
         }
 
         @Override
-        public VoiceOutputPlan call() throws Exception {
-            return executeAlgorithm(tupleCollection);
+        public PlanningResult call() throws Exception {
+            long startTime = System.currentTimeMillis();
+            VoiceOutputPlan plan = executeAlgorithm(tupleCollection);
+            if (plan == null) {
+                throw new TimeoutException();
+            }
+            PlanningResult result = new PlanningResult(plan);
+            long endTime = System.currentTimeMillis();
+            result.withExecutionTime(endTime - startTime);
+            return result;
         }
     }
 
