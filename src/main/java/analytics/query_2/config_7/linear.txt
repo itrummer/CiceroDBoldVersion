@@ -1,4 +1,0 @@
-Brooklyn Diner, three point seven rating, medium price, Diner cuisine, and Dos Caminos, four point zero rating, high price, Mexican cuisine.  
-Entries for medium price and Italian cuisine: Carmine's Italian Restaurant, four point two rating, Buca di Beppo, three point nine rating, and Tony's Di Napoli, four point four rating.  
-Entries for four point two rating: Havana Central Times Square, medium price, Cuban cuisine, Times Square Diner & Grill, low price, Diner cuisine, and Toloache, high price, Mexican cuisine.  
-Entries for four point two rating: Lillie's Victorian Establishment, medium price, British cuisine, and La Masseria, high price, Italian cuisine.  

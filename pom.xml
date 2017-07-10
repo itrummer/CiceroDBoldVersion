@@ -131,7 +131,16 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <argLine>-Djava.library.path=/Users/mabryan/Applications/IBM/ILOG/CPLEX_Studio1271/cplex/bin/x86-64_osx</argLine>
+                </configuration>
+            </plugin>
         </plugins>
+
     </build>
 
 </project>
