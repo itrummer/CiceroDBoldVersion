@@ -6,7 +6,10 @@ import planner.elements.TupleCollection;
 import java.util.Collection;
 
 /**
- * Represents the pruning stage of the Apriori Algorithm applied to Context generation
+ * Represents the pruning stage of the Apriori Algorithm applied to Context generation. After each Context
+ * generation stage, we apply a pruning method to the generated Contexts and filter Contexts according
+ * to some criteria related to the TupleCollection they were generated for. Subclasses should implement
+ * the abstract method prune() which represents this criteria.
  */
 public abstract class ContextPruner {
 

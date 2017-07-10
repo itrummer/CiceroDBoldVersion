@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A Scope represents an optional context with a set tuples that match the context
+ * A Scope represents an optional context with a set tuples that match the context.
+ * The template for a Scope with a Context and matching Tuples is
+ *
+ * Entries with "Context": "Tuples".
  */
 public class Scope implements Speakable {
     static final String PRECONTEXT_PHRASE = "Entries with ";
