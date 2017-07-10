@@ -1,7 +1,6 @@
 package planner.elements;
 
 import junit.framework.TestCase;
-import planner.elements.Value;
 
 import java.util.HashSet;
 import java.util.List;

@@ -1,6 +1,8 @@
 package planner;
 
 import junit.framework.TestCase;
+import planner.PlanningResult;
+import planner.ToleranceConfig;
 import planner.elements.TupleCollection;
 import planner.greedy.FantomGreedyPlanner;
 import planner.greedy.GreedyPlanner;
@@ -15,8 +17,6 @@ import voice.WatsonVoiceGenerator;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit testing for a VoicePlanner
@@ -137,19 +137,13 @@ public class VoicePlannerTest extends TestCase {
 
         List<PlanningResult> testResults = new ArrayList<>();
 
-        Relation[] testRelations = new Relation[] { Relation.MACBOOKS, Relation.RESTAURANTS, Relation.FOOTBALL, Relation.PHONES };
+        Relation[] testRelations = new Relation[] { Relation.PHONES };
         int[][] limitsForRelation = new int[][] {
-                { 2, 4, 6, 8, 10 },
-                { 2, 4, 6, 8, 10 },
-                { 2, 4, 6, 8, 10, 20 },
-                { 2, 4, 6, 8, 10, 20, 30, 40, 50 },
+                { 10 },
         };
 
         int[][] numberColumns = new int[][]{
-                { 1, 2, 4 },
-                { 1, 2, 3 },
-                { 1, 2 },
-                { 1, 2 },
+                { 3, 4 },
         };
 
         int relationIndex = 0;
@@ -164,6 +158,7 @@ public class VoicePlannerTest extends TestCase {
                     testResults.add(naiveResult);
 
                     for (ToleranceConfig config : configs) {
+                        System.out.println(query.getTupleCollection().entropy(config.getMaxNumericalDomainWidth()));
                         hybridPlanner.setConfig(config);
                         testResults.add(hybridPlanner.plan(query).withCorrespondingNaive(naiveResult));
 

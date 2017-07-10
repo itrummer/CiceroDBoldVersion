@@ -1,7 +1,5 @@
 package planner.elements;
 
-import play.mvc.WebSocket;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -312,14 +310,6 @@ public class TupleCollection implements Iterable<Tuple> {
             totalEntropy += entropyForAttribute(a, mW);
         }
 
-        if (totalEntropy > 100) {
-            try {
-                wait(5);
-            } catch (InterruptedException e) {
-
-            }
-        }
-
         return totalEntropy / (double) attributeCount();
     }
 
@@ -343,9 +333,9 @@ public class TupleCollection implements Iterable<Tuple> {
                 continue;
             }
 
-            double p = counts[i] / (double) totalCount;
+            double p = (double) counts[i] / (double) totalCount;
             double entropy = -p * Math.log(p);
-            totalEntropy += counts[i] * entropy;
+            totalEntropy += entropy;
         }
 
         return totalEntropy;

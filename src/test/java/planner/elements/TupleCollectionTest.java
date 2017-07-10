@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
 
 public class TupleCollectionTest extends TestCase {
 
