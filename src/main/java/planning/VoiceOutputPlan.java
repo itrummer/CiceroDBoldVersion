@@ -66,8 +66,16 @@ public class VoiceOutputPlan implements Speakable {
         }
     }
 
-    public int speechCost() {
+    public int getSpeechCost() {
         return toSpeechText(true).length();
+    }
+
+    public String getLongForm() {
+        return toSpeechText(true);
+    }
+
+    public List<Scope> getScopes() {
+        return scopes;
     }
 
 }

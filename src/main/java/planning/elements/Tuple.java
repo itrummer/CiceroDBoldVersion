@@ -1,5 +1,6 @@
 package planning.elements;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import planning.Speakable;
 
 import java.util.*;
@@ -30,6 +31,7 @@ public class Tuple implements Speakable {
         valueAssignments.put(column, value);
     }
 
+    @JsonIgnore
     public List<String> getAttributes() {
         return attributes;
     }
@@ -88,5 +90,31 @@ public class Tuple implements Speakable {
             cachedLongFormResultWithoutContext = t;
         }
         return t;
+    }
+
+    public List<ValueAssignmentEntry> getValueAssignments() {
+        List<ValueAssignmentEntry> values = new ArrayList<>();
+        for (String attribute : valueAssignments.keySet()) {
+            values.add(new ValueAssignmentEntry(attribute, valueAssignments.get(attribute).getValue()));
+        }
+        return values;
+    }
+
+    public class ValueAssignmentEntry {
+        String attribute;
+        Object value;
+
+        public ValueAssignmentEntry(String attribute, Object value) {
+            this.attribute = attribute;
+            this.value = value;
+        }
+
+        public String getAttribute() {
+            return attribute;
+        }
+
+        public Object getValue() {
+            return value;
+        }
     }
 }

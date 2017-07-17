@@ -110,4 +110,8 @@ public class Scope implements Speakable {
     public int numberTuples() {
         return tuples.size();
     }
+
+    public List<Tuple> getTuples() {
+        return tuples;
+    }
 }

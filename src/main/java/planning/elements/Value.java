@@ -1,5 +1,6 @@
 package planning.elements;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import planning.Speakable;
 import util.EnglishNumberToWords;
 
@@ -195,6 +196,7 @@ public class Value implements Speakable, Comparable<Value> {
      * instance that is not Categorical is classified as Numerical.
      * @return
      */
+    @JsonIgnore
     public boolean isCategorical() {
         return type == ValueType.STRING;
     }
@@ -202,6 +204,7 @@ public class Value implements Speakable, Comparable<Value> {
     /**
      * Convenience method. Returns the negation of isCategorical()
      */
+    @JsonIgnore
     public boolean isNumerical() {
         return !isCategorical();
     }
@@ -220,4 +223,7 @@ public class Value implements Speakable, Comparable<Value> {
         return null;
     }
 
+    public Object getValue() {
+        return value;
+    }
 }
