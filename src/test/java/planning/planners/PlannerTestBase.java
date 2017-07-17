@@ -23,7 +23,7 @@ public class PlannerTestBase extends TestCase {
     protected FantomGreedyPlanner fantomGreedyPlanner = new FantomGreedyPlanner();
     protected GreedyPlanner greedyPlanner = new GreedyPlanner();
 
-    protected Config createConfig(int mS, int mC, double mW) {
+    protected Config createConfig(int mS, int mC, double mW) throws Config.InvalidConfigValueException {
         Config config = new Config();
         config.setMaxAllowableContextSize(mS);
         config.setMaxAllowableCategoricalDomainSize(mC);
@@ -31,7 +31,7 @@ public class PlannerTestBase extends TestCase {
         return config;
     }
 
-    protected Config createConfig(int mS, int mC, double mW, double epsilon) {
+    protected Config createConfig(int mS, int mC, double mW, double epsilon) throws Config.InvalidConfigValueException {
         Config config = createConfig(mS, mC, mW);
         config.setEpsilon(epsilon);
         return config;

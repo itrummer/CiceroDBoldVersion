@@ -13,11 +13,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testLinearPerformsAsWellAsNaive() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
         PlanningResult naiveResult = planningManager.buildPlan(naivePlanner, tuples, config);
@@ -31,11 +28,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testHybridTop10PerformsAsWellAsNaive() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult hybridResult = planningManager.buildPlan(hybridPlannerTop10, tuples, config);
         PlanningResult naiveResult = planningManager.buildPlan(naivePlanner, tuples, config);
@@ -49,11 +43,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testHybridTupleCoveringPerformsAsWellAsNaive() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult hybridResult = planningManager.buildPlan(hybridPlannerTupleCovering, tuples, config);
         PlanningResult naiveResult = planningManager.buildPlan(naivePlanner, tuples, config);
@@ -67,12 +58,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testFantomGreedyPerformsAsWellAsNaive() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5, 0.1);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
-        config.setEpsilon(0.1);
 
         PlanningResult greedyResult = planningManager.buildPlan(fantomGreedyPlanner, tuples, config);
         PlanningResult naiveResult = planningManager.buildPlan(naivePlanner, tuples, config);
@@ -86,11 +73,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testGreedyPerformsAsWellAsNaive() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult greedyResult = planningManager.buildPlan(greedyPlanner, tuples, config);
         PlanningResult naiveResult = planningManager.buildPlan(naivePlanner, tuples, config);
@@ -104,11 +88,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testLinearPerformsAsWellAsHybridTop10() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
         PlanningResult hybridResult = planningManager.buildPlan(hybridPlannerTop10, tuples, config);
@@ -122,11 +103,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testLinearPerformsAsWellAsHybridTupleCovering() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
         PlanningResult hybridResult = planningManager.buildPlan(hybridPlannerTupleCovering, tuples, config);
@@ -140,12 +118,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testLinearPerformsAsWellAsFantom() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5, 0.1);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
-        config.setEpsilon(0.1);
 
         PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
         PlanningResult fantomResult = planningManager.buildPlan(fantomGreedyPlanner, tuples, config);
@@ -159,11 +133,8 @@ public class PlannerComparisonTest extends PlannerTestBase {
     public void testLinearPerformsAsWellAsGreedy() throws Exception {
         TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
 
-        Config config = new Config();
+        Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
-        config.setMaxAllowableContextSize(2);
-        config.setMaxAllowableCategoricalDomainSize(2);
-        config.setMaxAllowableNumericalDomainWidth(2.5);
 
         PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
         PlanningResult greedyResult = planningManager.buildPlan(greedyPlanner, tuples, config);

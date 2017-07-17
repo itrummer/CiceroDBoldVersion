@@ -50,6 +50,12 @@
             <artifactId>cplex</artifactId>
             <version>1271</version>
         </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-logging</artifactId>
+            <version>3.2.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
