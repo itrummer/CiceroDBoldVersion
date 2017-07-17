@@ -17,4 +17,7 @@ public class FantomGreedyPlannerTest extends PlannerTestBase {
         PlanningResult result = planningManager.buildPlan(fantomGreedyPlanner, tuples, config);
         assertNotNull(result.getPlan());
     }
+
+    // TODO: test with different epsilon values
+
 }
