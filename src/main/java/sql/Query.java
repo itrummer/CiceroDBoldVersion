@@ -1,6 +1,6 @@
 package sql;
 
-import planner.elements.TupleCollection;
+import planning.elements.TupleCollection;
 import util.DatabaseUtilities;
 
 import java.sql.SQLException;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MainController {
 
     @RequestMapping("/")
-    public String index() {
+    public String index() throws Exception {
         return "CiceroDB";
     }
 

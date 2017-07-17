@@ -1,6 +1,6 @@
 package util;
 
-import planner.elements.TupleCollection;
+import planning.elements.TupleCollection;
 
 import java.sql.*;
 import java.util.Map;
