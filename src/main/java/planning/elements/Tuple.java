@@ -1,5 +1,6 @@
 package planning.elements;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import planning.Speakable;
 
@@ -92,12 +93,13 @@ public class Tuple implements Speakable {
         return t;
     }
 
-    public List<ValueAssignmentEntry> getValueAssignments() {
-        List<ValueAssignmentEntry> values = new ArrayList<>();
-        for (String attribute : valueAssignments.keySet()) {
-            values.add(new ValueAssignmentEntry(attribute, valueAssignments.get(attribute).getValue()));
+    @JsonAnyGetter
+    public Map<String, Object> getValueAssignments() {
+        Map<String, Object> result = new HashMap<>();
+        for (String key : valueAssignments.keySet()) {
+            result.put(key, valueAssignments.get(key).getValue());
         }
-        return values;
+        return result;
     }
 
     public class ValueAssignmentEntry {

@@ -1,5 +1,7 @@
 package planning.elements;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -31,6 +33,7 @@ public class TupleCollection implements Iterable<Tuple> {
         }
     }
 
+    @JsonUnwrapped
     public ArrayList<Tuple> getTuples() {
         ArrayList<Tuple> list = new ArrayList<>();
         for (Tuple t : this) {
