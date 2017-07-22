@@ -1,5 +1,6 @@
 package api;
 
+import data.SQLConnector;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import planning.PlanningManager;
@@ -7,7 +8,6 @@ import planning.PlanningResult;
 import planning.config.Config;
 import planning.elements.TupleCollection;
 import planning.planners.naive.NaiveVoicePlanner;
-import util.DatabaseUtilities;
 
 @RestController
 public class MainController {
@@ -21,7 +21,8 @@ public class MainController {
     public PlanningResult naive() throws Exception {
         PlanningManager planningManager = new PlanningManager();
         NaiveVoicePlanner planner = new NaiveVoicePlanner();
-        TupleCollection tuples = DatabaseUtilities.executeQuery("select * from restaurants limit 10");
+        SQLConnector sqlConnector = new SQLConnector();
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
         return planningManager.buildPlan(planner, tuples, new Config());
     }
 }

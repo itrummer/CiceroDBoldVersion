@@ -1,5 +1,6 @@
 package planning.planners;
 
+import data.SQLConnector;
 import junit.framework.TestCase;
 import planning.PlanningManager;
 import planning.config.Config;
@@ -16,6 +17,7 @@ import planning.planners.naive.NaiveVoicePlanner;
  */
 public class PlannerTestBase extends TestCase {
     protected PlanningManager planningManager = new PlanningManager();
+    protected SQLConnector sqlConnector = new SQLConnector();
     protected NaiveVoicePlanner naivePlanner = new NaiveVoicePlanner();
     protected LinearProgrammingPlanner linearPlanner = new LinearProgrammingPlanner();
     protected HybridPlanner hybridPlannerTop10 = new HybridPlanner(new TopKPruner(10));

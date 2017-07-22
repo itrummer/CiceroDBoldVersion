@@ -2,10 +2,8 @@ package planning.elements;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.*;
+
 
 /**
  * Class representation of a collection of Tuples returned from a SQL query
@@ -15,7 +13,7 @@ public class TupleCollection implements Iterable<Tuple> {
     Map<Integer, Tuple> tuples;
     Map<Integer, Map<Integer, Value>> values;
     Map<Integer, Map<Integer, Value>> distinctValues;
-    HashMap<Integer, HashSet<Value>> valueSets;
+    Map<Integer, HashSet<Value>> valueSets;
 
     /**
      * Constructs a TupleCollection with 0 rows.
@@ -34,7 +32,7 @@ public class TupleCollection implements Iterable<Tuple> {
     }
 
     @JsonUnwrapped
-    public ArrayList<Tuple> getTuples() {
+    public List<Tuple> getTuples() {
         ArrayList<Tuple> list = new ArrayList<>();
         for (Tuple t : this) {
             list.add(t);
@@ -204,43 +202,6 @@ public class TupleCollection implements Iterable<Tuple> {
      */
     public int distinctValueCountForAttribute(int a) {
         return distinctValues.get(a).size();
-    }
-
-    /**
-     * Utility method to extract all Tuples from a ResultSet into Rows, which are
-     * then added to a TupleCollection
-     * @param resultSet The ResultSet from which to read Tuples
-     * @return A TupleCollection representing the Tuples in resultSet. Null if resultSet is null or if a
-     *          SQLException is encountered
-     */
-    public static TupleCollection rowCollectionFromResultSet(ResultSet resultSet) {
-        if (resultSet == null) {
-            return null;
-        }
-
-        try {
-            ResultSetMetaData metaData = resultSet.getMetaData();
-
-            ArrayList<String> attributes = new ArrayList<>();
-            for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                attributes.add(metaData.getColumnName(i));
-            }
-
-
-            TupleCollection tupleCollection = new TupleCollection(attributes);
-
-            while (resultSet.next()) {
-                Tuple tuple = new Tuple(attributes);
-                for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                    tuple.addValueAssignment(metaData.getColumnName(i), Value.createValueObject(resultSet.getObject(i)));
-                }
-                tupleCollection.addTuple(tuple);
-            }
-            return  tupleCollection;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     /**
@@ -477,7 +438,6 @@ public class TupleCollection implements Iterable<Tuple> {
             }
             throw new NoSuchElementException();
         }
-
     }
 
 }
