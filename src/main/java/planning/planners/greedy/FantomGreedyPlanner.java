@@ -1,4 +1,4 @@
-package planning.planners.greedy.fantom;
+package planning.planners.greedy;
 
 import planning.VoiceOutputPlan;
 import planning.config.Config;

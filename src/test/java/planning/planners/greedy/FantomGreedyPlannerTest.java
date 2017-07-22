@@ -1,4 +1,4 @@
-package planning.planners.greedy.fantom;
+package planning.planners.greedy;
 
 import planning.PlanningResult;
 import planning.config.Config;

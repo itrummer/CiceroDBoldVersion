@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 import planning.PlanningManager;
 import planning.config.Config;
 import planning.planners.greedy.GreedyPlanner;
-import planning.planners.greedy.fantom.FantomGreedyPlanner;
+import planning.planners.greedy.FantomGreedyPlanner;
 import planning.planners.hybrid.HybridPlanner;
 import planning.planners.hybrid.TopKPruner;
 import planning.planners.hybrid.TupleCoveringPruner;
