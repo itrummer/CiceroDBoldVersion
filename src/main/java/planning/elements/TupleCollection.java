@@ -1,12 +1,13 @@
 package planning.elements;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import util.Sets;
 
 import java.util.*;
 
 
 /**
- * Class representation of a collection of Tuples returned from a SQL query
+ * Class representation of a collection of Tuples
  */
 public class TupleCollection implements Iterable<Tuple> {
     List<String> attributes;
@@ -16,7 +17,7 @@ public class TupleCollection implements Iterable<Tuple> {
     Map<Integer, HashSet<Value>> valueSets;
 
     /**
-     * Constructs a TupleCollection with 0 rows.
+     * Constructs a TupleCollection with 0 Tuples
      */
     public TupleCollection(List<String> attributes) {
         this.attributes = attributes;
@@ -229,7 +230,7 @@ public class TupleCollection implements Iterable<Tuple> {
                 valueSet.addAll(distinctValues.get(a).values());
 
                 // add subsets of bounded cardinality
-                Set<Set<Value>> valueSubsets = subsetsOfSize(valueSet, mC);
+                Set<Set<Value>> valueSubsets = Sets.subsetsOfSize(valueSet, mC);
                 for (Set<Value> subset : valueSubsets) {
                     domains.add(new CategoricalValueDomain(attributeForIndex(a), new ArrayList<>(subset)));
                 }
@@ -372,52 +373,6 @@ public class TupleCollection implements Iterable<Tuple> {
         }
 
         return counts;
-    }
-
-    /**
-     * Computes the power set of a set of items
-     * @param originalSet The original set of items
-     * @param <T> The type of the items
-     * @return The power set of the original set
-     */
-    public static <T> Set<Set<T>> powerSet(Set<T> originalSet) {
-        Set<Set<T>> sets = new HashSet<>();
-        if (originalSet.isEmpty()) {
-            sets.add(new HashSet<>());
-            return sets;
-        }
-        List<T> list = new ArrayList<T>(originalSet);
-        T head = list.get(0);
-        HashSet<T> rest = new HashSet<T>(list.subList(1, list.size()));
-        for (Set<T> set : powerSet(rest)) {
-            HashSet<T> newSet = new HashSet<T>();
-            newSet.add(head);
-            newSet.addAll(set);
-            sets.add(newSet);
-            sets.add(set);
-        }
-        return sets;
-    }
-
-    /**
-     * Computes all subsets of originalSet that have at most k elements. Excludes the empty set for convenience.
-     *
-     * TODO: move to utilities class and write unit tests. Other algorithms may find this useful and this
-     * should be abstracted away
-     *
-     * @param originalSet The set of objects from which to create subsets
-     * @param k The maximum allowed size of a subset
-     * @param <T> The type of the objects in the HashSet
-     * @return All subsets of the original set that contain at most k elements, excluding the empty set
-     */
-    public static <T> Set<Set<T>> subsetsOfSize(Set<T> originalSet, int k) {
-        Set<Set<T>> filteredSets = new HashSet<>();
-        for (Set<T> set : powerSet(originalSet)) {
-            if (set.size() <= k && set.size() > 0) {
-                filteredSets.add(set);
-            }
-        }
-        return filteredSets;
     }
 
     @Override

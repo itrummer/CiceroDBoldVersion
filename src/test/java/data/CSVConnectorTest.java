@@ -31,7 +31,7 @@ public class CSVConnectorTest extends TestCase {
         String[] header2 = new String[]{"name:STRING", "age:INTEGER", "hometown:STRING"};
         TupleCollection tuples2 = connector.buildTupleCollectionFromCSV(testCSV, header2);
 
-        Value ageForMark2 = tuples1.getTuple(0).valueForAttribute("age");
+        Value ageForMark2 = tuples2.getTuple(0).valueForAttribute("age");
         assertTrue(ageForMark2.equals(new Value(21)));
     }
 
