@@ -8,9 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Represents a singular value. Provides various constructors for supported data types. This
+ * class essentially wraps various Java types and defines useful methods for translating
+ * data to speech. Values are immutable.
  */
 public class Value implements Speakable, Comparable<Value> {
+    /**
+     * Enum that represents the supported wrapped value types. For each type,
+     * there is a constructor with the corresponding Java class.
+     */
     public enum ValueType {
         INTEGER,
         DOUBLE,
@@ -18,25 +24,41 @@ public class Value implements Speakable, Comparable<Value> {
         STRING
     }
 
-    Comparable value;
-    ValueType type;
-    String cachedLongFormResult;
+    private Comparable value;
+    private ValueType type;
+    private String cachedLongFormResult;
 
+    /**
+     * Constructs a Value that wraps an Integer
+     * @param i The Integer that this Value will hold
+     */
     public Value(Integer i) {
         this.value = i;
         this.type = ValueType.INTEGER;
     }
 
+    /**
+     * Constructs a Value that wraps a Double
+     * @param d The Double that this Value will hold
+     */
     public Value(Double d) {
         this.value = d;
         this.type= ValueType.DOUBLE;
     }
 
+    /**
+     * Constructs a Value that wraps a Float
+     * @param f The Float that this Value will hold
+     */
     public Value(Float f) {
         this.value = f;
         this.type = ValueType.FLOAT;
     }
 
+    /**
+     * Constructs a Value
+     * @param s The String that this Value will hold
+     */
     public Value(String s) {
         this.value = s;
         this.type = ValueType.STRING;
@@ -79,7 +101,6 @@ public class Value implements Speakable, Comparable<Value> {
      * @return A Value object of the correct type. Null if value does not conform to a supported type.
      */
     public static Value createValueObject(Object value) {
-        // TODO: may not handle nulls from SQL correctly.. will need to test this out
         if (value instanceof String) {
             return new Value((String) value);
         } else if (value instanceof Integer) {
@@ -92,6 +113,7 @@ public class Value implements Speakable, Comparable<Value> {
         return null;
     }
 
+    @Override
     public String toSpeechText(boolean inLongForm) {
         if (inLongForm) {
             if (cachedLongFormResult != null) {
@@ -124,8 +146,8 @@ public class Value implements Speakable, Comparable<Value> {
 
     /**
      * Expands numeric types to their word values, then returns the length of the long-form number. For
-     * Categorical types, it returns the length of the String value.
-     * @return The speech cost for this Value
+     * categorical types, it returns the length of the String value.
+     * @return The speech cost in characters for this Value
      */
     public int speechCost() {
         return toSpeechText(true).length();
@@ -194,7 +216,6 @@ public class Value implements Speakable, Comparable<Value> {
     /**
      * Determines if this Value is classified as categorical. Categorical values are Strings. Any valid Value
      * instance that is not Categorical is classified as Numerical.
-     * @return
      */
     @JsonIgnore
     public boolean isCategorical() {
@@ -209,6 +230,11 @@ public class Value implements Speakable, Comparable<Value> {
         return !isCategorical();
     }
 
+    /**
+     * For numerical Values, returns a new Value whose inner value the product of this Value's inner value and
+     * the multiplier is multiplied by a multiplier. For categorical Values, returns a new copy of this Value.
+     * @param multiplier A double value to multiply by
+     */
     public Value times(double multiplier) {
         switch (type) {
             case FLOAT:
@@ -223,7 +249,10 @@ public class Value implements Speakable, Comparable<Value> {
         return null;
     }
 
-    public Object getValue() {
+    /**
+     * Returns the inner Comparable value of this Value instance
+     */
+    public Comparable getValue() {
         return value;
     }
 }

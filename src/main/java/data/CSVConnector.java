@@ -8,9 +8,7 @@ import planning.elements.TupleCollection;
 import planning.elements.Value;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Implements parsing of CSV data to a TupleCollection.
@@ -34,16 +32,42 @@ public class CSVConnector {
         // TODO: specify CSV configuration here or allow configuration to be overridden in constructor
     }
 
-    public TupleCollection buildTupleCollectionFromCSV(String csv, String... header) throws IOException {
-        CSVParser parser = CSVParser.parse(csv, CSVFormat.DEFAULT.withHeader(header));
+    private Value parseValue(String v, String type) throws Exception {
+        switch (type.toUpperCase()) {
+            case "INT":
+            case "INTEGER":
+                return new Value(Integer.parseInt(v));
+            default:
+                return new Value(v);
+        }
+    }
 
-        List<String> attributes = Arrays.asList(header);
-        TupleCollection tupleCollection = new TupleCollection(attributes);
+    public TupleCollection buildTupleCollectionFromCSV(String csv, String... header) throws Exception {
+        String[] attributes = new String[header.length];
+        Map<String, String> typeMap = new HashMap<>();
+
+        for (int i = 0; i < header.length; i++) {
+            String h = header[i]; // 'name:INTEGER'
+            int idx = h.indexOf(':');
+            if (idx != -1) {
+                String att = h.substring(0, idx);
+                String type = h.substring(idx + 1);
+                attributes[i] = att;
+                typeMap.put(att, type);
+            } else {
+                // default to STRING value if no type specified
+                attributes[i] = h;
+                typeMap.put(h, "STRING");
+            }
+        }
+
+        CSVParser parser = CSVParser.parse(csv, CSVFormat.DEFAULT.withHeader(attributes));
+        TupleCollection tupleCollection = new TupleCollection(Arrays.asList(attributes));
 
         for (CSVRecord record : parser.getRecords()) {
-            Tuple t = new Tuple(attributes);
-            for (String att : header) {
-                t.addValueAssignment(att, new Value(record.get(att)));
+            Tuple t = new Tuple(Arrays.asList(attributes));
+            for (String att : attributes) {
+                t.addValueAssignment(att, parseValue(record.get(att), typeMap.get(att)));
             }
             tupleCollection.addTuple(t);
         }

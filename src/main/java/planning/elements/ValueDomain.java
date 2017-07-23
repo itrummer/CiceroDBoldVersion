@@ -13,6 +13,4 @@ public abstract class ValueDomain implements Speakable {
     }
 
     public abstract boolean contains(Value v);
-    public abstract boolean isCategorical();
-    public abstract boolean isNumerical();
 }

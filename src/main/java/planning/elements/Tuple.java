@@ -32,19 +32,6 @@ public class Tuple implements Speakable {
         valueAssignments.put(column, value);
     }
 
-    @JsonIgnore
-    public List<String> getAttributes() {
-        return attributes;
-    }
-
-    public int timeSavingsFromValueDomain(ValueDomain d) {
-        Value v = valueAssignments.get(d.getAttribute());
-        if (v != null && d.contains(v)) {
-            return v.toSpeechText(true).length();
-        }
-        return 0;
-    }
-
     /**
      * Retrieves the value for the specified attribute
      */
@@ -100,23 +87,5 @@ public class Tuple implements Speakable {
             result.put(key, valueAssignments.get(key).getValue());
         }
         return result;
-    }
-
-    public class ValueAssignmentEntry {
-        String attribute;
-        Object value;
-
-        public ValueAssignmentEntry(String attribute, Object value) {
-            this.attribute = attribute;
-            this.value = value;
-        }
-
-        public String getAttribute() {
-            return attribute;
-        }
-
-        public Object getValue() {
-            return value;
-        }
     }
 }

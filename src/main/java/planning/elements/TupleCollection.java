@@ -401,6 +401,10 @@ public class TupleCollection implements Iterable<Tuple> {
 
     /**
      * Computes all subsets of originalSet that have at most k elements. Excludes the empty set for convenience.
+     *
+     * TODO: move to utilities class and write unit tests. Other algorithms may find this useful and this
+     * should be abstracted away
+     *
      * @param originalSet The set of objects from which to create subsets
      * @param k The maximum allowed size of a subset
      * @param <T> The type of the objects in the HashSet

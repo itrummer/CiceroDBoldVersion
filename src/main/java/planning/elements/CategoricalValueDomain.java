@@ -46,16 +46,6 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
     }
 
     @Override
-    public boolean isCategorical() {
-        return true;
-    }
-
-    @Override
-    public boolean isNumerical() {
-        return false;
-    }
-
-    @Override
     public String toSpeechText(boolean inLongForm) {
         if (inLongForm && longFormCachedResult != null) {
             return longFormCachedResult;
@@ -118,7 +108,6 @@ public class CategoricalValueDomain extends ValueDomain implements Speakable {
                 return false;
             }
         }
-
 
         return true;
     }

@@ -43,16 +43,6 @@ public class NumericalValueDomain extends ValueDomain {
         return geqLowerBound && leqUpperBound;
     }
 
-    @Override
-    public boolean isCategorical() {
-        return false;
-    }
-
-    @Override
-    public boolean isNumerical() {
-        return true;
-    }
-
     /**
      * Computes the width of this numerical value domain, which we define as
      * how much bigger the upper bound is than the lower bound. That is,
