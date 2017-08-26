@@ -75,6 +75,7 @@ public class Value implements Speakable, Comparable<Value> {
      */
     public int compareTo(Value anotherValue) {
         if (type != anotherValue.type) {
+            System.out.println("Type1: " + type + "; Type2: " + anotherValue.type);
             Integer thisValue = type.ordinal();
             Integer thatValue = anotherValue.type.ordinal();
             return thisValue.compareTo(thatValue);

@@ -10,6 +10,13 @@ import planning.planners.PlannerTestBase;
  */
 public class FantomGreedyPlannerTest extends PlannerTestBase {
 
+    public void testPlannerOutputNotNull() throws Exception {
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        Config config = createConfig(2, 2, 2.0, 0.1);
+        PlanningResult result = planningManager.buildPlan(fantomGreedyPlanner, tuples, config);
+        assertNotNull(result.getPlan());
+    }
+
     public void testNaiveVoicePlannerOutputNotNull() throws Exception {
         TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
         Config config = createConfig(2, 2, 2.0, 0.1);

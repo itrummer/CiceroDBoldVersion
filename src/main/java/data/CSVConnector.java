@@ -12,20 +12,6 @@ import java.util.*;
 
 /**
  * Implements parsing of CSV data to a TupleCollection.
- *
- * TODO: add better handling of data types when parsing CSVRecords. This can be done in a few ways.
- * One idea is to specify types similar to SQL (INTEGER, DOUBLE, FLOAT, STRING, etc.) and require
- * that these be included in the header names and separated by a delimiter such as ':' (option 1)
- * or that a special array of types be passed in along with the header names (option 2).
- * For example:
- *
- * Option 1:
- * header = ["name:STRING", "age:INTEGER"]
- *
- * Option 2:
- * headerNames = ["name", "age"]
- * headerTypes = ["STRING", "INTEGER"]
- *
  */
 public class CSVConnector {
     public CSVConnector() {
@@ -37,6 +23,10 @@ public class CSVConnector {
             case "INT":
             case "INTEGER":
                 return new Value(Integer.parseInt(v));
+            case "DOUBLE":
+                return new Value(Double.parseDouble(v));
+            case "FLOAT":
+                return new Value(Float.parseFloat(v));
             default:
                 return new Value(v);
         }

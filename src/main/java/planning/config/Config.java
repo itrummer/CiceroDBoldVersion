@@ -25,7 +25,7 @@ public class Config {
 
     public Integer getMaxAllowableContextSize() {
         if (maxAllowableContextSize == null) {
-            logger.warn("Using default value %d for max allowable context size", DEFAULT_MAX_ALLOWABLE_CONTEXT_SIZE);
+            logger.warn(String.format("Using default value %d for max allowable context size", DEFAULT_MAX_ALLOWABLE_CONTEXT_SIZE));
             return DEFAULT_MAX_ALLOWABLE_CONTEXT_SIZE;
         }
         return maxAllowableContextSize;
@@ -42,8 +42,8 @@ public class Config {
 
     public Double getMaxAllowableNumericalDomainWidth() {
         if (maxAllowableNumericalDomainWidth == null) {
-            logger.warn("Using default value %f for max allowable numerical domain width",
-                    DEFAULT_MAX_ALLOWABLE_NUMERICAL_DOMAIN_WIDTH);
+            logger.warn(String.format("Using default value %f for max allowable numerical domain width",
+                    DEFAULT_MAX_ALLOWABLE_NUMERICAL_DOMAIN_WIDTH));
             return DEFAULT_MAX_ALLOWABLE_NUMERICAL_DOMAIN_WIDTH;
         }
         return maxAllowableNumericalDomainWidth;
@@ -60,8 +60,8 @@ public class Config {
 
     public Integer getMaxAllowableCategoricalDomainSize() {
         if (maxAllowableCategoricalDomainSize == null) {
-            logger.warn("Using default value %d for max allowable categorical domain size",
-                    DEFAULT_MAX_ALLOWABLE_CATEGORICAL_DOMAIN_SIZE);
+            logger.warn(String.format("Using default value %d for max allowable categorical domain size",
+                    DEFAULT_MAX_ALLOWABLE_CATEGORICAL_DOMAIN_SIZE));
             return DEFAULT_MAX_ALLOWABLE_CATEGORICAL_DOMAIN_SIZE;
         }
         return maxAllowableCategoricalDomainSize;

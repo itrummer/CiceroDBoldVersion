@@ -10,7 +10,7 @@ import planning.planners.PlannerTestBase;
  */
 public class LinearProgrammingPlannerTest extends PlannerTestBase {
 
-    public void testGreedyPlanNotNull() throws Exception {
+    public void testLinearPlanNotNull() throws Exception {
         TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
         Config config = createConfig(2, 2, 2.0);
         PlanningResult result = planningManager.buildPlan(linearPlanner, tuples, config);

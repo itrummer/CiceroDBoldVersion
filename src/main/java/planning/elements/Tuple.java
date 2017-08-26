@@ -80,6 +80,11 @@ public class Tuple implements Speakable {
         return t;
     }
 
+    public Tuple withValueAssignment(String column, Value value) {
+        valueAssignments.put(column, value);
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getValueAssignments() {
         Map<String, Object> result = new HashMap<>();
@@ -87,5 +92,34 @@ public class Tuple implements Speakable {
             result.put(key, valueAssignments.get(key).getValue());
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "(Tuple " + valueAssignments.toString() + ")";
+    }
+
+    /**
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Tuple) {
+            Tuple other = (Tuple) obj;
+            if (valueAssignments.size() != other.valueAssignments.size()) {
+                return false;
+            }
+            for (String attribute : attributes) {
+                Value thisValue = valueForAttribute(attribute);
+                Value otherValue = other.valueForAttribute(attribute);
+                System.out.println("This: " + thisValue + "; Other: " + otherValue);
+                if (!valueForAttribute(attribute).equals(other.valueForAttribute(attribute))) {
+                    System.out.println("false");
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

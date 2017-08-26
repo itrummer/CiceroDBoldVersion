@@ -40,4 +40,26 @@ public class TupleTest extends TestCase {
         assertTrue(t.valueForAttribute("age").equals(new Value(21)));
     }
 
+    public void testTupleEquality() {
+        List<String> attributes = new ArrayList<>();
+        attributes.add("restaurant");
+        attributes.add("rating");
+        attributes.add("price");
+        attributes.add("cuisine");
+
+        Tuple t1 = new Tuple(attributes)
+                .withValueAssignment("restaurant", new Value("Carmine's Italian Restaurant"))
+                .withValueAssignment("rating", new Value(4.3))
+                .withValueAssignment("price", new Value("medium"))
+                .withValueAssignment("cuisine", new Value("Italian"));
+
+        Tuple t2 = new Tuple(attributes)
+                .withValueAssignment("restaurant", new Value("Carmine's Italian Restaurant"))
+                .withValueAssignment("rating", new Value(4.3))
+                .withValueAssignment("price", new Value("medium"))
+                .withValueAssignment("cuisine", new Value("Italian"));
+
+        assertTrue(t1.equals(t2));
+    }
+
 }

@@ -13,7 +13,7 @@ public class PlanningManager {
     VoicePlanner defaultPlanner;
 
     /**
-     * Lightweight class to manage exection of arbitrary planning algorithms for
+     * Lightweight class to manage execution of arbitrary planning algorithms for
      * arbitrary configurations. Manages the execution process and records any
      * metadata necessary for producing a PlanningResult.
      */

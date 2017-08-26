@@ -399,4 +399,8 @@ public class TupleCollection implements Iterable<Tuple> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "TupleCollection " + tuples.toString();
+    }
 }

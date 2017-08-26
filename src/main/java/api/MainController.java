@@ -22,7 +22,7 @@ public class MainController {
         PlanningManager planningManager = new PlanningManager();
         NaiveVoicePlanner planner = new NaiveVoicePlanner();
         SQLConnector sqlConnector = new SQLConnector();
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select restaurant, price from restaurants limit 10");
         return planningManager.buildPlan(planner, tuples, new Config());
     }
 }
