@@ -93,7 +93,7 @@ public class Config {
 
     public Double getEpsilon() {
         if (epsilon == null) {
-            logger.warn("Using default value %f for epsilon approximation", DEFAULT_EPSILON);
+            logger.warn(String.format("Using default value %f for epsilon approximation", DEFAULT_EPSILON));
             return DEFAULT_EPSILON;
         }
         return epsilon;

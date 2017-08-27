@@ -1,5 +1,6 @@
 package planning.elements;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import util.Sets;
 

@@ -12,17 +12,12 @@ import planning.planners.naive.NaiveVoicePlanner;
 @RestController
 public class MainController {
 
-    @RequestMapping("/")
-    public String index() {
-        return "Welcome to CiceroDB";
-    }
-
     @RequestMapping("/naive")
     public PlanningResult naive() throws Exception {
         PlanningManager planningManager = new PlanningManager();
         NaiveVoicePlanner planner = new NaiveVoicePlanner();
         SQLConnector sqlConnector = new SQLConnector();
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select restaurant, price from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select restaurant, price from restaurants limit 10", "Restaurants");
         return planningManager.buildPlan(planner, tuples, new Config());
     }
 }

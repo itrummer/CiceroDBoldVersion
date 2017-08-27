@@ -41,8 +41,8 @@ public class TestController {
                 throw new Exception("Invalid/unsupported algorithm");
         }
 
-        TupleCollection tupleCollection = csvConnector.buildTupleCollectionFromCSV(testInstance.csvBody, testInstance.csvHeader);
-        PlanningResult result = planningManager.buildPlan(planner, tupleCollection, new Config());
+        TupleCollection tupleCollection = csvConnector.buildTupleCollectionFromCSV(testInstance.getTuplesClassName(), testInstance.csvBody, testInstance.csvHeader.split(","));
+        PlanningResult result = planningManager.buildPlan(planner, tupleCollection, testInstance.getConfig());
         return new TestResult(counter.incrementAndGet(), result);
     }
 

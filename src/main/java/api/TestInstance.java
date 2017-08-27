@@ -8,6 +8,16 @@ public class TestInstance {
     String algorithm;
     Config config;
 
+    public String getTuplesClassName() {
+        return tuplesClassName;
+    }
+
+    public void setTuplesClassName(String tuplesClassName) {
+        this.tuplesClassName = tuplesClassName;
+    }
+
+    String tuplesClassName;
+
     public String getCsvHeader() {
         return csvHeader;
     }

@@ -29,4 +29,20 @@ public class PlanningResult {
         return plan;
     }
 
+    public long getExecutionTime() {
+        return executionTime;
+    }
+
+    public Config getConfig() {
+        return config;
+    }
+
+    public TupleCollection getTuples() {
+        return tuples;
+    }
+
+    public String getPlannerIdentifier() {
+        return plannerIdentifier;
+    }
+
 }

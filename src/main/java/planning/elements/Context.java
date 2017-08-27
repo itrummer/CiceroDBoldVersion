@@ -117,6 +117,10 @@ public class Context implements Speakable {
         return inLongForm ? cachedLongFormResult : cachedShortResult;
     }
 
+    public Map<String, ValueDomain> getValueDomains() {
+        return valueDomains;
+    }
+
     @Override
     public String toString() {
         return "Context: " + valueDomains;
