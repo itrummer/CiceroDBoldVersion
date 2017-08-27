@@ -14,7 +14,7 @@ public class CSVConnectorTest extends TestCase {
                 "John,24,Edina\n" +
                 "Jack,21,New York City\n";
         CSVConnector connector = new CSVConnector();
-        TupleCollection tuples = connector.buildTupleCollectionFromCSV(testCSV, header);
+        TupleCollection tuples = connector.buildTupleCollectionFromCSV("People", testCSV, header);
 
         assertEquals(tuples.tupleCount(), 3);
     }
@@ -24,13 +24,13 @@ public class CSVConnectorTest extends TestCase {
         CSVConnector connector = new CSVConnector();
 
         String[] header1 = new String[]{"name:STRING", "age:INTEGER", "hometown:STRING"};
-        TupleCollection tuples1 = connector.buildTupleCollectionFromCSV(testCSV, header1);
+        TupleCollection tuples1 = connector.buildTupleCollectionFromCSV("People", testCSV, header1);
 
         Value ageForMark1 = tuples1.getTuple(0).valueForAttribute("age");
         assertTrue(ageForMark1.equals(new Value(21)));
 
         String[] header2 = new String[]{"name:STRING", "age:INTEGER", "hometown:STRING"};
-        TupleCollection tuples2 = connector.buildTupleCollectionFromCSV(testCSV, header2);
+        TupleCollection tuples2 = connector.buildTupleCollectionFromCSV("People", testCSV, header2);
 
         Value ageForMark2 = tuples2.getTuple(0).valueForAttribute("age");
         assertTrue(ageForMark2.equals(new Value(21)));
@@ -42,7 +42,7 @@ public class CSVConnectorTest extends TestCase {
                 "John,24,Edina\n" +
                 "Jack,21,New York City\n";
         CSVConnector connector = new CSVConnector();
-        TupleCollection tuples = connector.buildTupleCollectionFromCSV(testCSV, header);
+        TupleCollection tuples = connector.buildTupleCollectionFromCSV("People", testCSV, header);
         assertEquals(tuples.tupleCount(), 3);
     }
 
@@ -53,7 +53,7 @@ public class CSVConnectorTest extends TestCase {
                 "Lillie's Victorian Establishment,4.3,medium,British\n" +
                 "Times Square Diner & Grill,4.2,low,Diner\n";
         CSVConnector connector = new CSVConnector();
-        TupleCollection tuples = connector.buildTupleCollectionFromCSV(testCSV, header);
+        TupleCollection tuples = connector.buildTupleCollectionFromCSV("Restaurants", testCSV, header);
         assertEquals(4, tuples.tupleCount());
 
         Tuple t0 = tuples.getTuple(0);
@@ -85,7 +85,7 @@ public class CSVConnectorTest extends TestCase {
         String[] testHeader = new String[]{"att1:STRING", "att2:INTEGER", "att3:DOUBLE"};
         String testCSV = "testVariable,2,5.4";
         CSVConnector connector = new CSVConnector();
-        TupleCollection tuples = connector.buildTupleCollectionFromCSV(testCSV, testHeader);
+        TupleCollection tuples = connector.buildTupleCollectionFromCSV("Entries", testCSV, testHeader);
 
         assertEquals(1, tuples.tupleCount());
 
@@ -99,7 +99,7 @@ public class CSVConnectorTest extends TestCase {
         String[] testHeader = new String[]{"att1:STRING", "att2:INTEGER", "att3:DOUBLE"};
         String testCSV = "testVariable,2,5.4\n";
         CSVConnector connector = new CSVConnector();
-        TupleCollection tuples = connector.buildTupleCollectionFromCSV(testCSV, testHeader);
+        TupleCollection tuples = connector.buildTupleCollectionFromCSV("Entries", testCSV, testHeader);
 
         assertEquals(1, tuples.tupleCount());
 

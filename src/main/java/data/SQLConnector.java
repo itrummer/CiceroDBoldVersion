@@ -24,7 +24,7 @@ public class SQLConnector {
                 "admin");
     }
 
-    private TupleCollection buildTupleCollectionFromResultSet(ResultSet resultSet) throws SQLException {
+    private TupleCollection buildTupleCollectionFromResultSet(ResultSet resultSet, String tuplesClassName) throws SQLException {
         ResultSetMetaData metaData = resultSet.getMetaData();
 
         List<String> attributes = new ArrayList<>();
@@ -32,7 +32,7 @@ public class SQLConnector {
             attributes.add(metaData.getColumnName(i));
         }
 
-        TupleCollection tupleCollection = new TupleCollection(attributes);
+        TupleCollection tupleCollection = new TupleCollection(attributes, tuplesClassName);
 
         while (resultSet.next()) {
             Tuple tuple = new Tuple(attributes);
@@ -45,7 +45,7 @@ public class SQLConnector {
         return  tupleCollection;
     }
 
-    public TupleCollection buildTupleCollectionFromQuery(String sql) throws SQLException {
+    public TupleCollection buildTupleCollectionFromQuery(String sql, String tuplesClassName) throws SQLException {
         Connection connection = null;
         ResultSet resultSet = null;
         Statement statement = null;
@@ -56,7 +56,7 @@ public class SQLConnector {
             connection = getConnection();
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sql);
-            tupleCollection = buildTupleCollectionFromResultSet(resultSet);
+            tupleCollection = buildTupleCollectionFromResultSet(resultSet, tuplesClassName);
         } catch (SQLException sqlException) {
             logger.error("Exception while executing query");
             exception = sqlException;
@@ -89,5 +89,9 @@ public class SQLConnector {
         }
 
         return tupleCollection;
+    }
+
+    public TupleCollection buildTupleCollectionFromQuery(String sql) throws SQLException {
+        return buildTupleCollectionFromQuery(sql, null);
     }
 }

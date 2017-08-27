@@ -10,16 +10,19 @@ import java.util.*;
  * Class representation of a collection of Tuples
  */
 public class TupleCollection implements Iterable<Tuple> {
+    public static final String DEFAULT_CLASS_NAME = "Entries";
+
     List<String> attributes;
     Map<Integer, Tuple> tuples;
     Map<Integer, Map<Integer, Value>> values;
     Map<Integer, Map<Integer, Value>> distinctValues;
     Map<Integer, HashSet<Value>> valueSets;
+    String tuplesClassName;
 
     /**
      * Constructs a TupleCollection with 0 Tuples
      */
-    public TupleCollection(List<String> attributes) {
+    public TupleCollection(List<String> attributes, String tuplesClassName) {
         this.attributes = attributes;
         this.tuples = new HashMap<>();
         this.values = new HashMap<>();
@@ -30,6 +33,11 @@ public class TupleCollection implements Iterable<Tuple> {
             distinctValues.put(a, new HashMap<>());
             valueSets.put(a, new HashSet<>());
         }
+        this.tuplesClassName = tuplesClassName;
+    }
+
+    public TupleCollection(List<String> attributes) {
+        this(attributes, "Entries");
     }
 
     @JsonUnwrapped
@@ -373,6 +381,10 @@ public class TupleCollection implements Iterable<Tuple> {
         }
 
         return counts;
+    }
+
+    public String getTuplesClassName() {
+        return tuplesClassName != null ? tuplesClassName : DEFAULT_CLASS_NAME;
     }
 
     @Override

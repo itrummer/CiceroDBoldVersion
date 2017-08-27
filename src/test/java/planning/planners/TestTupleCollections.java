@@ -18,7 +18,7 @@ public class TestTupleCollections {
         atts.add("price");
         atts.add("cuisine");
 
-        TupleCollection tuples = new TupleCollection(atts);
+        TupleCollection tuples = new TupleCollection(atts, "Restaurants");
 
         Tuple t1 = new Tuple(atts);
         t1.addValueAssignment("restaurant", new Value("Daniel's Cafe"));

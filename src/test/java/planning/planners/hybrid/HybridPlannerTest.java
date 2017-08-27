@@ -19,7 +19,7 @@ public class HybridPlannerTest extends PlannerTestBase {
     }
 
     public void testHybridTupleCoveringPlanNotNull() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
         Config config = createConfig(2, 2, 2.0);
         PlanningResult result = planningManager.buildPlan(hybridPlannerTupleCovering, tuples, config);
         assertNotNull(result.getPlan());

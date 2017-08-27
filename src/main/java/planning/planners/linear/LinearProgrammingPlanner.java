@@ -174,7 +174,7 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
 
             // ADD COST OBJECTIVE TO MODEL
 
-            IloIntExpr contextOverhead = cplex.prod(Scope.contextOverheadCost(), cplex.sum(g));
+            IloIntExpr contextOverhead = cplex.prod(Scope.contextOverheadCost(tupleCollection.getTuplesClassName()), cplex.sum(g));
 
             IloLinearIntExpr contextTime = cplex.linearIntExpr();
             for (int c = 0; c < cMax; c++) {
@@ -226,7 +226,7 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
             Map<Integer, Scope> scopes = new HashMap<>();
             for (int c = 0; c < cMax; c++) {
                 if (cplex.getValue(g[c]) > 0.5) {
-                    scopes.put(c, new Scope(new Context()));
+                    scopes.put(c, new Scope(new Context(), new ArrayList<>(), tupleCollection.getTuplesClassName()));
                 }
             }
 
@@ -266,7 +266,7 @@ public class LinearProgrammingPlanner extends NaiveVoicePlanner {
 
             // 4. iterate through all tuples and add them to the matching context within a scope, or add them to the
             //    scope with an empty context if they are not assigned to any context
-            Scope emptyContextScope = new Scope();
+            Scope emptyContextScope = new Scope(null, new ArrayList<>(), tupleCollection.getTuplesClassName());
             for (int t = 0; t < tupleCount; t++) {
                 boolean matched = false;
                 for (int c = 0; c < cMax; c++) {

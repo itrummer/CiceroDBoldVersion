@@ -78,7 +78,7 @@ public class Config {
 
     public Integer getTimeout() {
         if (timeout == null) {
-            logger.warn("Using default value %d for timeout", DEFAULT_TIMEOUT);
+            logger.warn(String.format("Using default value %d for timeout", DEFAULT_TIMEOUT));
             return DEFAULT_TIMEOUT;
         }
         return timeout;

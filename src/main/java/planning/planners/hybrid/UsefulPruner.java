@@ -34,7 +34,7 @@ public class UsefulPruner extends ContextPruner {
                 totalSavings += tWithoutContext - tWithContext;
             }
         }
-        return c.toSpeechText(true).length() + Scope.contextOverheadCost() >= totalSavings;
+        return c.toSpeechText(true).length() + Scope.contextOverheadCost(tupleCollection.getTuplesClassName()) >= totalSavings;
     }
 
     @Override

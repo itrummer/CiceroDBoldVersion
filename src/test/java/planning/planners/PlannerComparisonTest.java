@@ -10,7 +10,7 @@ import planning.elements.TupleCollection;
 public class PlannerComparisonTest extends PlannerTestBase {
 
     public void testLinearPerformsAsWellAsNaive() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
@@ -25,7 +25,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testHybridTop10PerformsAsWellAsNaive() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
@@ -40,7 +40,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testHybridTupleCoveringPerformsAsWellAsNaive() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
@@ -55,7 +55,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testFantomGreedyPerformsAsWellAsNaive() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5, 0.1);
         config.setTimeout(120);
@@ -70,7 +70,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testGreedyPerformsAsWellAsNaive() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
@@ -85,7 +85,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testLinearPerformsAsWellAsHybridTop10() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
@@ -100,7 +100,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testLinearPerformsAsWellAsHybridTupleCovering() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);
@@ -115,7 +115,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testLinearPerformsAsWellAsFantom() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5, 0.1);
         config.setTimeout(120);
@@ -130,7 +130,7 @@ public class PlannerComparisonTest extends PlannerTestBase {
     }
 
     public void testLinearPerformsAsWellAsGreedy() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10");
+        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5);
         config.setTimeout(120);

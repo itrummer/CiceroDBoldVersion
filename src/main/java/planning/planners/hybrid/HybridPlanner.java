@@ -41,7 +41,8 @@ public class HybridPlanner extends NaiveVoicePlanner {
 
             for (int c = 0; c < contextCount; c++) {
                 Context context = contextCandidates.get(c);
-                double contextCost = Scope.contextOverheadCost() + context.toSpeechText(true).length();
+                double contextCost = Scope.contextOverheadCost(tupleCollection.getTuplesClassName())
+                        + context.toSpeechText(true).length();
                 totalCost.addTerm(contextCost, g[c]);
             }
 
@@ -105,12 +106,12 @@ public class HybridPlanner extends NaiveVoicePlanner {
 
             ArrayList<Scope> scopes = new ArrayList<>();
             if (!emptyContextTuples.isEmpty()) {
-                scopes.add(new Scope(emptyContextTuples));
+                scopes.add(new Scope(null, emptyContextTuples, tupleCollection.getTuplesClassName()));
             }
 
             for (int c = 0; c < contextCandidates.size(); c++) {
                 if (tupleBins.containsKey(c)) {
-                    scopes.add(new Scope(contextCandidates.get(c), tupleBins.get(c)));
+                    scopes.add(new Scope(contextCandidates.get(c), tupleBins.get(c), tupleCollection.getTuplesClassName()));
                 }
             }
 

@@ -78,7 +78,7 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
 
         Map<Context, Scope> scopes = new HashMap<>();
         for (Context c : contextCandidates) {
-            scopes.put(c, new Scope(c));
+            scopes.put(c, new Scope(c, new ArrayList<>(), tupleCollection.getTuplesClassName()));
         }
 
         // for each tuple, find the Context it most favors, i.e. the best
@@ -99,7 +99,7 @@ public class FantomGreedyPlanner extends NaiveVoicePlanner {
         VoiceOutputPlan plan = new VoiceOutputPlan();
 
         if (!unmatchedTuples.isEmpty()) {
-            plan.addScope(new Scope(unmatchedTuples));
+            plan.addScope(new Scope(null, unmatchedTuples, tupleCollection.getTuplesClassName()));
         }
 
         for (Scope s : scopes.values()) {

@@ -32,7 +32,7 @@ public class CSVConnector {
         }
     }
 
-    public TupleCollection buildTupleCollectionFromCSV(String csv, String... header) throws Exception {
+    public TupleCollection buildTupleCollectionFromCSV(String tuplesClassName, String csv, String... header) throws Exception {
         String[] attributes = new String[header.length];
         Map<String, String> typeMap = new HashMap<>();
 
@@ -52,7 +52,7 @@ public class CSVConnector {
         }
 
         CSVParser parser = CSVParser.parse(csv, CSVFormat.DEFAULT.withHeader(attributes));
-        TupleCollection tupleCollection = new TupleCollection(Arrays.asList(attributes));
+        TupleCollection tupleCollection = new TupleCollection(Arrays.asList(attributes), tuplesClassName);
 
         for (CSVRecord record : parser.getRecords()) {
             Tuple t = new Tuple(Arrays.asList(attributes));

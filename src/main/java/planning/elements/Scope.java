@@ -2,7 +2,6 @@ package planning.elements;
 
 import planning.Speakable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,8 +11,6 @@ import java.util.List;
  * Entries with "Context": "Tuples".
  */
 public class Scope implements Speakable {
-    static final String PRECONTEXT_PHRASE = "Entries with ";
-    static final String POSTCONTEXT_PHRASE = ": ";
     static final String SCOPE_END_STRING = ".";
     static final String TUPLE_SEPARATOR_STRING = ", ";
 
@@ -21,38 +18,17 @@ public class Scope implements Speakable {
     List<Tuple> tuples;
     String cachedLongFormResult;
     String cachedShortResult;
+    String tuplesClassName;
 
     /**
      * Constructor for a Scope with a context
      * @param context The context that the tuples match
      * @param tuples The tuples in this scope
      */
-    public Scope(Context context, List<Tuple> tuples) {
+    public Scope(Context context, List<Tuple> tuples, String tuplesClassName) {
         this.context = context;
         this.tuples = tuples;
-    }
-
-    /**
-     * Constructor for a Scope without a context
-     * @param tuples The tuples in this scope
-     */
-    public Scope(List<Tuple> tuples) {
-        this(null, tuples);
-    }
-
-    /**
-     * Constructor for a Scope with one Context
-     * @param context
-     */
-    public Scope(Context context) {
-        this(context, new ArrayList<>());
-    }
-
-    /**
-     * Constructor for a scope with an empty context
-     */
-    public Scope() {
-        this(new ArrayList<>());
+        this.tuplesClassName = tuplesClassName;
     }
 
     /**
@@ -73,8 +49,8 @@ public class Scope implements Speakable {
     /**
      * Returns the speech cost of using a context
      */
-    public static int contextOverheadCost() {
-        return PRECONTEXT_PHRASE.length() + POSTCONTEXT_PHRASE.length();
+    public static int contextOverheadCost(String tuplesClassName) {
+        return tuplesClassName.length() + " with : ".length();
     }
 
     /**
@@ -89,7 +65,7 @@ public class Scope implements Speakable {
             return cachedShortResult;
         }
 
-        StringBuilder result = new StringBuilder(context == null ? "" : PRECONTEXT_PHRASE + context.toSpeechText(inLongForm) + POSTCONTEXT_PHRASE);
+        StringBuilder result = new StringBuilder(context == null ? "" : preContextPhrase() + context.toSpeechText(inLongForm) + postContextPhrase());
 
         int i = 0;
         for (Tuple t : tuples) {
@@ -105,6 +81,14 @@ public class Scope implements Speakable {
         }
 
         return (inLongForm ? cachedLongFormResult : cachedShortResult);
+    }
+
+    public String preContextPhrase() {
+        return tuplesClassName + " with ";
+    }
+
+    public String postContextPhrase() {
+        return ": ";
     }
 
     public int numberTuples() {
