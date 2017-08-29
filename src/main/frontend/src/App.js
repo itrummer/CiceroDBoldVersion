@@ -94,6 +94,7 @@ class TestInstance extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      algorithm: "fantom-greedy",
       csvHeader: "",
       csvBody: "",
       maxAllowableContextSize: 2,
