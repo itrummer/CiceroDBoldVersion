@@ -5,3 +5,10 @@ target/
 audiolization.iml
 logs
 *.wav
+*.log
+
+src/main/resources/META-INF/
+src/main/frontend/node/
+src/main/frontend/node_modules/
+src/main/frontend/build/
+src/main/frontend/package-lock.json
