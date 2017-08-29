@@ -31,7 +31,7 @@ class App extends Component {
     this.setState({isLoading: true});
     $.ajax({
       method: 'post',
-      url:'http://127.0.0.1:8080/test',
+      url:'/test',
       data: JSON.stringify(data),
       contentType: 'application/json',
       success: this.onSuccess,
