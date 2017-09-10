@@ -1,8 +1,8 @@
-# Audiolization (CiceroDB: Optimizing Voice Output of Relational Data)
+# Data Vocalization with CiceroDB
 
 Recent research on data visualization aims at automatically identifying the best way to represent data on visual
 interfaces. Supported by a Google faculty Award, the Cornell Database Group is currently studying the 
-complementary problem of "data audiolization". The goal here is to optimize the way in which structured data is
+complementary problem of "data vocalization". The goal here is to optimize the way in which structured data is
 represented via audio interfaces. This problem setting is motivated by emerging devices such as Google Home or Amazon
 Echo that interact with users primarily over voice based interfaces.
 
