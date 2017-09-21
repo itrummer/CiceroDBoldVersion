@@ -1,5 +1,12 @@
 # Data Vocalization with CiceroDB
 
+## Contributors
+
+- Immanuel Trummer
+- Jiancheng Zhu
+- Mark Bryan
+
+## About
 Recent research on data visualization aims at automatically identifying the best way to represent data on visual
 interfaces. Supported by a Google faculty Award, the Cornell Database Group is currently studying the 
 complementary problem of "data vocalization". The goal here is to optimize the way in which structured data is
@@ -16,38 +23,32 @@ currently reduce speaking time by removing redundancies which is appropriate for
 relatively small data sets. In future work, we will explore methods to transmit information that
 allow users to get insights about the distributions underlying larger data sets.
 
-## Environment Setup
+## Setup
 
-The project uses the [sbt](http://www.scala-sbt.org/download.html) build tool, so ensure this is installed before continuing.
+The project is built and run with [Maven](https://maven.apache.org/).
 
-Clone the repository and then import the project into IntelliJ as an sbt project. You will now be able
-to install the required dependencies using sbt, or you can allow IntelliJ to auto-import dependencies.
+To run the testing API locally, navigate inside the repository directory and enter the following command
 
-To run the project, navigate to the `audiolization` directory and enter the following command in the command line 
+`mvn spring-boot:run`
 
-`sbt run`
+The application is now running at `localhost:8080` and new tests can be submitted by making a `POST` request
+to `localhost:8080/test` with the body of the request specifying the data and configuration
+for the test.
 
-Open a web browser and navigate to `localhost:9000` to view the app.
+### CPLEX
 
-### CPLEX Setup
-
-If you wish to use the `IntegerProgrammingPlanner`, you will need to install the
-[IBM CPLEX Optimizer](https://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/). 
-CiceroDB uses CPLEX to solve the integer programming model of speech plan optimization. Once this is
-installed, add `cplex.jar` in your IDE as a external library. In the installation directory of CPLEX,
-you will find the directory `<CPLEX_installation_dir>/bin/<platform>`. You will need to add the following
-Java VM argument
+Many of the voice output optimization algorithms use CPLEX to solve linear programs 
+that minimize speaking time for conveying data. If you wish to use these algorithms, 
+you will need to install the [IBM CPLEX Optimizer](https://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/). 
+Once this is installed, add `cplex.jar` in your IDE as a external library. In the installation directory of CPLEX,
+you will find the directory `<CPLEX_installation_dir>/bin/<platform>`. Change the JVM argument in `pom.xml` for the location
+of your CPLEX installation. This will look like below:
 
 `-Djava.library.path=<CPLEX_installation_dir>/bin/<platform>`
 
-For example, this could be something like
+See `pom.xml` for an example. This JVM argument requirement can be explained in further detail [here](http://www-01.ibm.com/support/docview.wss?uid=swg21449776).
 
-`/Users/mabryan/Applications/IBM/ILOG/CPLEX_Studio_Community127/cplex/bin/x86-64_osx`
+## Demo
 
-This VM argument requirement can be explained in further detail [here](http://www-01.ibm.com/support/docview.wss?uid=swg21449776).
-
-## Contributors
-
-- Immanuel Trummer
-- Jiancheng Zhu
-- Mark Bryan
+We have prepared a demo built as a web app to allow users to interact with CiceroDB visually.
+The code is located at [https://github.com/mrkbryn/cicero-site](https://github.com/mrkbryn/cicero-site).
