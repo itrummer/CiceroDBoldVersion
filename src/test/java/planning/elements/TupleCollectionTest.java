@@ -79,16 +79,47 @@ public class TupleCollectionTest extends TestCase {
 
     public void testCandidateAssignments() throws Exception {
         TupleCollection tC = tupleCollection1();
-
         Map<Integer, Set<ValueDomain>> result = tC.candidateAssignments(2, 2.0);
 
-        // TODO: replace with what is expected
-        for (Integer i : result.keySet()) {
-            System.out.println("Value domains for attribute " + i + ":");
-            for (ValueDomain d : result.get(i)) {
-                System.out.println("\t" + d);
-            }
-        }
+        // should not contain keys for the primary key
+        assertFalse(result.containsKey(0));
+
+        Set<ValueDomain> a1Domains = result.get(1);
+        assertTrue(a1Domains.contains(new CategoricalValueDomain("a1", new Value("stringValue1"))));
+        assertTrue(a1Domains.contains(new CategoricalValueDomain("a1", new Value("stringValue2"))));
+        CategoricalValueDomain c1 = new CategoricalValueDomain("a1");
+        c1.addValueToDomain(new Value("stringValue1"));
+        c1.addValueToDomain(new Value("stringValue2"));
+        assertTrue(a1Domains.contains(c1));
+        assertEquals(a1Domains.size(), 3);
+
+        Set<ValueDomain> a2Domains = result.get(2);
+
+        // check for singular values
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.5))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(3.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(3.5))));
+
+        // check for rounded/truncated values
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(4.0))));
+
+        // check all other domains that satisfy mW
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.0), new Value(2.5))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.0), new Value(3.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.0), new Value(3.5))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.0), new Value(4.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.5), new Value(3.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.5), new Value(3.5))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(2.5), new Value(4.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(3.0), new Value(3.5))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(3.0), new Value(4.0))));
+        assertTrue(a2Domains.contains(new NumericalValueDomain("a2", new Value(3.5), new Value(4.0))));
+
+        // check for no other domains
+        assertEquals(a2Domains.size(), 15);
+
+        assertEquals(result.size(), 2);
     }
 
     public void testTupleCollectionIterator() {
@@ -190,5 +221,4 @@ public class TupleCollectionTest extends TestCase {
 
         assertTrue(tuplesWithRedundancy.entropy(2.0) < tuplesWithoutRedundancy.entropy(2.0));
     }
-
 }
