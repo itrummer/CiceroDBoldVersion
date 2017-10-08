@@ -49,6 +49,8 @@
             <groupId>cplex</groupId>
             <artifactId>cplex</artifactId>
             <version>1271</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/cplex-1271.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.neo4j</groupId>
