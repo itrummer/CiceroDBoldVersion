@@ -54,25 +54,10 @@ public class PlannerComparisonTest extends PlannerTestBase {
         assertTrue(hybridCost <= naiveCost);
     }
 
-    public void testFantomGreedyPerformsAsWellAsNaive() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
-
-        Config config = createConfig(2, 2, 2.5, 0.1);
-        config.setTimeout(120);
-
-        PlanningResult greedyResult = planningManager.buildPlan(fantomGreedyPlanner, tuples, config);
-        PlanningResult naiveResult = planningManager.buildPlan(naivePlanner, tuples, config);
-
-        int greedyCost = greedyResult.getPlan().toSpeechText(true).length();
-        int naiveCost = naiveResult.getPlan().toSpeechText(true).length();
-
-        assertTrue(greedyCost <= naiveCost);
-    }
-
     public void testGreedyPerformsAsWellAsNaive() throws Exception {
         TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
-        Config config = createConfig(2, 2, 2.5);
+        Config config = createConfig(2, 2, 2.5, 0.1);
         config.setTimeout(120);
 
         PlanningResult greedyResult = planningManager.buildPlan(greedyPlanner, tuples, config);
@@ -114,33 +99,18 @@ public class PlannerComparisonTest extends PlannerTestBase {
         assertTrue(linearCost <= hybridCost);
     }
 
-    public void testLinearPerformsAsWellAsFantom() throws Exception {
+    public void testLinearPerformsAsWellAsGreedy() throws Exception {
         TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
 
         Config config = createConfig(2, 2, 2.5, 0.1);
         config.setTimeout(120);
 
         PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
-        PlanningResult fantomResult = planningManager.buildPlan(fantomGreedyPlanner, tuples, config);
+        PlanningResult fantomResult = planningManager.buildPlan(greedyPlanner, tuples, config);
 
         int linearCost = linearResult.getPlan().toSpeechText(true).length();
         int fantomCost = fantomResult.getPlan().toSpeechText(true).length();
 
         assertTrue(linearCost <= fantomCost);
-    }
-
-    public void testLinearPerformsAsWellAsGreedy() throws Exception {
-        TupleCollection tuples = sqlConnector.buildTupleCollectionFromQuery("select * from restaurants limit 10", "Restaurants");
-
-        Config config = createConfig(2, 2, 2.5);
-        config.setTimeout(120);
-
-        PlanningResult linearResult = planningManager.buildPlan(linearPlanner, tuples, config);
-        PlanningResult greedyResult = planningManager.buildPlan(greedyPlanner, tuples, config);
-
-        int linearCost = linearResult.getPlan().toSpeechText(true).length();
-        int greedyCost = greedyResult.getPlan().toSpeechText(true).length();
-
-        assertTrue(linearCost <= greedyCost);
     }
 }

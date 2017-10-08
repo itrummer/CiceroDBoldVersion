@@ -81,6 +81,8 @@ public class TupleCollectionTest extends TestCase {
         TupleCollection tC = tupleCollection1();
 
         Map<Integer, Set<ValueDomain>> result = tC.candidateAssignments(2, 2.0);
+
+        // TODO: replace with what is expected
         for (Integer i : result.keySet()) {
             System.out.println("Value domains for attribute " + i + ":");
             for (ValueDomain d : result.get(i)) {
@@ -152,8 +154,6 @@ public class TupleCollectionTest extends TestCase {
         tuples.addTuple(t1);
         tuples.addTuple(t2);
 
-        System.out.println(tuples.entropy(2.0));
-
         Tuple t3 = new Tuple(attributes);
         t3.addValueAssignment("a", new Value("a2"));
         t3.addValueAssignment("b", new Value("b2"));
@@ -161,8 +161,6 @@ public class TupleCollectionTest extends TestCase {
         t3.addValueAssignment("d", new Value(2));
 
         tuples.addTuple(t3);
-
-        System.out.println(tuples.entropy(1.0));
     }
 
     public void testEntropySmallerForMoreRedundancy() {

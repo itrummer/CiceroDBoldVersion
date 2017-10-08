@@ -5,9 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import planning.PlanningManager;
 import planning.PlanningResult;
 import planning.VoicePlanner;
-import planning.config.Config;
 import planning.elements.TupleCollection;
-import planning.planners.greedy.FantomGreedyPlanner;
+import planning.planners.greedy.GreedyPlanner;
 import planning.planners.hybrid.HybridPlanner;
 import planning.planners.hybrid.TupleCoveringPruner;
 import planning.planners.linear.LinearProgrammingPlanner;
@@ -32,7 +31,7 @@ public class TestController {
                 planner = new HybridPlanner(new TupleCoveringPruner(10));
                 break;
             case "fantom-greedy":
-                planner = new FantomGreedyPlanner();
+                planner = new GreedyPlanner();
                 break;
             case "linear":
                 planner = new LinearProgrammingPlanner();

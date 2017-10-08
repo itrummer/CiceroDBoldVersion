@@ -5,7 +5,6 @@ import junit.framework.TestCase;
 import planning.PlanningManager;
 import planning.config.Config;
 import planning.planners.greedy.GreedyPlanner;
-import planning.planners.greedy.FantomGreedyPlanner;
 import planning.planners.hybrid.HybridPlanner;
 import planning.planners.hybrid.TopKPruner;
 import planning.planners.hybrid.TupleCoveringPruner;
@@ -22,7 +21,6 @@ public class PlannerTestBase extends TestCase {
     protected LinearProgrammingPlanner linearPlanner = new LinearProgrammingPlanner();
     protected HybridPlanner hybridPlannerTop10 = new HybridPlanner(new TopKPruner(10));
     protected HybridPlanner hybridPlannerTupleCovering = new HybridPlanner(new TupleCoveringPruner(10));
-    protected FantomGreedyPlanner fantomGreedyPlanner = new FantomGreedyPlanner();
     protected GreedyPlanner greedyPlanner = new GreedyPlanner();
 
     protected Config createConfig(int mS, int mC, double mW) throws Config.InvalidConfigValueException {
