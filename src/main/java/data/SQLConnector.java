@@ -17,11 +17,11 @@ public class SQLConnector {
 
     }
 
-    private Connection getConnection() throws SQLException {
-        // TODO: database connection should be configurable based on environment
-        return DriverManager.getConnection("jdbc:postgresql://localhost/audiolization_db",
-                "postgres",
-                "admin");
+    private static Connection getConnection() throws SQLException {
+        String dbUrl = System.getenv("JDBC_DATABASE_URL");
+        String userName = System.getenv("JDBC_DATABASE_USERNAME");
+        String password = System.getenv("JDBC_DATABASE_PASSWORD");
+        return DriverManager.getConnection(dbUrl, userName, password);
     }
 
     private TupleCollection buildTupleCollectionFromResultSet(ResultSet resultSet, String tuplesClassName) throws SQLException {
