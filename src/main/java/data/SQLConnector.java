@@ -11,11 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLConnector {
+
     final static Logger logger = LoggerFactory.getLogger(SQLConnector.class);
-
-    public SQLConnector() {
-
-    }
 
     private static Connection getConnection() throws SQLException {
         String dbUrl = System.getenv("JDBC_DATABASE_URL");

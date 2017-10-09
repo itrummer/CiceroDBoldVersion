@@ -14,9 +14,6 @@ import java.util.*;
  * Implements parsing of CSV data to a TupleCollection.
  */
 public class CSVConnector {
-    public CSVConnector() {
-        // TODO: specify CSV configuration here or allow configuration to be overridden in constructor
-    }
 
     private Value parseValue(String v, String type) throws Exception {
         switch (type.toUpperCase()) {
