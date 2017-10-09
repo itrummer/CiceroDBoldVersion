@@ -74,7 +74,7 @@ public class TestInstance {
         if (sqlQuery != null) {
             return sqlConnector.buildTupleCollectionFromQuery(sqlQuery, tuplesClassName);
         } else {
-            return csvConnector.buildTupleCollectionFromCSV(tuplesClassName, csvBody, csvHeader);
+            return csvConnector.buildTupleCollectionFromCSV(tuplesClassName, csvBody, csvHeader.split(","));
         }
     }
 
