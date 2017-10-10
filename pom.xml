@@ -46,6 +46,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
             <groupId>cplex</groupId>
             <artifactId>cplex</artifactId>
             <version>1271</version>
