@@ -2,9 +2,9 @@
 
 ## Contributors
 
-- Immanuel Trummer
-- Jiancheng Zhu
 - Mark Bryan
+- Jiancheng Zhu
+- Immanuel Trummer
 
 ## About
 Recent research on data visualization aims at automatically identifying the best way to represent data on visual
