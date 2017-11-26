@@ -27,26 +27,75 @@ allow users to get insights about the distributions underlying larger data sets.
 
 The project is built and run with [Maven](https://maven.apache.org/).
 
-To run the testing API locally, navigate inside the repository directory and enter the following command
+To setup CiceroDB, clone the repository
 
-`mvn spring-boot:run`
+```bash
+git clone https://github.com/itrummer/CiceroDB.git
+```
+
+Now, navigate to the CiceroDB directory
+
+```bash
+cd ./CiceroDB
+```
+
+You can stop here if you don't plan to use the hybrid and linear programming algorithms in `HybridPlanner` and `LinearProgrammingPlanner`.
+These algorithms use [IBM's CPLEX Optimizer](https://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/) to solve linear programs and build their voice outputs.
+CPLEX uses native libraries instead of pure Java libraries, which prevents us from packaging CiceroDB into one Java project.
+In order to use these planners, install the appropriate CPLEX for your machine and then specify the location of 
+the native libraries in `pom.xml`. This should be formatted like `-Djava.library.path=<CPLEX_installation_dir>/bin/<platform>`.
+
+You will now be able to run
+
+```bash
+mvn test
+```
+
+## Ad Hoc Planning
+
+If you wish to run an ad hoc planning test on sample data, you can write a simple script like below.
+
+```Java
+// Build a tuple collection from a CSV data source
+CSVConnector connector = new CSVConnector();
+TupleCollection tuples = connector.buildTupleCollectionFromCSV(
+        "restaurants",
+        "College Town Bagels,4.5,medium\nMac's Cafe,4.7,high",
+        new String[]{"restaurant:STRING", "rating:DOUBLE", "price:STRING"}
+);
+
+// Or, you can build a tuple collection from a JDBC data source
+SQLConnector connector = new SQLConnector();
+TupleCollection tuples = connector.buildTupleCollectionFromQuery(
+        "select * from restaurants",
+        "restaurants"
+);
+
+// Build a configuration to constrain the execution timeout, size, and complexity
+Config config = createConfig(2, 2, 2.0);
+
+// Execute the planning algorithm to get a PlanningResult
+VoicePlanner planner = new GreedyPlanner();
+PlanningResult result = planningManager.buildPlan(planner, tuples, config);
+
+// Print the generated voice output with numbers changed to long-form written text
+System.out.println(result.getPlan().toSpeechText(true));
+
+// Print the execution time
+System.out.println("Exection Time (in milliseconds): " + result.getExecutionTime());
+``` 
+
+## Test API
+
+CiceroDB also has a REST API for submitting tests. To run the testing API locally, navigate inside the repository directory and enter the following command
+
+```bash
+mvn spring-boot:run
+```
 
 The application is now running at `localhost:8080` and new tests can be submitted by making a `POST` request
 to `localhost:8080/test` with the body of the request specifying the data and configuration
 for the test.
-
-### CPLEX
-
-Many of the voice output optimization algorithms use CPLEX to solve linear programs 
-that minimize speaking time for conveying data. If you wish to use these algorithms, 
-you will need to install the [IBM CPLEX Optimizer](https://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/). 
-Once this is installed, add `cplex.jar` in your IDE as a external library. In the installation directory of CPLEX,
-you will find the directory `<CPLEX_installation_dir>/bin/<platform>`. Change the JVM argument in `pom.xml` for the location
-of your CPLEX installation. This will look like below:
-
-`-Djava.library.path=<CPLEX_installation_dir>/bin/<platform>`
-
-See `pom.xml` for an example. This JVM argument requirement can be explained in further detail [here](http://www-01.ibm.com/support/docview.wss?uid=swg21449776).
 
 ## Demo
 
