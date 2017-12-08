@@ -103,6 +103,8 @@ The application will bootstrap the database you setup with test relations, `foot
 The application will be running at `localhost:8080` and new tests can be submitted by making a `POST` request
 to `localhost:8080/test` with the body of the request specifying the data and configuration for the test.
 
+See the API for submitting tests [on Swagger](https://swaggerhub.com/apis/CiceroDB/CiceroDB/v1)
+
 ## Demo
 
 We have prepared a demo built as a web app to allow users to interact with CiceroDB visually.
