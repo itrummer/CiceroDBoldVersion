@@ -25,7 +25,13 @@ allow users to get insights about the distributions underlying larger data sets.
 
 ## Setup
 
+Note: we are currently working on making this setup process easier and simpler. We will update this section as we do.
+
 The project is built and run with [Maven](https://maven.apache.org/).
+
+You will need to have a PostgreSQL database that CiceroDB can connect to. Install PostgreSQL on your machine and then
+create a database. Update the JDBC url, username, and password in `setup.sh`, then run `./setup.sh` to export these
+environment variables for Spring to use and connect to your database.
 
 To setup CiceroDB, clone the repository
 
@@ -93,9 +99,9 @@ CiceroDB also has a REST API for submitting tests. To run the testing API locall
 mvn spring-boot:run
 ```
 
-The application is now running at `localhost:8080` and new tests can be submitted by making a `POST` request
-to `localhost:8080/test` with the body of the request specifying the data and configuration
-for the test.
+The application will bootstrap the database you setup with test relations, `football`, `macbooks`, `restaurants`, and `yelp`.
+The application will be running at `localhost:8080` and new tests can be submitted by making a `POST` request
+to `localhost:8080/test` with the body of the request specifying the data and configuration for the test.
 
 ## Demo
 
